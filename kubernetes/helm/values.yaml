@@ -65,7 +65,7 @@ secret:
 backend:
   name: jjhealth-backend
   image:
-    repository: your-backend-image
+    repository: jjhealth-backend
     tag: latest
   service:
     type: ClusterIP
@@ -74,7 +74,7 @@ backend:
 frontend:
   name: jjhealth-frontend
   image:
-    repository: your-frontend-image
+    repository: jjhealth-frontend
     tag: latest
   service:
     type: LoadBalancer

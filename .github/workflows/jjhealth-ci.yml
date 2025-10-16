@@ -3,7 +3,7 @@ name: CI/CD - Build & Push Docker Images
 on:
   push:
     branches:
-      - main   # run pipeline on main branch
+      - main
   pull_request:
 
 jobs:
@@ -13,12 +13,14 @@ jobs:
       contents: read
       packages: write 
 
+    outputs:
+      backend_image: ghcr.io/${{ github.repository_owner }}/jjhealth-backend:latest
+      frontend_image: ghcr.io/${{ github.repository_owner }}/jjhealth-frontend:latest
+
     steps:
-      # Checkout repository
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Log in to GitHub Container Registry
       - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
@@ -26,7 +28,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build & push backend image
       - name: Build & Push Backend
         uses: docker/build-push-action@v4
         with:
@@ -37,7 +38,6 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/jjhealth-backend:latest
             ghcr.io/${{ github.repository_owner }}/jjhealth-backend:${{ github.sha }}
 
-      # Build & push frontend image
       - name: Build & Push Frontend
         uses: docker/build-push-action@v4
         with:
@@ -47,10 +47,11 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/jjhealth-frontend:latest
             ghcr.io/${{ github.repository_owner }}/jjhealth-frontend:${{ github.sha }}
-    
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -60,23 +61,23 @@ jobs:
         with:
           version: v1.30.0
 
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
 
-      - name: Apply Kubernetes manifests
+      - name: Print image outputs
         run: |
-          kubectl apply -f ./kubernetes
+          echo "Backend image: ${{ needs.build-and-push.outputs.backend_image }}"
+          echo "Frontend image: ${{ needs.build-and-push.outputs.frontend_image }}"
 
-      - name: Update Backend Deployment with new image
+       
+      - name: Print image outputs
         run: |
-          kubectl set image deployment/jjhealth-backend \
-            laravel-backend=${{ env.BACKEND_IMAGE }} \
-            -n development
-
-      - name: Update Frontend Deployment with new image
-        run: |
-          kubectl set image deployment/jjhealth-frontend \
-            react-frontend=${{ env.FRONTEND_IMAGE }} \
-            -n development
+          echo "Backend image: ${{ needs.build-and-push.outputs.backend_image }}"
+          echo "Frontend image: ${{ needs.build-and-push.outputs.frontend_image }}"
