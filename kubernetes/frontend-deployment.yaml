@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jjhealth-frontend
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jjhealth-frontend
+  template:
+    metadata:
+      labels:
+        app: jjhealth-frontend
+    spec:
+      containers:
+        - name: nginx-frontend
+          image: your-frontend-image:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: APP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: jjhealth-services-config
+                  key: APP_URL
+            - name: BACKEND_URL
+              value: "$(APP_URL):9000"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jjhealth-frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: jjhealth-frontend
+  ports:
+    - port: 80
+      targetPort: 80

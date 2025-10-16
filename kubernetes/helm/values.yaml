@@ -1,0 +1,106 @@
+namespace: development
+
+backend:
+  name: jjhealth-backend
+  image:
+    repository: your-backend-image
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 9000
+
+frontend:
+  name: jjhealth-frontend
+  image:
+    repository: your-frontend-image
+    tag: latest
+  service:
+    type: LoadBalancer
+    port: 80
+
+mysql:
+  enabled: true
+  name: jjhealth-mysql
+  namespace: development
+  image: mysql:8.0
+  service:
+    port: 3306
+  storage:
+    size: 1Gi
+  secretName: jjhealth-mysql-secret
+  database:
+    name: laravel_db
+    userSecretKey: DB_USERNAME
+    passwordSecretKey: DB_PASSWORD
+
+
+
+clusterIssuer:
+  enabled: true
+  name: letsencrypt-prod
+  email: you@onet-gaming.com
+  server: https://acme-v02.api.letsencrypt.org/directory
+  privateKeySecretName: letsencrypt-prod-key
+
+
+ingress:
+  enabled: true
+  className: nginx
+  host: jjhealth-services.example.com
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  paths:
+    - path: /
+      pathType: Prefix
+      service:
+        name: jjhealth-frontend
+        port: 80
+
+  tls:
+    enabled: true
+    secretName: onet-gaming-tls
+    issuerName: letsencrypt-prod
+    email: you@onet-gaming.com
+    hosts:
+      - onet-gaming.com
+      - www.onet-gaming.com
+
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+
+
+httproute:
+  enabled: true
+  name: jjhealth-services-app-httproute
+  parentRefs:
+    - name: my-gateway       # Must exist in your cluster
+      namespace: dev
+  hostnames:
+    - jjhealth.example.com    # Replace with a real hostname
+
+
+hpa:
+  enabled: true
+  name: jjhealth-backend-hpa
+  target: jjhealth-backend
+  minReplicas: 1
+  maxReplicas: 5
+  cpuUtilization: 70
+
+
+
+httproute:
+  enabled: false
+  name: jjhealth-route
+  gateway: jjhealth-gateway
+  hostname: jjhealth.example.com
+
+
+serviceAccount:
+  create: true
+  name: jjhealth-sa
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/jjhealth-role

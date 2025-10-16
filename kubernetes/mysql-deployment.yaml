@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:   # for dev/local clusters (not for production)
+    path: "/mnt/data/mysql"
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jjhealth-mysql
+  namespace: development
+spec:
+  serviceName: jjhealth-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jjhealth-mysql
+  template:
+    metadata:
+      labels:
+        app: jjhealth-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jjhealth-services-secret
+                  key: DB_PASSWORD
+            - name: MYSQL_DATABASE
+              value: "laravel_db"
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: jjhealth-services-secret
+                  key: DB_USERNAME
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jjhealth-services-secret
+                  key: DB_PASSWORD
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jjhealth-mysql
+  namespace: development
+spec:
+  clusterIP: None
+  selector:
+    app: jjhealth-mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
