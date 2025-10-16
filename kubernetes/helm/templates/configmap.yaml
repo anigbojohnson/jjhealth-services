@@ -1,50 +1,11 @@
+{{- if .Values.configMap.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-config
+  name: {{ .Values.configMap.name }}
   namespace: {{ .Values.namespace }}
 data:
-  APP_NAME: "{{ .Values.app.name }}"
-  APP_ENV: "{{ .Values.app.env }}"
-  APP_DEBUG: "{{ .Values.app.debug }}"
-  APP_URL: "{{ .Values.app.url }}"
-  LOG_CHANNEL: "{{ .Values.logging.channel }}"
-  LOG_LEVEL: "{{ .Values.logging.level }}"
-
-  DB_CONNECTION: "{{ .Values.database.connection }}"
-  DB_HOST: "{{ .Values.database.host }}"
-  DB_PORT: "{{ .Values.database.port }}"
-  DB_DATABASE: "{{ .Values.database.name }}"
-  DB_USERNAME: "{{ .Values.database.username }}"
-
-  BROADCAST_DRIVER: "{{ .Values.services.broadcast_driver }}"
-  CACHE_DRIVER: "{{ .Values.services.cache_driver }}"
-  FILESYSTEM_DRIVER: "{{ .Values.services.filesystem_driver }}"
-  QUEUE_CONNECTION: "{{ .Values.services.queue_connection }}"
-  SESSION_DRIVER: "{{ .Values.services.session_driver }}"
-  SESSION_LIFETIME: "{{ .Values.services.session_lifetime }}"
-
-  MEMCACHED_HOST: "{{ .Values.cache.memcached_host }}"
-  REDIS_HOST: "{{ .Values.cache.redis_host }}"
-  REDIS_PORT: "{{ .Values.cache.redis_port }}"
-
-  MAIL_MAILER: "{{ .Values.mail.mailer }}"
-  MAIL_HOST: "{{ .Values.mail.host }}"
-  MAIL_PORT: "{{ .Values.mail.port }}"
-  MAIL_FROM_ADDRESS: "{{ .Values.mail.from_address }}"
-  MAIL_FROM_NAME: "{{ .Values.mail.from_name }}"
-
-  AWS_DEFAULT_REGION: "{{ .Values.aws.region }}"
-  AWS_BUCKET: "{{ .Values.aws.bucket }}"
-  AWS_USE_PATH_STYLE_ENDPOINT: "{{ .Values.aws.use_path_style_endpoint }}"
-
-  PUSHER_HOST: "{{ .Values.pusher.host }}"
-  PUSHER_PORT: "{{ .Values.pusher.port }}"
-  PUSHER_SCHEME: "{{ .Values.pusher.scheme }}"
-  PUSHER_APP_CLUSTER: "{{ .Values.pusher.app_cluster }}"
-
-  VITE_PUSHER_APP_KEY: "{{ .Values.vite_pusher.app_key }}"
-  VITE_PUSHER_HOST: "{{ .Values.vite_pusher.host }}"
-  VITE_PUSHER_PORT: "{{ .Values.vite_pusher.port }}"
-  VITE_PUSHER_SCHEME: "{{ .Values.vite_pusher.scheme }}"
-  VITE_PUSHER_APP_CLUSTER: "{{ .Values.vite_pusher.app_cluster }}"
+  {{- range $key, $value := .Values.configMap.data }}
+  {{ $key }}: "{{ $value }}"
+  {{- end }}
+{{- end }}

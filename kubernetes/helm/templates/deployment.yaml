@@ -26,9 +26,9 @@ spec:
             - containerPort: {{ .Values.backend.service.port }}
           envFrom:
             - configMapRef:
-                name: {{ .Values.backend.configMapRef }}
+                name: {{ .Values.configMap.name }}
             - secretRef:
-                name: {{ .Values.backend.secretRef }}
+                name: {{ .Values.secret.name }}
 
 ---
 
@@ -61,7 +61,7 @@ spec:
             - name: APP_URL
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Values.frontend.configMapRef }}
-                  key: {{ .Values.frontend.appUrlKey }}
+                  name: {{ .Values.configMapRef.name }}
+                  key: {{ .Values.configMapRef.data.APP_URL }}
             - name: BACKEND_URL
-              value: "$(APP_URL):{{ .Values.frontend.backendPort }}"
+              value: "$(APP_URL):{{ .Values.frontend.service.port }}"

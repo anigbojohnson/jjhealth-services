@@ -1,4 +1,66 @@
-namespace: development
+configMap:
+  enabled: true
+  name: jjhealth-services-config
+  data:
+    APP_NAME: "jjhealth-services"
+    APP_ENV: "local"
+    APP_DEBUG: "true"
+    APP_URL: "https://onet-gaming.com"
+    LOG_CHANNEL: "stack"
+    LOG_LEVEL: "debug"
+
+    DB_CONNECTION: "mysql"
+    DB_HOST: "jjhealth-mysql"
+    DB_PORT: "3306"
+    DB_DATABASE: "laravel_db"
+    DB_USERNAME: "laravel_user"
+
+    BROADCAST_DRIVER: "log"
+    CACHE_DRIVER: "file"
+    FILESYSTEM_DRIVER: "local"
+    QUEUE_CONNECTION: "sync"
+    SESSION_DRIVER: "file"
+    SESSION_LIFETIME: "120"
+
+    MEMCACHED_HOST: "127.0.0.1"
+    REDIS_HOST: "127.0.0.1"
+    REDIS_PORT: "6379"
+
+    MAIL_MAILER: "smtp"
+    MAIL_HOST: "mailpit"
+    MAIL_PORT: "1025"
+    MAIL_FROM_ADDRESS: "hello@example.com"
+    MAIL_FROM_NAME: "jjhealth-services"
+
+    AWS_DEFAULT_REGION: "us-east-1"
+    AWS_BUCKET: ""
+    AWS_USE_PATH_STYLE_ENDPOINT: "false"
+
+    PUSHER_HOST: ""
+    PUSHER_PORT: "443"
+    PUSHER_SCHEME: "https"
+    PUSHER_APP_CLUSTER: "mt1"
+
+    VITE_PUSHER_APP_KEY: ""
+    VITE_PUSHER_HOST: ""
+    VITE_PUSHER_PORT: "443"
+    VITE_PUSHER_SCHEME: "https"
+    VITE_PUSHER_APP_CLUSTER: "mt1"
+
+secret:
+  enabled: true
+  name: jjhealth-services-secret
+  data:
+    APP_KEY: "base64:bIys/xG8FSOy0KL6ttG3AZUwg/dq66PnIUOzlVfotzs="
+    DB_PASSWORD: "Sonship123$"
+    REDIS_PASSWORD: ""
+    MAIL_USERNAME: ""
+    MAIL_PASSWORD: ""
+    AWS_ACCESS_KEY_ID: ""
+    AWS_SECRET_ACCESS_KEY: ""
+    PUSHER_APP_ID: ""
+    PUSHER_APP_KEY: ""
+    PUSHER_APP_SECRET: ""
 
 backend:
   name: jjhealth-backend
@@ -33,54 +95,40 @@ mysql:
     userSecretKey: DB_USERNAME
     passwordSecretKey: DB_PASSWORD
 
-
-
-clusterIssuer:
-  enabled: true
-  name: letsencrypt-prod
-  email: you@onet-gaming.com
-  server: https://acme-v02.api.letsencrypt.org/directory
-  privateKeySecretName: letsencrypt-prod-key
-
-
 ingress:
   enabled: true
-  className: nginx
-  host: jjhealth-services.example.com
+  host: jjhealth.example.com
+  className: alb
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    alb.ingress.kubernetes.io/group.name: jjhealth-group
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
   paths:
     - path: /
       pathType: Prefix
       service:
-        name: jjhealth-frontend
+        name: jjhealth-service
         port: 80
-
   tls:
     enabled: true
-    secretName: onet-gaming-tls
-    issuerName: letsencrypt-prod
-    email: you@onet-gaming.com
-    hosts:
-      - onet-gaming.com
-      - www.onet-gaming.com
-
+    acmArn: arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-5678-efgh-9101-ijklmnopqrst
 
 serviceAccount:
   create: true
+  name: jjhealth-sa
   automount: true
-  annotations: {}
-
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/jjhealth-role
 
 httproute:
   enabled: true
   name: jjhealth-services-app-httproute
   parentRefs:
-    - name: my-gateway       # Must exist in your cluster
+    - name: my-gateway
       namespace: dev
   hostnames:
-    - jjhealth.example.com    # Replace with a real hostname
-
+    - jjhealth.example.com
 
 hpa:
   enabled: true
@@ -89,18 +137,3 @@ hpa:
   minReplicas: 1
   maxReplicas: 5
   cpuUtilization: 70
-
-
-
-httproute:
-  enabled: false
-  name: jjhealth-route
-  gateway: jjhealth-gateway
-  hostname: jjhealth.example.com
-
-
-serviceAccount:
-  create: true
-  name: jjhealth-sa
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/jjhealth-role
