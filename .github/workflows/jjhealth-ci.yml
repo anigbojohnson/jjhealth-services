@@ -76,8 +76,22 @@ jobs:
           echo "Backend image: ${{ needs.build-and-push.outputs.backend_image }}"
           echo "Frontend image: ${{ needs.build-and-push.outputs.frontend_image }}"
 
-       
-      - name: Print image outputs
+      - name: Helm Lint
         run: |
-          echo "Backend image: ${{ needs.build-and-push.outputs.backend_image }}"
-          echo "Frontend image: ${{ needs.build-and-push.outputs.frontend_image }}"
+          helm lint kubernetes/helm
+
+      - name: Helm Dependency Update
+        run: |
+          helm dependency update kubernetes/helm
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install jjhealth kubernetes/helm \
+            --namespace jjhealth \
+            --create-namespace \
+            --set backend.image.repository=ghcr.io/${{ github.repository_owner }}/jjhealth-backend \
+            --set backend.image.tag=${{ github.sha }} \
+            --set backend.image.pullPolicy=IfNotPresent \
+            --set frontend.image.repository=ghcr.io/${{ github.repository_owner }}/jjhealth-frontend \
+            --set frontend.image.tag=${{ github.sha }} \
+            --set frontend.image.pullPolicy=IfNotPresent
