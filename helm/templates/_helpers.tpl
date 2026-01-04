@@ -9,6 +9,7 @@
 {{- end -}}
 
 
+
 {{/* Common labels used by all resources */}}
 {{- define "jjhealth.labels" -}}
 helm.sh/chart: {{ include "jjhealth.name" . }}-{{ .Chart.Version | replace "+" "_" }}
