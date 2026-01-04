@@ -1,0 +1,13 @@
+# Git
+.git/
+**/.git/
+*.pack
+*.idx
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# CI / editor
+.vscode/
+.idea/
