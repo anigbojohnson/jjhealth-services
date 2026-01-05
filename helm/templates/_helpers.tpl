@@ -17,6 +17,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
+
 {{/* Common selector labels */}}
 {{- define "jjhealth.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "jjhealth.name" . }}
