@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.backend.name }}
-  namespace: {{ .Release.Namespace }}
+  namespace: development
 spec:
   replicas: {{ .Values.backend.replicas }}
   selector:
