@@ -68,6 +68,7 @@ awsSecretsManager:
   secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds!db-ca85071c-952a-400b-b9c1-5298feb9ba28-ZcADpp
   k8sSecretName: db-creds
 
+
 backend:
   name: jjhealth-backend
   replicas: 1
