@@ -65,12 +65,12 @@ secret:
 awsSecretsManager:
   enabled: true
   secretProviderClassName: db-secrets
-  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds-db-10025667-ce09-4be2-8c73-3104407780c6-dBtC0w
-  k8sSecretName: rds-db-10025667-ce09-4be2-8c73-3104407780c6
+  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds!db-10025667-ce09-4be2-8c73-3104407780c6-dBtC0w
+  k8sSecretName: rds!db-10025667-ce09-4be2-8c73-3104407780c6
 
 backend:
   name: jjhealth-backend
-  replicas: 2
+  replicas: 1
   image:
     repository: 869868778582.dkr.ecr.eu-west-2.amazonaws.com/jjhealth-backend-solution
     tag: latest
