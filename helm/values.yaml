@@ -90,7 +90,7 @@ frontend:
 ingress:
   enabled: true
   className: alb
-  host: onet-gaming.com
+  host: onet.com
 
   annotations:
     alb.ingress.kubernetes.io/group.name: jjhealth-group
