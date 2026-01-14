@@ -65,8 +65,9 @@ secret:
 awsSecretsManager:
   enabled: true
   secretProviderClassName: db-secrets
-  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds!db-e7277b9b-f805-4712-b23a-65be3a136766-0HsNLn
-  k8sSecretName: rds!db-e7277b9b-f805-4712-b23a-65be3a136766
+  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds*db-e7277b9b-f805-4712-b23a-65be3a136766-0HsNLn
+  k8sSecretName: jjhealth-rds-credentials
+
 
 backend:
   name: jjhealth-backend
