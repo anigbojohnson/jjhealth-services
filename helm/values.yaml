@@ -71,7 +71,7 @@ awsSecretsManager:
 
 backend:
   name: jjhealth-backend
-  replicas: 2
+  replicas: 1
   image:
     repository: 869868778582.dkr.ecr.eu-west-2.amazonaws.com/jjhealth-backend-solution
     tag: latest
