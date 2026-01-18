@@ -14,9 +14,7 @@ spec:
       labels:
         app: {{ .Values.backend.name }}
     spec:
-      {{- if .Values.serviceAccount.create }}
       serviceAccountName: {{ .Values.serviceAccount.name }}
-      {{- end }}
 
       volumes:
         - name: secrets-store
@@ -41,8 +39,7 @@ spec:
             - configMapRef:
                 name: "{{ .Values.configMap.name }}-main-config"
             - secretRef:
-                name: {{ .Values.awsSecretsManager.k8sSecretName }}
-
+                name: {{ .Values.awsSecretsManager.k8sSecretName | lower }}
 
 ---
 apiVersion: apps/v1
