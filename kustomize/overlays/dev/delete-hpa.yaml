@@ -1,0 +1,6 @@
+# delete-hpa.yaml
+$patch: delete
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jjhealth-backend-hpa          # must match exactly the name in base output
