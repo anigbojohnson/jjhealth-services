@@ -4,7 +4,11 @@ kind: Namespace
 metadata:
   name: {{ .Release.Namespace }}
   labels:
+<<<<<<< HEAD
     {{- include "jjhealth.labels" . | nindent 4 }}
+=======
+    app.kubernetes.io/managed-by: "Helm"
+>>>>>>> ddfe5f4 (good lord)
   annotations:
     meta.helm.sh/release-name: "{{ .Release.Name }}"
     meta.helm.sh/release-namespace: "{{ .Release.Namespace }}"

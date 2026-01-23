@@ -8,8 +8,11 @@
 {{- printf "%s-%s" .Release.Name (include "jjhealth.name" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> ddfe5f4 (good lord)
 {{/* Common labels used by all resources */}}
 {{- define "jjhealth.labels" -}}
 helm.sh/chart: {{ include "jjhealth.name" . }}-{{ .Chart.Version | replace "+" "_" }}

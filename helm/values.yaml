@@ -1,6 +1,10 @@
 configMap:
   enabled: true
+<<<<<<< HEAD
   name: jjhealth-services
+=======
+  name: jjhealth-services-config
+>>>>>>> ddfe5f4 (good lord)
   data:
     APP_NAME: "jjhealth-services"
     APP_ENV: "local"
@@ -9,12 +13,20 @@ configMap:
     LOG_CHANNEL: "stack"
     LOG_LEVEL: "debug"
 
+<<<<<<< HEAD
     DB_CONNECTION: "pgsql"
     DB_HOST: "jjhealth-db.cj2seuige0e8.eu-west-2.rds.amazonaws.com"
     DB_PORT: "5432"
     DB_DATABASE: "onet_gaming_app"
     DB_USERNAME: "dbmaster"
     DB_SSLMODE: "require"
+=======
+    DB_CONNECTION: "mysql"
+    DB_HOST: "jjhealth-mysql"
+    DB_PORT: "3306"
+    DB_DATABASE: "laravel_db"
+    DB_USERNAME: "laravel_user"
+>>>>>>> ddfe5f4 (good lord)
 
     BROADCAST_DRIVER: "log"
     CACHE_DRIVER: "file"
@@ -33,7 +45,11 @@ configMap:
     MAIL_FROM_ADDRESS: "hello@example.com"
     MAIL_FROM_NAME: "jjhealth-services"
 
+<<<<<<< HEAD
     AWS_DEFAULT_REGION: "eu-west-2"
+=======
+    AWS_DEFAULT_REGION: "us-east-1"
+>>>>>>> ddfe5f4 (good lord)
     AWS_BUCKET: ""
     AWS_USE_PATH_STYLE_ENDPOINT: "false"
 
@@ -53,6 +69,10 @@ secret:
   name: jjhealth-services-secret
   data:
     APP_KEY: "base64:bIys/xG8FSOy0KL6ttG3AZUwg/dq66PnIUOzlVfotzs="
+<<<<<<< HEAD
+=======
+    DB_PASSWORD: "Sonship123$"
+>>>>>>> ddfe5f4 (good lord)
     REDIS_PASSWORD: ""
     MAIL_USERNAME: ""
     MAIL_PASSWORD: ""
@@ -62,6 +82,7 @@ secret:
     PUSHER_APP_KEY: ""
     PUSHER_APP_SECRET: ""
 
+<<<<<<< HEAD
 awsSecretsManager:
   enabled: true
   secretProviderClassName: db-secrets
@@ -73,6 +94,12 @@ backend:
   replicas: 2
   image:
     repository: 869868778582.dkr.ecr.eu-west-2.amazonaws.com/jjhealth-backend-solution
+=======
+backend:
+  name: jjhealth-backend
+  image:
+    repository: jjhealth-backend
+>>>>>>> ddfe5f4 (good lord)
     tag: latest
   service:
     type: ClusterIP
@@ -80,6 +107,7 @@ backend:
 
 frontend:
   name: jjhealth-frontend
+<<<<<<< HEAD
   replicas: 1
   service:
     type: ClusterIP
@@ -102,10 +130,44 @@ ingress:
     alb.ingress.kubernetes.io/actions.ssl-redirect: >
       {"Type":"redirect","RedirectConfig":{"Protocol":"HTTPS","Port":"443","StatusCode":"HTTP_301"
 
+=======
+  image:
+    repository: jjhealth-frontend
+    tag: latest
+  service:
+    type: LoadBalancer
+    port: 80
+
+mysql:
+  enabled: true
+  name: jjhealth-mysql
+  namespace: development
+  image: mysql:8.0
+  service:
+    port: 3306
+  storage:
+    size: 1Gi
+  secretName: jjhealth-mysql-secret
+  database:
+    name: laravel_db
+    userSecretKey: DB_USERNAME
+    passwordSecretKey: DB_PASSWORD
+
+ingress:
+  enabled: true
+  host: jjhealth.example.com
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/group.name: jjhealth-group
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
+>>>>>>> ddfe5f4 (good lord)
   paths:
     - path: /
       pathType: Prefix
       service:
+<<<<<<< HEAD
         name: jjhealth-frontend
         port: 80
     - path: /health
@@ -114,22 +176,39 @@ ingress:
         name: jjhealth-frontend
         port: 80
 
+=======
+        name: jjhealth-service
+        port: 80
+  tls:
+    enabled: true
+    acmArn: arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-5678-efgh-9101-ijklmnopqrst
+>>>>>>> ddfe5f4 (good lord)
 
 serviceAccount:
   create: true
   name: jjhealth-sa
   automount: true
   annotations:
+<<<<<<< HEAD
     eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role
+=======
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/jjhealth-role
+>>>>>>> ddfe5f4 (good lord)
 
 httproute:
   enabled: true
   name: jjhealth-services-app-httproute
   parentRefs:
     - name: my-gateway
+<<<<<<< HEAD
       namespace: development
   hostnames:
     - onet-gaming.com
+=======
+      namespace: dev
+  hostnames:
+    - jjhealth.example.com
+>>>>>>> ddfe5f4 (good lord)
 
 hpa:
   enabled: true
@@ -137,4 +216,8 @@ hpa:
   target: jjhealth-backend
   minReplicas: 1
   maxReplicas: 5
+<<<<<<< HEAD
   cpuUtilization: 50
+=======
+  cpuUtilization: 70
+>>>>>>> ddfe5f4 (good lord)
