@@ -1,0 +1,46 @@
+<<<<<<< HEAD
+{{- if .Values.ingress.enabled }} 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: onet-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+=======
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "jjhealth.fullname" . }}-ingress
+  namespace: {{ .Values.namespace }}
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.tls.acmArn }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+>>>>>>> ddfe5f4 (good lord)
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          {{- range .Values.ingress.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ .service.name }}
+                port:
+                  number: {{ .service.port }}
+          {{- end }}
+{{- end }}
+<<<<<<< HEAD
+
+=======
+>>>>>>> ddfe5f4 (good lord)
