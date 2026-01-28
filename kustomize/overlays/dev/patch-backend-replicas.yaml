@@ -3,4 +3,5 @@ kind: Deployment
 metadata:
   name: jjhealth-backend   
 spec:
-  replicas: 1
+  replicas: 3
+  
