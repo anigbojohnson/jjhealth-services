@@ -1,0 +1,140 @@
+configMap:
+  enabled: true
+  name: jjhealth-services
+  data:
+    APP_NAME: "jjhealth-services"
+    APP_ENV: "local"
+    APP_DEBUG: "true"
+    APP_URL: "https://onet-gaming.com"
+    LOG_CHANNEL: "stack"
+    LOG_LEVEL: "debug"
+
+    DB_CONNECTION: "pgsql"
+    DB_HOST: "jjhealth-db.cj2seuige0e8.eu-west-2.rds.amazonaws.com"
+    DB_PORT: "5432"
+    DB_DATABASE: "onet_gaming_app"
+    DB_USERNAME: "dbmaster"
+    DB_SSLMODE: "require"
+
+    BROADCAST_DRIVER: "log"
+    CACHE_DRIVER: "file"
+    FILESYSTEM_DRIVER: "local"
+    QUEUE_CONNECTION: "sync"
+    SESSION_DRIVER: "file"
+    SESSION_LIFETIME: "120"
+
+    MEMCACHED_HOST: "127.0.0.1"
+    REDIS_HOST: "127.0.0.1"
+    REDIS_PORT: "6379"
+
+    MAIL_MAILER: "smtp"
+    MAIL_HOST: "mailpit"
+    MAIL_PORT: "1025"
+    MAIL_FROM_ADDRESS: "hello@example.com"
+    MAIL_FROM_NAME: "jjhealth-services"
+
+    AWS_DEFAULT_REGION: "eu-west-2"
+    AWS_BUCKET: ""
+    AWS_USE_PATH_STYLE_ENDPOINT: "false"
+
+    PUSHER_HOST: ""
+    PUSHER_PORT: "443"
+    PUSHER_SCHEME: "https"
+    PUSHER_APP_CLUSTER: "mt1"
+
+    VITE_PUSHER_APP_KEY: ""
+    VITE_PUSHER_HOST: ""
+    VITE_PUSHER_PORT: "443"
+    VITE_PUSHER_SCHEME: "https"
+    VITE_PUSHER_APP_CLUSTER: "mt1"
+
+secret:
+  enabled: true
+  name: jjhealth-services-secret
+  data:
+    APP_KEY: "base64:bIys/xG8FSOy0KL6ttG3AZUwg/dq66PnIUOzlVfotzs="
+    REDIS_PASSWORD: ""
+    MAIL_USERNAME: ""
+    MAIL_PASSWORD: ""
+    AWS_ACCESS_KEY_ID: ""
+    AWS_SECRET_ACCESS_KEY: ""
+    PUSHER_APP_ID: ""
+    PUSHER_APP_KEY: ""
+    PUSHER_APP_SECRET: ""
+
+awsSecretsManager:
+  enabled: true
+  secretProviderClassName: db-secrets
+  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds!db-ca85071c-952a-400b-b9c1-5298feb9ba28-ZcADpp
+  k8sSecretName: db-creds
+
+backend:
+  name: jjhealth-backend
+  replicas: 2
+  image:
+    repository: 869868778582.dkr.ecr.eu-west-2.amazonaws.com/jjhealth-backend-solution
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 9000
+
+frontend:
+  name: jjhealth-frontend
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 80
+
+
+ingress:
+  enabled: true
+  className: alb
+  host: onet-gaming.com
+
+  annotations:
+    alb.ingress.kubernetes.io/group.name: jjhealth-group
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: >
+      {"Type":"redirect","RedirectConfig":{"Protocol":"HTTPS","Port":"443","StatusCode":"HTTP_301"
+
+  paths:
+    - path: /
+      pathType: Prefix
+      service:
+        name: jjhealth-frontend
+        port: 80
+    - path: /health
+      pathType: Prefix
+      service:
+        name: jjhealth-frontend
+        port: 80
+
+
+serviceAccount:
+  create: true
+  name: jjhealth-sa
+  automount: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role
+
+httproute:
+  enabled: true
+  name: jjhealth-services-app-httproute
+  parentRefs:
+    - name: my-gateway
+      namespace: development
+  hostnames:
+    - onet-gaming.com
+
+hpa:
+  enabled: true
+  name: jjhealth-backend-hpa
+  target: jjhealth-backend
+  minReplicas: 1
+  maxReplicas: 5
+  cpuUtilization: 50
