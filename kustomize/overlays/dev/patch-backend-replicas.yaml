@@ -5,6 +5,7 @@ metadata:
 spec:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   replicas: 1 
 =======
   replicas: 2   
@@ -12,3 +13,7 @@ spec:
 =======
   replicas: 1
 >>>>>>> 0bed7f2 (p)
+=======
+  replicas: 1
+  
+>>>>>>> 4e3bd53 (push and test)
