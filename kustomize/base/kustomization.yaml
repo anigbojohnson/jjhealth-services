@@ -7,4 +7,3 @@ helmGlobals:
 helmCharts:
   - name: jjhealth-services             # ← must exactly match the subdir name
     releaseName: jjhealth-services
-    valuesFile: values.yaml             # ensure this file exists in base/
