@@ -65,8 +65,8 @@ secret:
 awsSecretsManager:
   enabled: true
   secretProviderClassName: db-secrets
-  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealthdb-8YPXLu
-  k8sSecretName: jjhealthdb
+  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealthdb-11-W88xrD
+  k8sSecretName: jjhealthdb-11
 
 
 backend:
@@ -122,6 +122,7 @@ serviceAccount:
   automount: true
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role
+
 
 httproute:
   enabled: true
