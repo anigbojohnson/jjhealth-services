@@ -117,7 +117,7 @@ ingress:
 
 
 serviceAccount:
-  create: true
+  create: false
   name: jjhealth-sa
   automount: true
  # annotations:
