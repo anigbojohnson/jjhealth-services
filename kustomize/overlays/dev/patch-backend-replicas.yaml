@@ -3,17 +3,4 @@ kind: Deployment
 metadata:
   name: jjhealth-backend   
 spec:
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   replicas: 1 
-=======
-  replicas: 2   
->>>>>>> 007a103 (update)
-=======
-  replicas: 1
->>>>>>> 0bed7f2 (p)
-=======
-  replicas: 1
-  
->>>>>>> 4e3bd53 (push and test)
