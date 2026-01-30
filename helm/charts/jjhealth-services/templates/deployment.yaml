@@ -14,7 +14,7 @@ spec:
       labels:
         app: {{ .Values.backend.name }}
     spec:
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: laravel-sa
 
       volumes:
         - name: secrets-store

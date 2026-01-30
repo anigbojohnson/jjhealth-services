@@ -120,8 +120,8 @@ serviceAccount:
   create: true
   name: jjhealth-sa
   automount: true
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role
+ # annotations:
+ #   eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role
 
 httproute:
   enabled: true
