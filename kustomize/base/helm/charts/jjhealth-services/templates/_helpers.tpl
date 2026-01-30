@@ -1,7 +1,10 @@
+
 {{/* Generate the chart name */}}
 {{- define "jjhealth.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- $name := .Values.nameOverride | default .Chart.Name -}}
+{{- $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
 
 {{/* Generate a fully qualified name (release + chart) */}}
 {{- define "jjhealth.fullname" -}}
