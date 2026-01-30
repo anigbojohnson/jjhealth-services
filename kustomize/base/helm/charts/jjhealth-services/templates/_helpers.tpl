@@ -1,7 +1,5 @@
-<<<<<<< HEAD
 {{/* Generate the chart name */}}
 {{- define "jjhealth.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/* Generate a fully qualified name (release + chart) */}}
@@ -24,10 +22,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/name: {{ include "jjhealth.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
-=======
 {{/* Generate the chart name */}}
 {{- define "jjhealth.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/* Generate a fully qualified name (release + chart) */}}
@@ -50,4 +46,3 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/name: {{ include "jjhealth.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
->>>>>>> 72c60a8 (added kustomize)
