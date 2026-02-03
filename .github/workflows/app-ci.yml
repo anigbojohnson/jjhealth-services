@@ -119,8 +119,11 @@ jobs:
             exit 0
           fi
 
+
           git add ${{ env.KUSTOMIZE_DIR}}/kustomization.yaml
           git commit -m "chore(dev): deploy backend image ${{ github.sha }}"
+          git pull --rebase origin main
+
           git push
 
   
