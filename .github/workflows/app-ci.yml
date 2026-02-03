@@ -106,8 +106,8 @@ jobs:
       - name: Update dev kustomize image tag
         run: |
           cd   ${{ env.KUSTOMIZE_DIR}} || { echo "Kustomize dev overlay not found"; exit 1; }
-          kustomize edit set image \ 
-          ghcr.io/${{ github.repository_owner }}/jjhealth-backend=ghcr.io/${{ github.repository_owner }}/jjhealth-backend:${{ github.sha }}
+          kustomize edit set image \
+            ghcr.io/${{ github.repository_owner }}/jjhealth-backend=ghcr.io/${{ github.repository_owner }}/jjhealth-backend:${{ github.sha }}
 
       - name: Commit and push kustomize change
         run: |
