@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jjhealth-services
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/anigbojohnson/jjhealth-services.git
+    targetRevision: main
+    path: kustomize/overlays/dev
+    # Remove this entire block:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: development
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

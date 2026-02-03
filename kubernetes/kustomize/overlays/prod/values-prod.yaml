@@ -1,0 +1,7 @@
+<<<<<<< HEAD
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jjhealth-backend   
+spec:
+  replicas: 2   

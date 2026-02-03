@@ -1,0 +1,82 @@
+# ----------------------------------
+# OS / Editor junk
+# ----------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log
+
+# ----------------------------------
+# Environment & secrets (CRITICAL)
+# ----------------------------------
+.env
+.env.*
+!.env.example
+
+# ----------------------------------
+# Laravel
+# ----------------------------------
+/vendor/
+/node_modules/
+storage/*.key
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+public/storage
+
+# ----------------------------------
+# Composer
+# ----------------------------------
+composer.phar
+
+# ----------------------------------
+# PHPUnit / Tests
+# ----------------------------------
+.phpunit.result.cache
+coverage/
+tests/_output/
+
+# ----------------------------------
+# Psalm
+# ----------------------------------
+.psalm-cache/
+.psalm/
+psalm-report.json
+
+# ----------------------------------
+# Docker
+# ----------------------------------
+docker-compose.override.yml
+**/.dockerignore
+
+# ----------------------------------
+# Kubernetes / Helm
+# ----------------------------------
+*.tgz
+charts/**/charts/
+
+# ----------------------------------
+# Terraform
+# ----------------------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+.crash.log
+
+# ----------------------------------
+# GitHub Actions artifacts
+# ----------------------------------
+*.sarif
+
+# ----------------------------------
+# Windows
+# ----------------------------------
+Desktop.ini
+terraform/root/.terraform/
+*.exe

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<psalm
+  errorLevel="3"
+  phpVersion="8.2"
+  resolveFromConfigFile="true"
+>
+  <projectFiles>
+    <directory name="." />
+
+    <ignoreFiles>
+      <directory name="vendor" />
+      <directory name="storage" />
+      <directory name="tests" />
+    </ignoreFiles>
+  </projectFiles>
+
+  <plugins>
+    <pluginClass class="Psalm\LaravelPlugin\Plugin" />
+  </plugins>
+</psalm>

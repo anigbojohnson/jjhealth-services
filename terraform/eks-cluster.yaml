@@ -1,0 +1,24 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: jjhealth-services-cluster
+  region: eu-west-2
+  version: "1.31"
+
+managedNodeGroups:
+  - name: app-nodes
+    instanceType: t3.small
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    privateNetworking: true
+    ssh:
+      allow: true
+      publicKeyName: todo_key   # replace this with your EC2 key pair name
+
+privateCluster:
+  enabled: true
+  additionalEndpointServices:
+    - "autoscaling"
+    - "logs"

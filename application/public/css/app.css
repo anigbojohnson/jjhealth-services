@@ -1,0 +1,256 @@
+.bold-text {
+    font-weight: bold;
+}
+
+.sidebar-menu {
+    list-style-type: none;
+}
+.sidebar-menu a:hover {
+    text-decoration: none; /* Removes underline on hover */
+  }
+
+
+    .sidebar-menu a {
+        padding: 10px 15px; /* Adjust the padding as needed */
+      }
+  .sidebar-menu li a {
+    width: 140%;
+    margin-left: -25px;
+    padding-left: 20px;
+    padding-right: 100px;
+  }
+  .sidebar-menu {
+    margin-top:  20px;
+
+  }
+
+  .priceTag {
+    background-color: #add8e6; /* Light blue color */
+    color: #fff; /* Optional: text color to ensure readability */
+}
+
+footer a {
+  text-decoration: none !important;
+  color:black
+
+}
+footer a:hover {
+  color:lightblue !important;/* Change this color to whatever you want */
+}
+.center-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  background-color: LightGray;
+}
+
+.center-not-login-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.genderSelector{
+  width:100%;
+  height: 40px;
+
+}
+/*
+#work {
+  display: none;
+}
+  */
+
+  #acknoledgement{
+    display: none;
+
+  }
+
+  #workAdjustments{
+    display: none;
+  }
+
+  #medicationRegimen{
+    display: none;
+
+  }
+
+  #healthConditions{
+    display: none;
+
+  }                   
+  #medicalDetails ,#howLongFor, #work , #studiesDetials, #previewDetails ,#carerDetails,#medicalDetails, #consultationRequest, #paymentRequest {
+    display: none;
+
+  }
+  #personCaredFor{
+    display: none;
+
+  }
+
+  .relative-container {
+    position: relative;
+    width: 100%;
+}
+.full-width-image {
+    width: 100%;
+    height: auto;
+}
+.top-button {
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+#fileUploadButton {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+#fileUploadButton:hover {
+    background-color: #0056b3;
+}
+
+#fileUpload {
+    display: none; /* Hide the actual file input */
+}
+.choose:hover{
+  color:white;
+}
+
+.option-card {
+  background-color: #f8f9fa; /* Light background */
+  border-radius: 15px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.option-card:hover {
+  background-color: #1b63d0; /* Hover effect */
+  color:white;
+}
+
+.option-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.option-text {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #343a40; /* Default color */
+  margin-left: 15px; /* Adds space between the icon and the text */
+  transition: color 0.3s ease;
+}
+
+.arrow-icon {
+  font-size: 1.5rem;
+  color: #343a40;
+  transition: transform 0.3s ease;
+  margin-left: auto; 
+}
+
+.option-card:hover .arrow-icon {
+  transform: translateX(5px);
+}
+
+.option-card:hover .option-text,
+.option-card:hover .arrow-icon {
+    color: #fff;
+}
+
+.option-card {
+  background-color: #ffffff; /* White background */
+  border-radius: 15px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex; /* Flexbox for horizontal layout */
+  align-items: center; /* Align icon and text vertically */
+  padding: 10px; /* Optional padding for better spacing */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for a subtle effect */
+}
+
+
+
+
+
+
+
+
+.faq-header {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.faq-item {
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+.faq-question {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #1a2d54;
+}
+.faq-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #f9f9f9;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+.faq-button:hover {
+  background-color: #e6e6e6;
+}
+.faq-button .icon {
+  color: #1a7cb6;
+  font-size: 1.5rem;
+}
+.faq-content {
+  padding: 20px;
+  border-top: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.nav-link.active {
+  border-bottom: 2px solid blue;
+  display: inline-block; /* Ensures the border is only as wide as the text */
+  width: auto; /* Auto width to match text length */
+  padding-bottom: 2px; /* Optional: adjust spacing between text and border */
+  color:blue;
+
+}
+
+
+
+
+
+.card-icons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.card-icon {
+  width: 50px; /* Adjust the width as per your need */
+  margin-right: 10px;
+}
+
+
+
+
+
+
+
