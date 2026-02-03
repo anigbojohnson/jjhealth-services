@@ -102,7 +102,6 @@ jobs:
 #     name: trivy-html-report
 #     path: trivy-report.html
 
-     
       - name: Update dev kustomize image tag
         run: |
           cd   ${{ env.KUSTOMIZE_DIR}} || { echo "Kustomize dev overlay not found"; exit 1; }

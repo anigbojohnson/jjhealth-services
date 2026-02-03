@@ -11,8 +11,6 @@ images:
 - name: ghcr.io/anigbojohnson/jjhealth-backend
   newTag: bf9502c2d1b42d1617605e6145fc186d11084926
 
-# The key part: Patch to override replicas on the backend Deployment
-
 # Delete HPA in development
 patches:
 - path: patch-backend-replicas.yaml
