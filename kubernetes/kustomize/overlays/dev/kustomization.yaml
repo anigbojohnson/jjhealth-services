@@ -8,9 +8,6 @@ resources:
 namespace: development
 
 images:
-- name: ghcr.io/anigbojohnson/jjhealth-backend
-  newName: ghcr.io/anigbojohnson/jjhealth-backend
-  newTag: a52da1a5ce1f62c65d4545e0cc2f6bb16306ea1c
 - name: repo/backend
   newName: repo/backend
   newTag: v2.3.1
