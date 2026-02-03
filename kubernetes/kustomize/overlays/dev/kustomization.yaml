@@ -9,11 +9,7 @@ namespace: development
 
 images:
 - name: ghcr.io/anigbojohnson/jjhealth-backend
-  newName: ghcr.io/anigbojohnson/jjhealth-backend
   newTag: bf9502c2d1b42d1617605e6145fc186d11084926
-- name: repo/backend
-  newName: repo/backend
-  newTag: v2.3.1
 
 # The key part: Patch to override replicas on the backend Deployment
 
