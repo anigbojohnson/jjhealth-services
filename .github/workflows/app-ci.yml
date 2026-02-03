@@ -55,7 +55,7 @@ jobs:
     needs: sast-scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
