@@ -10,7 +10,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'kubernetes\kustomize\overlays\dev\**'
+      - 'kubernetes/kustomize/overlays/dev/**'
   pull_request:
     branches:
       - main
