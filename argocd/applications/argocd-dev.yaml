@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/anigbojohnson/jjhealth-services.git
     targetRevision: main
-    path: kustomize/overlays/dev
+    path: kubernetes/kustomize/overlays/dev
     # Remove this entire block:
   destination:
     server: https://kubernetes.default.svc

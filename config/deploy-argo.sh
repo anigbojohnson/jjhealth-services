@@ -3,6 +3,17 @@ set -e
 
 ARGO_NAMESPACE="argocd"
 ARGO_APP_PATH="..\argocd\applications\argocd-dev.yaml"
+CLUSTER_NAME="jjhealth-services-cluster"
+AWS_REGION="eu-west-2"
+AWS_ACCOUNT_ID="869868778582"
+
+
+echo "🔁 Updating kubeconfig..."
+aws eks update-kubeconfig \
+  --region ${AWS_REGION} \
+  --name ${CLUSTER_NAME}
+
+kubectl get nodes
 
 echo "📦 Installing Argo CD..."
 
@@ -18,10 +29,10 @@ done
 kubectl create namespace $ARGO_NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 
 # Install Argo CD manifests
-kubectl apply -n $ARGO_NAMESPACE -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl create -n $ARGO_NAMESPACE -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 
-kubectl apply -n $ARGO_NAMESPACE -f "$ARGO_APP_PATH"
+kubectl create -n $ARGO_NAMESPACE -f "$ARGO_APP_PATH"
 
 # Port-forward Argo CD
 echo "🔁 Starting port-forwarding for Argo CD..."

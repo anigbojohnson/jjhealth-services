@@ -151,7 +151,7 @@ module "rds" {
 
 # Create the secret
 resource "aws_secretsmanager_secret" "db" {
-  name = "jjhealthdb-20"   # Your custom secret name
+  name = "jjhealthdb-23"   # Your custom secret name
   description = "DB credentials for jjhealth RDS"
   tags = {
     Project = var.project_name

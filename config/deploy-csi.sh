@@ -10,7 +10,7 @@ AWS_REGION="eu-west-2"
 AWS_ACCOUNT_ID="869868778582"
 NAMESPACE="development"
 BACKEND_SA_NAME="laravel-sa"
-BACKEND_ROLE_NAME="jjhealth-backend-secrets-role-1"
+BACKEND_ROLE_NAME="jjhealth-backend-secrets-role-2"
 BACKEND_POLICY_NAME="jjhealth-backend-secrets-policy"
 
 ### ===============================
@@ -35,6 +35,10 @@ eksctl utils associate-iam-oidc-provider \
 
 echo "🔐 Creating IAM ServiceAccount: ${BACKEND_SA_NAME} in namespace ${NAMESPACE}"
 
+eksctl delete iamserviceaccount \
+  --cluster "${CLUSTER_NAME}" \
+  --namespace "${NAMESPACE}" \
+  --name ${BACKEND_SA_NAME}
 
 
 eksctl create iamserviceaccount \
