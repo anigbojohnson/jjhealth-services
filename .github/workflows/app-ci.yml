@@ -10,7 +10,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'kubernetes/kustomize/**'
+      - 'kubernetes\kustomize\overlays\dev\kustomization.yaml'
   pull_request:
     branches:
       - main
