@@ -10,7 +10,7 @@ namespace: development
 images:
 - name: ghcr.io/anigbojohnson/jjhealth-backend
   newName: ghcr.io/anigbojohnson/jjhealth-backend
-  newTag: f341f8fd63335f8c803f27d9c5fe68b8ad554081
+  newTag: 1c7f6fa33afe1c8ca69d515dd17102a0d15ee868
 
 # Delete HPA in development
 patches:
