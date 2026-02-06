@@ -9,25 +9,22 @@ Thumbs.db
 .vscode/
 *.log
 
-# ----------------------------------
-# Environment & secrets (CRITICAL)
-# ----------------------------------
-.env
-.env.*
-!.env.example
 
 # ----------------------------------
 # Laravel
 # ----------------------------------
-/vendor/
-/node_modules/
-storage/*.key
-storage/logs/*
-storage/framework/cache/*
-storage/framework/sessions/*
-storage/framework/views/*
-bootstrap/cache/*
-public/storage
+application/vendor/
+application/node_modules/
+application/storage/*.key
+application/storage/logs/*
+application/storage/framework/cache/*
+application/storage/framework/sessions/*
+application/storage/framework/views/*
+application/bootstrap/cache/*
+application/public/storage
+application/.env
+application/.env.example
+
 
 # ----------------------------------
 # Composer
@@ -63,11 +60,13 @@ charts/**/charts/
 # ----------------------------------
 # Terraform
 # ----------------------------------
-.terraform/
-*.tfstate
-*.tfstate.*
-terraform.tfvars
-.crash.log
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+terraform/.crash.log
+**/*.pem
+**/*.pub
 
 # ----------------------------------
 # GitHub Actions artifacts
