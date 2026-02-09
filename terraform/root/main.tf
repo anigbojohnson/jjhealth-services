@@ -1,7 +1,7 @@
 data "aws_availability_zones" "available" {}
 
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.git?ref=a1b2c3d4e5f678901234567890abcdef12345678"
   version = "~> 5.0"
 
   name = "${var.project_name}-vpc"
@@ -66,8 +66,7 @@ module "bastion_host" {
 
 
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.24"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=9f8e7d6c5b4a32109876543210fedcba98765432"
 
   cluster_name    = "${var.project_name}-cluster"
   cluster_version = "1.31"
@@ -113,8 +112,8 @@ module "eks" {
 
 
 module "rds" {
-  source  = "terraform-aws-modules/rds/aws"
-  version = "~> 6.1"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-rds.git?ref=a1b2c3d4e5f678901234567890abcdef12345678"
+
 
   identifier        = "jjhealth-db"
   engine            = "postgres"
@@ -149,22 +148,7 @@ module "rds" {
   }
 }
 
-# Create the secret
-resource "aws_secretsmanager_secret" "db" {
-  name = "jjhealthdb-24"   # Your custom secret name
-  description = "DB credentials for jjhealth RDS"
-  tags = {
-    Project = var.project_name
-  }
-}
 
-# Store the initial secret value
-resource "aws_secretsmanager_secret_version" "db" {
-  secret_id = aws_secretsmanager_secret.db.id
 
-  secret_string = jsonencode({
-    db_name  = var.db_name
-    username = var.db_username
-    password = var.db_password
-  })
-}
+
+

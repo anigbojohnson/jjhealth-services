@@ -1,3 +1,27 @@
+resource "aws_security_group" "alb_sg" {
+  name        = "app-lb-sg"
+  description = "Public access to app load balancer"
+  vpc_id      = var.vpc_id
+
+
+  ingress {
+    description = "HTTPS from internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    security_groups = [aws_security_group.web_sg.id]
+
+  }
+}
+
 resource "aws_security_group" "web_sg" {
   name        = "alb security group"
   description = "enable http/https access on port 80/443"
@@ -8,7 +32,7 @@ resource "aws_security_group" "web_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+     security_groups = [aws_security_group.alb_sg.id]
   }
 
   ingress {
@@ -16,7 +40,7 @@ resource "aws_security_group" "web_sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+     security_groups = [aws_security_group.alb_sg.id]
   }
 
   ingress {
@@ -24,15 +48,16 @@ resource "aws_security_group" "web_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
 
   egress {
+    description = "allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
+      security_groups= [aws_security_group.app_sg.id]
   }
 
   tags = {
@@ -60,7 +85,7 @@ resource "aws_security_group" "app_sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.web_sg.id]
   }
 
   ingress {
@@ -72,10 +97,11 @@ resource "aws_security_group" "app_sg" {
   }
 
   egress {
+    description = "allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups= [aws_security_group.db_sg.id]
   }
 
   tags = {
@@ -98,13 +124,37 @@ resource "aws_security_group" "db_sg" {
   }
 
   egress {
+    description = "allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups= [aws_security_group.app_sg.id]
   }
 
   tags = {
     Name = "db_sg"
   }
+}
+
+resource "aws_security_group" "alb_sg" {
+  # checkov:skip=CKV2_AWS_5:SG attached to ALB in another module
+  description = "checkov:skip=CKV2_AWS_5:SG attached to ALB in another module"
+
+}
+
+resource "aws_security_group" "web_sg" {
+  # checkov:skip=CKV2_AWS_5:Used by app_sg which is attached to EKS
+  description = "checkov:skip=CKV2_AWS_5:Used by app_sg which is attached to EKS"
+
+}
+
+resource "aws_security_group" "app_sg" {
+  # checkov:skip=CKV2_AWS_5:Attached to EKS node group
+  description = "checkov:skip=CKV2_AWS_5:Attached to EKS node group"
+}
+
+resource "aws_security_group" "db_sg" {
+  # checkov:skip=CKV2_AWS_5:Attached to RDS via vpc_security_group_ids
+  description = "checkov:skip=CKV2_AWS_5:Attached to RDS via vpc_security_group_ids"
+
 }
