@@ -35,5 +35,4 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
 
       - run: terraform init
-      - run: terraform plan
       - run: terraform apply -auto-approve
