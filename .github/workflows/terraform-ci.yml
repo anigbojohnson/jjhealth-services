@@ -23,7 +23,7 @@ jobs:
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
-          url: https://fictional-chainsaw-wx7xv647qj9h5464-8200.app.github.dev/
+          url: http://35.178.207.36:8200
           role: gh-actions-role
           method: jwt
           secrets: |
