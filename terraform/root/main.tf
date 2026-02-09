@@ -1,9 +1,9 @@
 data "aws_availability_zones" "available" {}
 
 module "vpc" {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.git?ref=a1b2c3d4e5f678901234567890abcdef12345678"
+  source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
-
+  
   name = "${var.project_name}-vpc"
   cidr = var.vpc_cidr
 
@@ -66,8 +66,8 @@ module "bastion_host" {
 
 
 module "eks" {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=9f8e7d6c5b4a32109876543210fedcba98765432"
-
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
   cluster_name    = "${var.project_name}-cluster"
   cluster_version = "1.31"
 
@@ -112,8 +112,8 @@ module "eks" {
 
 
 module "rds" {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-rds.git?ref=a1b2c3d4e5f678901234567890abcdef12345678"
-
+  source  = "terraform-aws-modules/rds/aws"
+  version = "~> 6.0"
 
   identifier        = "jjhealth-db"
   engine            = "postgres"

@@ -136,24 +136,24 @@ resource "aws_security_group" "db_sg" {
   }
 }
 
-resource "aws_security_group" "alb_sg" {
+resource "aws_security_group" "alb_sg_CKV2_AWS_5" {
   # checkov:skip=CKV2_AWS_5:SG attached to ALB in another module
   description = "checkov:skip=CKV2_AWS_5:SG attached to ALB in another module"
 
 }
 
-resource "aws_security_group" "web_sg" {
+resource "aws_security_group" "web_sg_CKV2_AWS_5" {
   # checkov:skip=CKV2_AWS_5:Used by app_sg which is attached to EKS
   description = "checkov:skip=CKV2_AWS_5:Used by app_sg which is attached to EKS"
 
 }
 
-resource "aws_security_group" "app_sg" {
+resource "aws_security_group" "app_sg_CKV2_AWS_5" {
   # checkov:skip=CKV2_AWS_5:Attached to EKS node group
   description = "checkov:skip=CKV2_AWS_5:Attached to EKS node group"
 }
 
-resource "aws_security_group" "db_sg" {
+resource "aws_security_group" "db_sg_CKV2_AWS_5" {
   # checkov:skip=CKV2_AWS_5:Attached to RDS via vpc_security_group_ids
   description = "checkov:skip=CKV2_AWS_5:Attached to RDS via vpc_security_group_ids"
 
