@@ -29,7 +29,6 @@ jobs:
 
             echo "$TOKEN" | cut -d '.' -f2 | base64 -d | jq .
 
-
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
