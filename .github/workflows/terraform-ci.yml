@@ -36,5 +36,5 @@ jobs:
       - run: rm -rf .terraform
       - run: terraform init
       - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve -out=tfplan
+      - run: terraform apply -auto-approve tfplan
 
