@@ -42,17 +42,6 @@ variable "priv_sub_3b_cidr" {
   type        = string
 }
 
-variable "db_username" {
-  description = "Database username"
-  type        = string
-}
-
-variable "db_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
 
 
 variable "ami_id" {
@@ -94,13 +83,6 @@ variable "domain_name" {
 }
 
 
-variable "aws_access_key_id" {
-  type = string
-}
-
-variable "aws_secret_access_key" {
-  type = string
-}
 
 
 

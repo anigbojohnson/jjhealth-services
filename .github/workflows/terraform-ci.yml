@@ -24,7 +24,7 @@ jobs:
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
-          url: http://13.40.123.126:8200
+          url: http://18.175.123.215:8200
           role: gh-actions-role
           jwtGithubAudience: https://github.com/anigbojohnson
           method: jwt
@@ -34,5 +34,6 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
 
-      - run: terraform init
-      - run: terraform apply -auto-approve
+      - run: terraform init -lockfile=readonly
+      - run: terraform plan -out=tfplan
+      - run: terraform apply -auto-approve -input=false tfplan
