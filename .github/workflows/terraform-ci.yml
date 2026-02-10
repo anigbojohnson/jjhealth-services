@@ -33,7 +33,7 @@ jobs:
             aws/creds/terraform-role secret_key | AWS_SECRET_ACCESS_KEY
 
       - uses: hashicorp/setup-terraform@v3
-
+      - run: rm -rf .terraform
       - run: terraform init -upgrade -lockfile=readonly 
       - run: terraform plan -out=tfplan
       - run: terraform apply -auto-approve -input=false tfplan
