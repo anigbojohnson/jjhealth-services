@@ -36,6 +36,5 @@ jobs:
       - run: rm -rf .terraform
       - run: terraform init
       - run: terraform plan -out=tfplan
-      - run: terraform destroy -auto-approve -input=false tfplan
+      - run: terraform destroy -auto-approve 
 
-      
