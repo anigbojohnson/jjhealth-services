@@ -1,9 +1,9 @@
 data "aws_availability_zones" "available" {}
 
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
+  source = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
-  
+
   name = "${var.project_name}-vpc"
   cidr = var.vpc_cidr
 
@@ -66,8 +66,8 @@ module "bastion_host" {
 
 
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+  source = "terraform-aws-modules/eks/aws"
+  version = "~> 20.24"
   cluster_name    = "${var.project_name}-cluster"
   cluster_version = "1.31"
 
@@ -117,19 +117,20 @@ module "rds" {
 
   identifier        = "jjhealth-db"
   engine            = "postgres"
-  engine_version    = "16"        # ✅ Let AWS choose latest 16.x
+  engine_version    = "16"
   family            = "postgres16"
   instance_class    = "db.t3.micro"
-  allocated_storage = 20
+
+  allocated_storage     = 20
   max_allocated_storage = 100
 
   db_name  = var.db_name
-  username = var.db_username
-  password = var.db_password
-  port     = 5432
-  manage_master_user_password = false  
+  username = "jjhealth_admin"
 
+  # 🔐 Let AWS Secrets Manager handle the password
+  manage_master_user_password = true
 
+  port = 5432
   multi_az = false
 
   vpc_security_group_ids = [module.security-group.db_sg_id]
@@ -140,13 +141,11 @@ module "rds" {
   publicly_accessible = false
   skip_final_snapshot = true
 
-
-
-
   tags = {
     Project = "${var.project_name}-rds"
   }
 }
+
 
 
 

@@ -17,7 +17,8 @@ resource "aws_security_group" "alb_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    security_groups = [aws_security_group.web_sg.id]
+    cidr_blocks       = ["0.0.0.0/0"]
+
 
   }
 }
@@ -57,7 +58,8 @@ resource "aws_security_group" "web_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = -1
-      security_groups= [aws_security_group.app_sg.id]
+    cidr_blocks       = ["0.0.0.0/0"]
+
   }
 
   tags = {
@@ -101,7 +103,8 @@ resource "aws_security_group" "app_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = -1
-    security_groups= [aws_security_group.db_sg.id]
+    cidr_blocks       = ["0.0.0.0/0"]
+
   }
 
   tags = {
@@ -128,7 +131,8 @@ resource "aws_security_group" "db_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = -1
-    security_groups= [aws_security_group.app_sg.id]
+    cidr_blocks       = ["0.0.0.0/0"]
+
   }
 
   tags = {
