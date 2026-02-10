@@ -63,7 +63,6 @@ charts/**/charts/
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.*
-terraform/terraform.tfvars
 terraform/.crash.log
 **/*.pem
 **/*.pub
