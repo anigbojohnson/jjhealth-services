@@ -34,7 +34,8 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - run: rm -rf .terraform
       - run: terraform init -reconfigure
-      - run: terraform plan -out=tfplan
+      - run: terraform state list
+      - run: terraform plan
       - run: terraform apply -auto-approve
 
 
