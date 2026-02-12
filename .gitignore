@@ -61,8 +61,9 @@ charts/**/charts/
 # Terraform
 # ----------------------------------
 terraform/.terraform/
-terraform/*.tfstate
-terraform/*.tfstate.*
+terraform/root/*.tfstate
+terraform/root/tfplan
+terraform/root/*.tfstate.*
 terraform/.crash.log
 **/*.pem
 **/*.pub
