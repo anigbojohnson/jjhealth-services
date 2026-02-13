@@ -29,14 +29,30 @@ jobs:
           method: jwt
           secrets: |
             aws/creds/terraform-role access_key | AWS_ACCESS_KEY_ID ;
-            aws/creds/terraform-role secret_key | AWS_SECRET_ACCESS_KEY
+            aws/creds/terraform-role secret_key | AWS_SECRET_ACCESS_KEY;
+            aws/creds/terraform-role security_token | AWS_SESSION_TOKEN
+      
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
-      - uses: hashicorp/setup-terraform@v3
-      - run: rm -rf .terraform
-      - run: terraform init -reconfigure
-      - run: terraform state list
-      - run: terraform plan
-      - run: terraform apply -auto-approve
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Clean Terraform Directory
+        run: rm -rf .terraform
+
+      - name: Terraform Init
+        run: terraform init -reconfigure
+
+      - name: Terraform State List
+        run: terraform state list
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
 
 
       
