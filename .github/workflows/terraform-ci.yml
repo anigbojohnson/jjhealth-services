@@ -42,11 +42,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -reconfigure
 
-      - name: Import existing KMS alias
-        run: |
-          terraform import 'module.eks.module.kms.aws_kms_alias.this["cluster"]' alias/eks/jjhealth-services-cluster || true
-
-
       - name: Terraform State List
         run: terraform state list
 
@@ -54,4 +49,4 @@ jobs:
         run: terraform plan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
