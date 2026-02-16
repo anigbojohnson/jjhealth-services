@@ -141,3 +141,17 @@ hpa:
   minReplicas: 1
   maxReplicas: 5
   cpuUtilization: 50
+
+
+networkPolicy:
+  enabled: true
+
+  ingressNamespace: ingress-nginx
+
+  postgres:
+    port: 5432
+
+  rdsCidrs:
+    - 10.0.5.0/24
+    - 10.0.6.0/24
+
