@@ -65,8 +65,8 @@ secret:
 awsSecretsManager:
   enabled: true
   secretProviderClassName: db-secrets
-  secretArn: SUPER_SECRET_PASSWORD
-  k8sSecretName: jjhealthdb-23
+  secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds!db-0dc12353-638a-4de6-8e76-a9bfdc168c47-DCavn4
+  k8sSecretName: rds!db-0dc12353-638a-4de6-8e76-a9bfdc168c47
 
 
 
@@ -123,7 +123,7 @@ serviceAccount:
   name: jjhealth-sa
   automount: true
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role
+    eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role-1
 
 httproute:
   enabled: true
