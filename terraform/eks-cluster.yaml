@@ -22,3 +22,6 @@ privateCluster:
   additionalEndpointServices:
     - "autoscaling"
     - "logs"
+
+
+
