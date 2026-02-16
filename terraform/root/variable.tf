@@ -55,6 +55,7 @@ variable "instance_type" {
   default     = "t2.micro"
 }
 
+
 variable "db_subnet_group_name" {
   description = "Name of the RDS subnet group spanning subnets in AZ-a and AZ-b"
   type        = string
