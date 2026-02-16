@@ -66,7 +66,7 @@ awsSecretsManager:
   enabled: true
   secretProviderClassName: db-secrets
   secretArn: arn:aws:secretsmanager:eu-west-2:869868778582:secret:rds!db-0dc12353-638a-4de6-8e76-a9bfdc168c47-DCavn4
-  k8sSecretName: rds!db-0dc12353-638a-4de6-8e76-a9bfdc168c47
+  k8sSecretName:  rds-db-credentials
 
 
 
