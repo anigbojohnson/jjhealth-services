@@ -16,25 +16,13 @@ spec:
     spec:
       serviceAccountName: laravel-sa
 
-      volumes:
-        - name: secrets-store
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: {{ .Values.awsSecretsManager.secretProviderClassName }}
-
       containers:
         - name: laravel-backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
           ports:
             - containerPort: {{ .Values.backend.service.port }}
 
-          volumeMounts:
-            - name: secrets-store
-              mountPath: "/mnt/secrets"
-              readOnly: true
-
+          # Use Kubernetes Secret created by ESO instead of CSI volume
           envFrom:
             - configMapRef:
                 name: "{{ .Values.configMap.name }}-main-config"
