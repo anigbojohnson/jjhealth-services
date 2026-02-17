@@ -45,9 +45,6 @@ jobs:
       - name: Terraform Init
         run: terraform init -reconfigure
 
-      - name: Terraform State List
-        run: terraform state list
-
       - name: Terraform Plan
         run: terraform plan
 
