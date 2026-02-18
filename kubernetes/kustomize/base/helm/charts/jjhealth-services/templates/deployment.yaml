@@ -14,11 +14,6 @@ spec:
       labels:
         app: {{ .Values.backend.name }}
     spec:
-<<<<<<< HEAD
-=======
-      serviceAccountName: laravel-sa
-
->>>>>>> 714ec34f1d341a86d1c912469db240589cb90795
       containers:
         - name: laravel-backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
