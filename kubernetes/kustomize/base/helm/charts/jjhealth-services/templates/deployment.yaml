@@ -32,7 +32,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.frontend.name }}
-  namespace: {{ .Release.Namespace }}
+  namespace: development
 spec:
   replicas: {{ .Values.frontend.replicas }}
   selector:
