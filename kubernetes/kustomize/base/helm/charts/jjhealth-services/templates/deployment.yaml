@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.backend.name }}
-  namespace: development
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.backend.replicas }}
   selector:
@@ -32,7 +32,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.frontend.name }}
-  namespace: development
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.frontend.replicas }}
   selector:
