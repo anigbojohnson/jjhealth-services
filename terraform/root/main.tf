@@ -128,7 +128,7 @@ module "rds" {
   username = "jjhealth_admin"
 
   # 🔐 Let AWS Secrets Manager handle the password
-   # manage_master_user_password = true
+    manage_master_user_password = true
 
   port = 5432
   multi_az = false
