@@ -65,7 +65,7 @@ secret:
 awsSecretsManager:
   enabled: true
   region: eu-west-2
-  secretName: "rds!db-b36a24bc-93e9-444e-9add-1df5d621f656"
+  secretName: "rds!db-5f79d011-6607-44b8-8dbb-3b2f82cd6556"
   k8sSecretName: "rds-credentials"
   refreshInterval: "1h"
 
