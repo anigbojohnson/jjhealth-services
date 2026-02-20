@@ -43,9 +43,6 @@ spec:
       labels:
         app: {{ .Values.frontend.name }}
     spec:
-      {{- if .Values.serviceAccount.create }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
-      {{- end }}
       containers:
         - name: nginx-frontend
           image: nginx:1.25
