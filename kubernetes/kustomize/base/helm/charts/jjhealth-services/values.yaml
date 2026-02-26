@@ -96,7 +96,7 @@ ingress:
   host: onet.com
 
   annotations:
-    alb.ingress.kubernetes.io/security-groups: sg-xxxxxxxx
+    alb.ingress.kubernetes.io/security-groups: sg-0591fb5ba99e3f62b
     alb.ingress.kubernetes.io/group.name: jjhealth-group
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
