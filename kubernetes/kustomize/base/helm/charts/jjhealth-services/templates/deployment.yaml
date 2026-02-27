@@ -14,9 +14,6 @@ spec:
         app: {{ .Values.backend.name }}
     spec:
       volumes:
-        - name: app-code
-          emptyDir: {}
-
         - name: nginx-config
           configMap:
             name: "{{ .Values.configMap.name }}-nginx-config"
@@ -37,9 +34,7 @@ spec:
             - secretRef:
                 name: {{ .Values.awsSecretsManager.k8sSecretName }}
 
-          volumeMounts:
-            - name: app-code
-              mountPath: /var/www/html
+ 
 
         # ---------------------------
         # Nginx Container
@@ -50,8 +45,6 @@ spec:
             - containerPort: 80
 
           volumeMounts:
-            - name: app-code
-              mountPath: /var/www/html
 
             - name: nginx-config
               mountPath: /etc/nginx/conf.d/default.conf
