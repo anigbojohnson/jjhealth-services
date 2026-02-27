@@ -28,6 +28,11 @@ spec:
           ports:
             - containerPort: 9000
 
+          volumeMounts:
+            - name: env-file
+              mountPath: /var/www/html/.env
+              subPath: .env
+
           envFrom:
             - configMapRef:
                 name: "{{ .Values.configMap.name }}-main-config"
@@ -45,6 +50,3 @@ spec:
               mountPath: /etc/nginx/conf.d/default.conf
               subPath: default.conf
             
-            - name: env-file
-              mountPath: /var/www/html/.env
-              subPath: .env
