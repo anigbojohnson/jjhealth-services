@@ -19,9 +19,6 @@ spec:
             name: "{{ .Values.configMap.name }}-nginx-config"
 
       containers:
-        # ---------------------------
-        # Laravel PHP-FPM Container
-        # ---------------------------
         - name: php-fpm
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
           imagePullPolicy: IfNotPresent
@@ -34,11 +31,6 @@ spec:
             - secretRef:
                 name: {{ .Values.awsSecretsManager.k8sSecretName }}
 
- 
-
-        # ---------------------------
-        # Nginx Container
-        # ---------------------------
         - name: nginx
           image: nginx:1.25
           ports:

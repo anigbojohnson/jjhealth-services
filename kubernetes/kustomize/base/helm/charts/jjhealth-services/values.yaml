@@ -52,7 +52,7 @@ secret:
   enabled: true
   name: jjhealth-services-secret
   data:
-    APP_KEY: "base64:bIys/xG8FSOy0KL6ttG3AZUwg/dq66PnIUOzlVfotzs="
+    APP_KEY: "base64:7GnfjqQNjGGjUGZ+KedvPjm9DKItAzoU47YuNWruKrA="
     REDIS_PASSWORD: ""
     MAIL_USERNAME: ""
     MAIL_PASSWORD: ""
