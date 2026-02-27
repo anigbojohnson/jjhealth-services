@@ -65,7 +65,7 @@ secret:
 awsSecretsManager:
   enabled: true
   region: eu-west-2
-  secretName: "rds!db-6f797e64-0318-41e5-8409-bdea46418da5"
+  secretName: "rds!db-1d57ddb6-fd63-4e52-b1e6-ca74e11dda77"
   k8sSecretName: "rds-credentials"
   refreshInterval: "1h"
 
@@ -82,12 +82,7 @@ backend:
     type: ClusterIP
     port: 9000
 
-frontend:
-  name: jjhealth-frontend
-  replicas: 1
-  service:
-    type: ClusterIP
-    port: 80
+
 
 
 ingress:
@@ -96,7 +91,7 @@ ingress:
   host: onet.com
 
   annotations:
-    alb.ingress.kubernetes.io/security-groups: sg-0591fb5ba99e3f62b
+    alb.ingress.kubernetes.io/security-groups: sg-035cb149cbfb797a8
     alb.ingress.kubernetes.io/group.name: jjhealth-group
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
@@ -109,12 +104,12 @@ ingress:
     - path: /
       pathType: Prefix
       service:
-        name: jjhealth-frontend
+        name: jjhealth-backend
         port: 80
     - path: /health
       pathType: Prefix
       service:
-        name: jjhealth-frontend
+        name: jjhealth-backend
         port: 80
 
 

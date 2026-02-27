@@ -19,27 +19,25 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   default.conf: |
-    server {
+      server {
         listen 80;
-        listen [::]:80;
         server_name _;
 
-        # Optional static root (if serving static files)
-        root /usr/share/nginx/html;
-        index index.html index.htm;
+        root /var/www/html/public;
+        index index.php index.html;
 
-        # Health endpoint for Kubernetes
-        location /health {
-            default_type text/html;
-            return 200 "<!DOCTYPE html><p>Web Tier Health Check</p>\n";
-        }
-
-        # Proxy all other requests to backend service
         location / {
-            proxy_pass http://{{ .Values.backend.name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.backend.service.port }};
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            try_files $uri $uri/ /index.php?$query_string;
         }
-    }
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME /var/www/html/public$fastcgi_script_name;
+        }
+
+        location ~ /\.ht {
+            deny all;
+        }
+      }

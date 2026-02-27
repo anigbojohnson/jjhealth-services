@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,48 +13,46 @@ spec:
       labels:
         app: {{ .Values.backend.name }}
     spec:
-      containers:
-        - name: laravel-backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          ports:
-            - containerPort: {{ .Values.backend.service.port }}
+      volumes:
+        - name: app-code
+          emptyDir: {}
 
-          # Use Kubernetes Secret created by ESO instead of CSI volume
+        - name: nginx-config
+          configMap:
+            name: "{{ .Values.configMap.name }}-nginx-config"
+
+      containers:
+        # ---------------------------
+        # Laravel PHP-FPM Container
+        # ---------------------------
+        - name: php-fpm
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+
           envFrom:
             - configMapRef:
                 name: "{{ .Values.configMap.name }}-main-config"
             - secretRef:
                 name: {{ .Values.awsSecretsManager.k8sSecretName }}
 
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Values.frontend.name }}
-  namespace: {{ .Release.Namespace }}
-spec:
-  replicas: {{ .Values.frontend.replicas }}
-  selector:
-    matchLabels:
-      app: {{ .Values.frontend.name }}
-  template:
-    metadata:
-      labels:
-        app: {{ .Values.frontend.name }}
-    spec:
-      containers:
-        - name: nginx-frontend
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+
+        # ---------------------------
+        # Nginx Container
+        # ---------------------------
+        - name: nginx
           image: nginx:1.25
           ports:
-            - containerPort: {{ .Values.frontend.service.port }}
+            - containerPort: 80
+
           volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+
             - name: nginx-config
               mountPath: /etc/nginx/conf.d/default.conf
               subPath: default.conf
-
-      volumes:
-        - name: nginx-config
-          configMap:
-            name: "{{ .Values.configMap.name }}-nginx-config"
-
-
