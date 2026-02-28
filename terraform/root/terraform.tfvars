@@ -17,7 +17,7 @@ priv_sub_3b_cidr = "10.0.6.0/24"
 ami_id = "ami-0a0ff88d0f3f85a14" 
 instance_type = "t2.micro"  
 
-db_name = "onet_gaming_app"
+db_name = "jjhealth_db"
 
 s3_website_endpoint = "mydomain19871027.com.s3-website-eu-west-2.amazonaws.com" 
 s3_website_zone_id  = "Z3GKZC51ZF0DB4"   # eu-west-2 — you can override if needed

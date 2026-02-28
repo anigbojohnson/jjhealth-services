@@ -12,8 +12,7 @@ configMap:
     DB_CONNECTION: "pgsql"
     DB_HOST: "jjhealth-db.cj2seuige0e8.eu-west-2.rds.amazonaws.com"
     DB_PORT: "5432"
-    DB_DATABASE: "onet_gaming_app"
-    DB_USERNAME: "dbmaster"
+    DB_DATABASE: "jjhealth_db"
     DB_SSLMODE: "require"
 
     BROADCAST_DRIVER: "log"
@@ -88,7 +87,6 @@ backend:
 ingress:
   enabled: true
   className: alb
-  host: onet.com
 
   annotations:
     alb.ingress.kubernetes.io/security-groups: sg-035cb149cbfb797a8
@@ -120,14 +118,6 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::869868778582:role/jjhealth-backend-secrets-role-1
 
-httproute:
-  enabled: true
-  name: jjhealth-services-app-httproute
-  parentRefs:
-    - name: my-gateway
-      namespace: development
-  hostnames:
-    - onet-gaming.com
 
 hpa:
   enabled: true
