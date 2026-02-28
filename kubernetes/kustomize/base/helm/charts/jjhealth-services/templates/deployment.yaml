@@ -26,10 +26,6 @@ spec:
           ports:
             - containerPort: 9000
           
-          volumeMounts:
-            - name: nginx-config
-              mountPath: /etc/nginx/conf.d/default.conf
-              subPath: default.conf
 
           envFrom:
             - configMapRef:
@@ -43,5 +39,9 @@ spec:
           image: nginx:1.25
           ports:
             - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
 
             
