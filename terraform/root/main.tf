@@ -92,9 +92,9 @@ module "eks" {
 
   eks_managed_node_groups = {
     app_nodes = {
-      desired_size = 2
-      max_size     = 2
-      min_size     = 2
+      desired_size = 1
+      max_size     = 1
+      min_size     = 1
       instance_types = ["t2.medium"]
       capacity_type  = "ON_DEMAND"
       vpc_security_group_ids = [module.security-group.app_sg_id]

@@ -52,21 +52,20 @@ secret:
   enabled: true
   name: jjhealth-services-secret
   data:
-    .env: |
-      APP_KEY=base64:7GnfjqQNjGGjUGZ+KedvPjm9DKItAzoU47YuNWruKrA=
-      REDIS_PASSWORD=
-      MAIL_USERNAME=
-      MAIL_PASSWORD=
-      AWS_ACCESS_KEY_ID=
-      AWS_SECRET_ACCESS_KEY=
-      PUSHER_APP_ID=
-      PUSHER_APP_KEY=
-      PUSHER_APP_SECRET=
+    APP_KEY: "base64:7GnfjqQNjGGjUGZ+KedvPjm9DKItAzoU47YuNWruKrA="
+    REDIS_PASSWORD: ""
+    MAIL_USERNAME: ""
+    MAIL_PASSWORD: ""
+    AWS_ACCESS_KEY_ID: ""
+    AWS_SECRET_ACCESS_KEY: ""
+    PUSHER_APP_ID: ""
+    PUSHER_APP_KEY: ""
+    PUSHER_APP_SECRET: ""
 
 awsSecretsManager:
   enabled: true
   region: eu-west-2
-  secretName: "rds!db-1d57ddb6-fd63-4e52-b1e6-ca74e11dda77"
+  secretName: "rds!db-95094671-a261-440f-9aa1-4207b1215acd"
   k8sSecretName: "rds-credentials"
   refreshInterval: "1h"
 
