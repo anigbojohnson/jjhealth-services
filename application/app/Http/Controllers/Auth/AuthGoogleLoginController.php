@@ -73,7 +73,5 @@ public function callback() {
                 return redirect('/');
             }
    
-
- 
     }
 }

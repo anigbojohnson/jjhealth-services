@@ -26,11 +26,8 @@
             </div>
         @endif 
         
-        
-            <form method="POST" action="{{ route('login', ['param' =>  str_replace(' ', ' ',$param), 'action'=>$action ]) }}" class="form-container">
+            <form method="POST"  action="/login/{{ $param }}/{{ $action }}" class="form-container">
                 @csrf
-
-        
                 <div class="form-group">
                     <label for="email" class="form-label font-weight-bold">Email</label>
                     <input id="email" type="text" name="email" value="{{ old('email') }}"  autocomplete="email" class="form-control">

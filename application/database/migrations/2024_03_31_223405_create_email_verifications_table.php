@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('token');
-            $table->dateTime('expireAt'); // Adding expiration time column
+            $table->string('token')->nullable();
+            $table->dateTime('expires_at')->nullable(); // Adding expiration time column
             $table->timestamps();
         });
         

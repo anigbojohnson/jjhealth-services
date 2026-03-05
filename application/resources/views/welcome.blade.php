@@ -81,11 +81,11 @@
                         <span class="nav-link">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             Logout
                         </a>
                     </li>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    <form id="logout-form" action="/logout" method="POST" style="display: none;">
                         @csrf
                     </form>
                 @endguest
@@ -276,6 +276,7 @@ $.ajaxSetup({
 
           // Get form data
           var formData = $(this).serialize();
+          console.log(formData)
 
           // Send AJAX request
           $.ajax({
@@ -283,7 +284,7 @@ $.ajaxSetup({
               headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     },
-              url:  '{{ route("forgotten-password") }}',
+              url:  "/forgotten-password",
               data: formData,
               success: function(response) {
                 // Registration successful

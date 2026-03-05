@@ -90,6 +90,15 @@ class RegisterController extends Controller
         if($userExists){
             return redirect()->route('login')->with('error', 'You have different means of login.');
         }
+
+        
+        $userExists = User::where('email', $request->email)
+        ->where('provider', '=', 'form register')
+        ->exists();
+
+       if($userExists){
+            return redirect()->route('login')->with('error', 'You are registered user.');
+        }
         // Create a new user instance
         $user = new EmailVerification();
         $user->first_name = $request->fname;

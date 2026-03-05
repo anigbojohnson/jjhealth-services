@@ -36,13 +36,14 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
+
         $userExists = User::where('email', $request->email)
         ->where('provider', '!=', 'form register')
         ->exists();
     
         if($userExists){
             return redirect()->route('login', ['param' => session()->get('param'), 'action' => session()->get('action')])
-    ->with('error', 'You have different means of login.');
+                   ->with('error', 'You have different means of login.');
 
         }
 

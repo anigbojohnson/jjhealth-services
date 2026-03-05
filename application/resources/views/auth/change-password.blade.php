@@ -19,7 +19,7 @@
                 <div class="card-header" style="font-weight: bold;"><h4>{{ __('Change Password') }}</h4></div>
 
                 <div class="card-body">
-                    <form method="POST"  id="change-password-form"  action="{{ route('change-forggotten-password')}}">
+                    <form method="POST"  id="change-password-form"  action="/change-forggotten-password">
                         @csrf
                         <ul id="password-errors" class="text-danger" style="display: none;"></ul> <!-- List for displaying errors -->
 

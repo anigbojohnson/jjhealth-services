@@ -27,7 +27,17 @@ use App\Models\Solutions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
+
+
+Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect('/');
+})->name('logout');
 
 
 Route::get('/search-solutions', function (Request $request) {
@@ -191,10 +201,6 @@ Route::get('/specialist-referrals', function () {
     return view('auth.specialist-referral');
 });
 
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/');
-})->name('logout');
 
 
 
@@ -227,7 +233,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/submit-travelAndHoliday-medical-certificate', [CertificateTravelAndHolidayController::class, 'storeMCDetails'])->name('submit-travelAndHoliday-medical-certificate');
 
     Route::post('/create-mc-care-payment-intent', [CertificateCareController::class,'getSecretKey'])->name('create-mc-care-payment-intent');
-    Route::post('/validate-medicalDetails-care-medical-certificate', [CertificateCareController::class, 'medicalDetails'])->name('validate-personalDetails-care-medical-certificate');
+    Route::post('/validate-medicalDetails-care-medical-certificate', [CertificateCareController::class, 'medicalDetails'])->name('validate-medicalDetails-care-medical-certificate');
     Route::post('/submit-carer-medical-certificate', [CertificateCareController::class, 'storeMCDetails'])->name('submit-carer-medical-certificate');
 
     Route::post('/validate-personalDetails-care-medical-certificate', [CertificateCareController::class, 'personalDetails'])->name('validate-personalDetails-care-medical-certificate');
@@ -283,7 +289,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cancel', [PaymentController::class, 'cancel'])->name('cancel');
     Route::get('/success', [PaymentController::class, 'success'])->name('success');
     Route::get('/payment/{id}/{action}/{failLink}', [PaymentController::class, 'show'])->name('payment');
-    Route::post('/payment', [PaymentController::class, 'make'])->name('payment');
+  //  Route::post('/payment', [PaymentController::class, 'make'])->name('payment');
     Route::get('/dashboard',[DashboardController::class,'index'] )->name('user.account');
 });
 
@@ -295,4 +301,8 @@ Route::post('/google-drive-downloaded-files', [AuthGoogleDriveController::class,
 Route::get('/auth/dropbox/redirect', [AuthGoogleDriveController::class, 'dropboxRedirect'])->name('auth.dropbox.redirect');
 Route::get('/auth/dropbox/callback', [AuthGoogleDriveController::class, 'dropboxCallback'])->name('auth.dropbox.callback');
 Route::post('/dropbox-downloaded-files', [AuthGoogleDriveController::class, 'downloadDropboxFiles']);
+
+
+
+
 

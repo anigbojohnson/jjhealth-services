@@ -19,7 +19,7 @@ public function redirect(Request $request)
     session()->put('page', $request->query('page'));
     $query = http_build_query([
         'client_id' => config('services.microsoft.client_id'),
-        'redirect_uri' => route('auth.microsoft.callback'),
+        'redirect_uri' => config('services.microsoft.redirect'),
         'response_type' => 'code',
         'scope' => 'User.Read', // Adjust scopes as needed
         'state' => csrf_token() 
@@ -36,7 +36,7 @@ public function callback(Request $request) {
             'client_id' => config('services.microsoft.client_id'),
             'client_secret' => config('services.microsoft.client_secret'),
             'code' => $request->input('code'),
-            'redirect_uri' => route('auth.microsoft.callback'),
+            'redirect_uri' => config('services.microsoft.redirect'),
             'grant_type' => 'authorization_code',
         ],
     ]);

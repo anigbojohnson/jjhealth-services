@@ -22,17 +22,15 @@
       <h2>Medical Certificates</h2>
       <p>
         <i>
-        If you need to take a sick day or time off from work, school, or university, you can request a medical certificate from home. Personal and Carer’s certificates are available. Simply complete an online questionnaire about your condition, and if approved, our doctors will email the certificate to you
-        
-      </i>
-       
+            If you need to take a sick day or time off from work, school, or university, you can request a medical certificate from home. Personal and Carer’s certificates are available. Simply complete an online questionnaire about your condition, and if approved, our doctors will email the certificate to you
+        </i>      
       </p>  
     </div>
         @if(request()->has('messege'))
             <div class="alert alert-success">
                 {{ request('messege') }}
             </div>
-          @endif
+        @endif
     <div class="row gy-3 mt-5">
       <div class="col-md-4">
         <div class="card">
@@ -146,6 +144,5 @@
             </div>
         </div>
     </div>
-
-        </div>
+  </div>
   @endsection
