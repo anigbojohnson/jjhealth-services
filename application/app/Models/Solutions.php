@@ -21,7 +21,7 @@ class Solutions extends Authenticatable
         'solution_name',
         'description',
         'cost',
-        'category'
+        'category_id'
     ];
 
     /**
@@ -45,5 +45,9 @@ class Solutions extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function category(){
+        return $this->belongsTo(Category::class);
     }
 }

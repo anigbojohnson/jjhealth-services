@@ -1,22 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
-
 use Carbon\Carbon;
 use App\Models\Solutions;
 use App\Models\User;
 use App\Models\MedicalCertificate;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
+use App\Http\Controllers\Payment as PaymentController;
 
 
-class CertificateTravelAndHolidayController extends Controller
+
+class CertificateStudiesController extends Controller
 {
     //
+
     public function personalDetails(Request $request)
     {
         $validatedData = $request->validate([
@@ -27,7 +28,7 @@ class CertificateTravelAndHolidayController extends Controller
                 'required',
                 'regex:/^(?:\+61|0)[2-478](?:[ -]?[0-9]){8}$/'
             ],
-            'dob' => 'required|date|before_or_equal:today',
+            'dob' => 'required|date|before:-18 years',
             'gender' => 'required|in:male,female,not say',
             'indigene' => 'required|in:,not say,no,Aboriginal,Torres Strait Islander origin',
             'address' => 'required|string'
@@ -39,6 +40,72 @@ class CertificateTravelAndHolidayController extends Controller
 
     }
 
+
+    public function studiesDetails(Request $request)
+    {
+
+        $today = now()->startOfDay();
+        $tomorrow = $today->copy()->addDay();
+        $validFrom = $request->validFrom;  // Get validFrom from the request
+        $validatedData = $request->validate([
+            'studies' => 'required|in:sickLeave,resumeStudies',
+            'yourStudiesPlace' => 'required|string',
+            
+            // Validation for validFrom
+            'validFrom' => [
+                'required_if:studies,sickLeave',  // Only required if studies is 'sickLeave'
+                'date',
+                'nullable',
+                function ($attribute, $value, $fail) use ($today, $tomorrow) {
+                    if ($value) {
+                        $date = \Carbon\Carbon::parse($value)->startOfDay();
+                        
+                        // Check if validFrom is today or tomorrow
+                        if (!$date->equalTo($today) && !$date->equalTo($tomorrow)) {
+                            $fail('It must be either today or tomorrow.');
+                        }
+                    }
+                }
+            ],
+            
+            // Validation for validTo
+            'validTo' => [
+                'required_if:studies,sickLeave',
+                'date',
+                'nullable',
+                function ($attribute, $value, $fail) use ($validFrom, $today) {
+                    if ($value && $validFrom) {
+                        $validFromDate = \Carbon\Carbon::parse($validFrom)->startOfDay();
+                        $validToDate = \Carbon\Carbon::parse($value)->startOfDay();
+                        $maxValidDate = $today->copy()->addDays(3)->endOfDay();  // 3 days from today
+                        
+                        // Check if validTo is after or equal to validFrom
+                        if ($validToDate->lt($validFromDate)) {
+                            $fail('The valid to date must be after or equal to the valid from date.');
+                        }
+        
+                        // Check if validTo is at most 3 days from today
+                        if ($validToDate->gt($maxValidDate)) {
+                            $fail('The valid to date must be at most three days from today.');
+                        }
+                    }
+                }
+            ]
+        ],
+        [
+            // Custom error messages for required_if rule
+            'validTo.required_if' => 'This field is required when sick leave selected',
+            'validFrom.required_if' => 'This field is required when sick leave selected',
+            'studies'=>'either option must be selected'
+        ]);
+        
+        
+
+    session()->put('studiesDetails', $validatedData);
+
+    return response()->json(['message' => 'success'], 200);
+
+    }
     public function medicalDetails(Request $request)
     {
 
@@ -51,10 +118,14 @@ class CertificateTravelAndHolidayController extends Controller
                 'nullable'
             ],
             'medicalLetterReasons' => [
-                'required',
-                'not_in:noOption',
-                'in:Serious illness,Acute injury,Hospitalization or surgery,Flare-ups of chronic condition,Mental health crisis,Destress due to bereavement,Infectious Disease,Pregnancy related complications,other',
-            ],
+        'required',
+        'in:Common cold or flu,Headache,Migraine,Back pain,Period pain,Anxiety, stress or depression,other',
+        function ($attribute, $value, $fail) {
+            if ($value === 'noOption') {
+                $fail('Please select a valid option for the medical letter reason.');
+            }
+        }
+    ],
             'detailedSymptoms' => [
             'required',
             'string',
@@ -77,6 +148,17 @@ class CertificateTravelAndHolidayController extends Controller
                 } 
             }
         ],
+            'currentStatus' => [
+                'required',
+                'in:ongoing,partially recovered,completely recovered',
+
+                function ($attribute, $value, $fail) {
+                    if ($value === 'noOption') {
+                        
+                        $fail('Please select a valid option for the medical letter reason.');
+                    }
+                }
+            ],
        'startDateSymptoms' => [
             'required',
             'date',
@@ -89,10 +171,9 @@ class CertificateTravelAndHolidayController extends Controller
             },
         ],
         ], [
-            'medicalLetterReasons.not_in' => 'Please select a valid reason.',
-            'medicalLetterReasons.in' => 'Please select a valid reason from the list.',
             'medicalLetterReasons.required' => 'The medical letter reason is required.',
             'currentStatus.required' => 'The current status is required.',  
+            'medicalLetterReasons.in' => 'Please select a valid option for the medical letter reason.',
             'currentStatus.in' => 'The selected current status is invalid.',
 
 
@@ -104,6 +185,7 @@ class CertificateTravelAndHolidayController extends Controller
 
         $combinedDetails = [
             'personalDetails' => session('personalDetails'),
+            'studiesDetails' => session('studiesDetails'),
             'medicalDetails' => session('medicalsDetails')
         ];
         session()->put('combinedDetails',  $combinedDetails);
@@ -116,9 +198,16 @@ class CertificateTravelAndHolidayController extends Controller
     }
 
     public function storeMCDetails(Request $request){
+        $seeking = '';
     
-        $seeking ="Travel and Holiday cancellation";
 
+        $validatedData = session('studiesDetails');
+
+        if ($validatedData['studies'] == 'sickLeave') {
+            $seeking = 'Sick leave from studies';
+        } elseif ($validatedData['studies'] == 'resumeStudies') {
+            $seeking = 'Fit to resume studies';
+        } 
         $validatedData = session('personalDetails');
 
         $user = User::updateOrCreate(
@@ -135,6 +224,7 @@ class CertificateTravelAndHolidayController extends Controller
         );
 
         $validatedData = session('medicalsDetails');
+        $validatedStudies = session('studiesDetails');
 
 
         
@@ -148,17 +238,20 @@ class CertificateTravelAndHolidayController extends Controller
             'privacy' => $validatedData['privacy']??null,
             'medicationsRegularlyInfo' => $validatedData['medicationsRegularlyInfo']??null,
             'symptomsDetailed' => $validatedData['detailedSymptoms']??null,
+            'location' => $validatedStudies['yourStudiesPlace']??null,
+            'validFrom' => $validatedStudies['validFrom']??null,
             'medicalLetterReasons' => $validatedData['medicalLetterReasons']??null,
             'symptomsStartDate' => $validatedData['startDateSymptoms']??null,
+            'currentStatus' => $validatedData['currentStatus']??null,
+            'validTo' => $validatedStudies['validTo']??null,
             'request_status'=>"new request"
 
         ]);
 
-        $solutions = Solutions::where('solution_id', 'MC04')->latest('id')->first();
 
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  $solutions->id;
+        $payment->product_id =  'MC02';
         $payment->customer_email = Auth::user()->email;
         $payment->mc_id  =  $medicalCertificate->id;    
         $payment->payment_status = "pending";    
@@ -172,12 +265,10 @@ class CertificateTravelAndHolidayController extends Controller
             'redirect_url' => route('certificate', ['messege' => "Your payment is pending when your request is fullfilled"])
         ]);
     }
-    
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'MC04')->latest('id')->first();
-        
+        $solutions = Solutions::where('solution_id', 'MC02')->first();
         
         $payment = new PaymentController();
         $ecretKey = $payment->make($solutions);
@@ -185,4 +276,5 @@ class CertificateTravelAndHolidayController extends Controller
         
         return response()->json([ 'secret_key'=>$ecretKey], 200);
     }
+    
 }

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 
+
 class LoginController extends Controller
 {
         /**
@@ -15,11 +16,9 @@ class LoginController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function loginForm($param,$action)
+    public function loginForm(Request $request)
     {
-        session()->put('action', $action);
-        session()->put('param', $param);
-        return view('auth.login', ['param' => $param,'action'=>$action]);
+        return view('auth.login');
     }
       /**
      * Handle an authentication attempt.

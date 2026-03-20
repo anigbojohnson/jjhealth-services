@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('payments', function (Blueprint $table) {
             //
+          $table->string('payment_status')->nullable();
+
         });
     }
 
@@ -23,9 +25,6 @@ return new class extends Migration
     {
         Schema::table('payments', function (Blueprint $table) {
             //
-            Schema::table('payments', function (Blueprint $table) {
-               $table->dropForeign(['solution_id']); // drop foreign key
-            });
         });
     }
 };

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Telehealth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Treatment;
 use App\Http\Controllers\Controller;
@@ -9,7 +9,7 @@ use App\Models\Payment;
 
 use App\Models\User;
 use App\Models\Solutions;
-use App\Http\Controllers\Auth\PaymentController;
+use App\Http\Controllers\Payment as PaymentController;
 use Illuminate\Support\Facades\Auth;
 
 class TelehealthController extends Controller

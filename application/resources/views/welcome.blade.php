@@ -4,26 +4,36 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-
+        
         <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
 
-
-
         <title>@yield("title","Video Explorer")</title>
+<link rel="stylesheet" href="{{ asset('/css/app.css') }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link rel="stylesheet" href="{{ asset('/css/app.css') }}">
 
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="https://js.stripe.com/v3/"></script>
+        <!-- jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUSt7aRlI0dowRdJn6ba9AYkjff8j1Vsw&libraries=places"></script>
-        <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- Axios -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-        <!-- Styles -->
+<!-- Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Google Maps -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUSt7aRlI0dowRdJn6ba9AYkjff8j1Vsw&libraries=places"></script>
+
+<!-- Fonts -->
+<link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
         <style>
             
         </style>
@@ -34,20 +44,25 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <!-- Logo on the left -->
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="{{ route('/') }}">
             <img src="{{ asset('images/logo.png') }}" alt="jjhealth-services logo" style="max-width: 100px; height: auto;">
         </a>
 
         <!-- Mobile toggle button -->
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+      <button class="navbar-toggler" type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" 
+              aria-expanded="false" 
+              aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
 
         <!-- Collapsible content for nav links -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <!-- Left-side navigation -->
 
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav me-auto">
               <li class="nav-item">
                   <a class="nav-link {{ Route::currentRouteName() == 'telehealth' ? 'active' : '' }}" 
                     href="{{ route('telehealth') }}">Telehealth Consultations</a>
@@ -68,13 +83,13 @@
 
 
             <!-- Right-side navigation -->
-            <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ms-auto">
                 @guest
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login', ['param' => 'login_form', 'action' => '_']) }}">Login</a>
+                        <a class="nav-link" href="{{ route('login') }}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('register', ['param' => 'register_form', 'action' => '_']) }}">Register</a>
+                        <a class="nav-link" href="{{ route('register') }}">Register</a>
                     </li>
                 @else
                     <li class="nav-item">
@@ -97,7 +112,6 @@
 
 
   
-
     @yield('content')
 
 
@@ -143,7 +157,7 @@
     <!-- Section: Social media -->
 
     <!-- Section: Links  -->
-    <section class="">
+    <section class="" style="width: 100%;">
       <div class="container text-center text-md-start mt-5">
         <!-- Grid row -->
         <div class="row mt-3">
@@ -209,7 +223,7 @@
             </p>
             
             <p>
-              <a href="#!">Help</a>
+              <a href="/faq">FAQ</a>
             </p>
           </div>
           <!-- Grid column -->
@@ -246,13 +260,6 @@
     </div>
     <!-- Copyright -->
   </footer>
-  <!-- Footer -->
-<!-- End of .container -->
-       
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
 

@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\MedicalCertificate;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\Payment as PaymentController;
 use App\Models\User;
 use App\Models\MedicalCertificate;
 use Carbon\Carbon;
 use App\Models\Solutions;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
+
 
 
 class CertificateCareController extends Controller
@@ -217,7 +218,7 @@ class CertificateCareController extends Controller
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'MC03')->latest('id')->first();
+        $solutions = Solutions::where('solution_id', 'MC03')->first();
         
         $payment = new PaymentController();
         $ecretKey = $payment->make($solutions);
@@ -271,11 +272,10 @@ class CertificateCareController extends Controller
             'request_status'=>"new request"
 
         ]);
-        $solutions = Solutions::where('solution_id', 'MC03')->latest('id')->first();
-
+        
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  $solutions->id;
+        $payment->product_id = 'MC03';
         $payment->customer_email = Auth::user()->email;
         $payment->mc_id  =  $medicalCertificate->id;    
         $payment->payment_status = "pending";    

@@ -629,3 +629,5 @@ $('#validate-medical').on('click', function(e) {
     });
 
 });
+
+

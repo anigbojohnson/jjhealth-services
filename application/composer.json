@@ -9,7 +9,6 @@
         "google/apiclient": "^2.0",
         "guzzlehttp/guzzle": "^7.8",
         "laravel/framework": "^11.0",
-        "laravel/socialite": "^5.12",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "league/flysystem-aws-s3-v3": "^3.0",

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -12,14 +12,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
-
-
+use App\Http\Controllers\Payment as PaymentController;
 
 
 class CertificateWorkController extends Controller
 {
     //
-
     public function personalDetails(Request $request)
     {
         $validatedData = $request->validate([
@@ -233,11 +231,11 @@ class CertificateWorkController extends Controller
             'request_status'=>"new request"
         ]);
      
-            $solutions = Solutions::where('solution_id', 'like', 'MC%')->get()->last();
+            $solutions = Solutions::where('solution_id', 'like', 'MC01')->first();
     
             $payment = new Payment();
             $payment->payment_id = session('payment_intent_id');
-            $payment->product_id =  $solutions->id;
+            $payment->product_id =  'MC01';
             $payment->customer_email = Auth::user()->email;
             $payment->mc_id  =  $medicalCertificate->id;    
             $payment->payment_status = "pending";    
@@ -266,7 +264,7 @@ class CertificateWorkController extends Controller
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'MC01')->latest('id')->first();
+        $solutions = Solutions::where('solution_id', 'MC01')->first();
         
         $payment = new PaymentController();
         $ecretKey = $payment->make($solutions);

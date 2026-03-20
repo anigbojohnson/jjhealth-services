@@ -5,11 +5,11 @@
    <!-- resources/views/auth/register.blade.php -->
 
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row  justify-content-center">
         <div class="col-md-6">
 
            
-            <h1 class="text-center"  style="font-weight: bold;">Login</h1>
+            <h1 class="text-center fw-bold mt-3 mb-3">Login</h1>
             @error('error')
             <p class="text-danger text-center" >{{ $message }}</p>
             @enderror 
@@ -26,20 +26,20 @@
             </div>
         @endif 
         
-            <form method="POST"  action="/login/{{ $param }}/{{ $action }}" class="form-container">
+            <form method="POST"  action="/login" class="form-container">
                 @csrf
-                <div class="form-group">
-                    <label for="email" class="form-label font-weight-bold">Email</label>
+                <div class="form-group mt-3 mb-3">
+                    <label for="email" class="form-label fw-medium">Email</label>
                     <input id="email" type="text" name="email" value="{{ old('email') }}"  autocomplete="email" class="form-control">
    
                     @error('email')
-                    <span class="text-danger">{{ $message }}</span>
+                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-                <div class="form-group">
+                <div class="form-group mt-3 mb-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <label for="password" class="form-label font-weight-bold">Password</label>
-                        <span><a  href="#" data-toggle="modal" data-target="#exampleModal">
+                        <label for="password" class="form-label fw-medium">Password</label>
+                        <span><a  href="#" data-toggle="modal" data-target="#exampleModal" class="fw-medium">
                             Forgotten Password?</a></span>
                     </div>
 
@@ -50,17 +50,17 @@
                 </div>
 
 
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                <div class="form-group mt-3 mb-3">
+                    <button type="submit" class=" btn btn-primary btn-block w-100 fw-medium">Sign In</button>
                 </div>
             </form>
-            <p>If you are not registered, <a href="{{ route('register', ['param' =>$param , 'action' => $action]) }}">click here</a> to register.</p>
+            <p>If you are not registered, <a href="{{ route('register') }}" class="fw-bold">click here</a> to register.</p>
 
-            <a href="{{ url('/auth/microsoft/redirect') }}?page={{'login'}}" class="btn btn-microsoft btn-block border">
-                <i class="fab fa-microsoft"></i> Login with Microsoft
+            <a href="{{ url('/auth/login/microsoft/redirect') }}?page={{'login'}}" class="btn btn-microsoft btn-block w-100 border mt-3 mb-3">
+                <i class="fab fa-microsoft fw-medium"></i> Login with Microsoft
             </a>  
-            <a href="{{ url('/auth/google/redirect') }}?page={{'login'}}"   class="btn btn-google btn-block border">
-                <i class="fab fa-google"></i> Login with Google
+            <a href="{{ url('/auth/login/google/redirect') }}?page={{'login'}}"   class="btn btn-google btn-block w-100 border">
+                <i class="fab fa-google fw-medium"></i> Login with Google
             </a> 
         </div>
     </div>

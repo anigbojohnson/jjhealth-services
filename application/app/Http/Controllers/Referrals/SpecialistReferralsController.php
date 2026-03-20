@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Referrals;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Auth\PaymentController;
+use App\Http\Controllers\Payment\PaymentController as PaymentController;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
 use App\Models\SpecialistReferrals;
@@ -49,7 +49,6 @@ class SpecialistReferralsController extends Controller
             'fileUpload' => 'required_if:medicalConditionImage,Yes|nullable|mimes:jpg,jpeg,png,pdf|max:5120', // File required only if 'Yes'
         ]);
 
-         
         return response()->json(['message' => ''], 200);
 
     }
@@ -80,11 +79,8 @@ class SpecialistReferralsController extends Controller
             $file = $request->file('fileUpload');
             $fileName = time() . '_' . $file->getClientOriginalName();
             $fileContent = base64_encode(file_get_contents($file));
+            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
 
-            $filePath = Storage::disk('s3')->putFileAs($file, $fileName);
-
-            // Generate the URL to the file
-            $fileUrl = Storage::disk('s3')->url($filePath);
         }
 
         $userData = session()->get('personalDetails');
@@ -103,6 +99,7 @@ class SpecialistReferralsController extends Controller
             ]
         );
 
+        
     $sr = SpecialistReferrals::create([
             'user_email' => auth()->user()->email,  // Assuming the user is authenticated
             'request_reason' => $validatedData['requestReason'],
@@ -115,9 +112,9 @@ class SpecialistReferralsController extends Controller
 
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  $solutions->id;
+        $payment->product_id =  session('credentials')->id;
         $payment->customer_email = Auth::user()->email;
-        $payment->specialist_refferrals_id = $sr->id;    
+        $payment->specialist_referrals_id = $sr->id;    
         $payment->payment_status = "pending";    
 
         $payment->save();

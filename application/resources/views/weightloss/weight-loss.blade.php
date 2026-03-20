@@ -2,10 +2,7 @@
 @extends('welcome')
 @section('title',"weight loss")
 @section('content')
-    
-   <!-- resources/views/auth/register.blade.php -->
-
-   @vite(['resources/js/app.js', 'resources/js/weight-loss.js'])
+@vite(['resources/js/app.js', 'resources/js/weight-loss.js'])
 
    
 <div class="container">

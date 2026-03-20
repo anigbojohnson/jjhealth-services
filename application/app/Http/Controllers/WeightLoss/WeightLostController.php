@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\WeightLoss;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\WeightLoss;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Solutions;
-use App\Http\Controllers\Auth\PaymentController;
+use App\Http\Controllers\Payment as PaymentController;
 use Carbon\Carbon;
 use App\Models\Payment;
 

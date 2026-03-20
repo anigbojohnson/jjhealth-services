@@ -5,21 +5,21 @@ use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Http;
+
 use Illuminate\Support\Facades\Auth;
 use App\Models\EmailVerification;
 use App\Models\Solutions;
 use App\Models\Category;
 
 
-class AuthGoogleLoginController extends Controller
+class AuthGoogleRegisterController extends Controller
 {
     //
 public function redirect()
 {
         $query = http_build_query([
             'client_id'     => config('services.google.client_id'),
-            'redirect_uri'  => config('services.google.redirect_login'),
+            'redirect_uri'  => config('services.google.redirect_register'),
             'response_type' => 'code',
             'scope'         => 'openid email profile',
             'access_type'   => 'offline',
@@ -40,7 +40,7 @@ public function callback(Request $request) {
         $tokenResponse = Http::post('https://oauth2.googleapis.com/token', [
             'client_id'     => config('services.google.client_id'),
             'client_secret' => config('services.google.client_secret'),
-            'redirect_uri'  => config('services.google.redirect_login'),
+            'redirect_uri'  => config('services.google.redirect_register'),
             'grant_type'    => 'authorization_code',
             'code'          => $request->query('code'),
         ]);
@@ -117,3 +117,4 @@ public function callback(Request $request) {
    
     }
 }
+

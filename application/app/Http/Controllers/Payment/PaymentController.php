@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Payment;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
@@ -24,11 +24,11 @@ public function make($request)
 
     // Create a PaymentIntent with manual capture method
     $paymentIntent = $stripe->paymentIntents->create([
-        'amount' => $request->cost * 100,  // Stripe expects amount in cents
+        'amount' => session('credentials')->cost * 100,  // Stripe expects amount in cents
         'currency' => 'aud',
         'payment_method_types' => ['card'],
         'capture_method' => 'manual',  // Authorize only, capture later
-        'description' => $request->solution_name,
+        'description' => session('credentials')->solution_name,
     ]);
 
     if (isset($paymentIntent->id) && $paymentIntent->id != "") {

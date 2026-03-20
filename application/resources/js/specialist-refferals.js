@@ -1,4 +1,15 @@
+
+let step = 1;
+const totalSteps = 3;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
+
 $(document).ready(function () {
+
 
     $('#personal-detail-form').on('submit', function (e) {
         e.preventDefault();
@@ -12,6 +23,8 @@ $(document).ready(function () {
             contentType: false,
             success: function (response) {
                 // Handle success, clear error messages
+        
+                
                 $('#address-error').text('');
                 $('#fname-error').text('');
                 $('#lname-error').text('');
@@ -20,13 +33,19 @@ $(document).ready(function () {
 
 
                 $('#pesonalDetails').hide('d-none')
-                $('#consultationRequest').show()                
+                $('#consultationRequest').show() 
+                
+                if(step < totalSteps)  
+                    step++;
+                 
+                updateProgress();
+
             },
             error: function (response) {
                 // Handle errors
                 
                 var errors = response.responseJSON.errors;
-                console.log(response)
+                console.log(errors)
                 if (errors.address) {
                     $('#address-error').text(errors.address[0]);
                 }
@@ -111,14 +130,33 @@ $(document).ready(function () {
                     }
                 }).then(function(result) {
                     if (result.error) {
-                        // Display error message in #card-errors
+  
                         $('#card-errors').text(result.error.message);
                     } else {
+
+
+                         // Display error message in #card-errors
+                        let form = document.getElementById('consultation-special-refferals-form');
+                        let formData = new FormData(form);
+
+                        // 👇 THIS is what you're missing
+                        let fileInput = document.getElementById('fileUpload');
+
+                        if (fileInput && fileInput.files.length > 0) {
+                            formData.append('fileUpload', fileInput.files[0]);
+                        }
+                            console.log("jesus is lord");
+
+                        for (let pair of formData.entries()) {
+                            console.log(pair[0], pair[1]);
+                        }
                         // Payment succeeded, redirect to success page
                         $.ajax({
                             type: 'POST',
+                            data: formData,
+                            contentType: false,  // VERY IMPORTANT
+                            processData: false,  // VERY IMPORTANT
                             url: '/save-specialist-refferals-details', // Adjust this route to your actual backend route
-                            data: $('#consultation-special-refferals-form').serialize() ,
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 window.location.href = response.redirect_url
@@ -140,10 +178,10 @@ $(document).ready(function () {
 
     $('#consultation-special-refferals-form').on('submit', function (e) {
         e.preventDefault();
+        
         $('#requestReason-error').text('');
         $('#medicalConditionImage-error').text('');
         $('#fileUpload-error').text('');
-        console.log(this)
         $.ajax({
             url: "/special-refferals-consultation-details",
             method: 'POST',
@@ -155,6 +193,10 @@ $(document).ready(function () {
                 // Handle success, clear error messages
                 $('#consultationRequest').hide('d-none')
                 $('#paymentRequest').show()
+                if(step < totalSteps)  
+                    step++;       
+                updateProgress();
+        
             },
             error: function (response) {
                 // Handle errors
@@ -181,10 +223,6 @@ $(document).ready(function () {
             $('#file-name').text('Selected file: ' + fileName); // Display the file name
         });
 
-    
-
-    
-        
     $('.option-btn').click(function () {
         var target = $(this).data('target');
         var value = $(this).data('value');
@@ -212,11 +250,100 @@ $(document).ready(function () {
     $('#back-personalDetails').on('click', function () {
         $('#pesonalDetails').show()
         $('#consultationRequest').hide('d-none')
+        if(step < totalSteps)  
+            step--;
+        updateProgress();
+        
     })
 
     $('#back-home').on('click', function () {
         $('#pesonalDetails').hide('d-none')
+                if(step < totalSteps)  
+                    step--;
+                updateProgress();
         window.location.href = '/specialist_referrals'
+
     })
+
+});
+
+
+
+// Initialize progress
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    
+
+
+  const steps = [
+    {
+      step: "Step 01",
+      title: "Inquire",
+      text: "Once you apply here, we’ll schedule a consultation to discuss your current situation, your goals, and the details of your ideal partnership with a dating and image consultant."
+    },
+    {
+      step: "Step 02",
+      title: "Consult",
+      text: "We’ll walk through your style, preferences, and relationship goals during a personalized consultation session."
+    },
+    {
+      step: "Step 03",
+      title: "Match & Style",
+      text: "Together we’ll develop your personal brand and initiate curated matchmaking tailored just for you."
+    }
+  ];
+
+  let currentStep = 0;
+
+  const stepContent = document.getElementById("step-content");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const stepNav = document.getElementById("stepNav");
+
+  function renderStep() {
+
+    const content = steps[currentStep];
+
+    stepContent.innerHTML = `
+      <p class="text-uppercase text-muted small fw-semibold mb-1">${content.step}</p>
+      <h3 class="fw-bold mb-3">${content.title}</h3>
+      <p class="text-secondary">${content.text}</p>
+    `;
+
+    // Handle previous button visibility
+    if (currentStep === 0) {
+      prevBtn.style.display = "none";
+      stepNav.classList.remove("justify-content-between");
+      stepNav.classList.add("justify-content-end");
+    } else {
+      prevBtn.style.display = "inline-block";
+      stepNav.classList.remove("justify-content-end");
+      stepNav.classList.add("justify-content-between");
+    }
+
+    // Change next button text
+    nextBtn.innerHTML =
+      currentStep < steps.length - 1 ? "Next &rarr;" : "Select specialist referrals";
+  }
+
+  window.goToNext = function () {
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+      renderStep();
+    } else {
+   
+    window.location.href = "/specialist-referral/select";
+    }
+  };
+
+  window.goToPrevious = function () {
+    if (currentStep > 0) {
+      currentStep--;
+      renderStep();
+    }
+  };
+
+  renderStep();
 
 });

@@ -27,8 +27,8 @@ class RegisterController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function showRegistrationForm(Request $request,$param, $action){
-    return view('auth.register', compact('param', 'action'));
+    public function showRegistrationForm(Request $request){
+    return view('auth.register');
 }
 
     
@@ -39,7 +39,7 @@ class RegisterController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
      */
-    public function register(Request $request,  $param,$action)
+    public function register(Request $request)
     {
    
         // Validate the incoming request data
@@ -109,10 +109,7 @@ class RegisterController extends Controller
              
             $this->emailVerificationService->sendVerificationLink($user, "verify-email");
 
-            return redirect()->route('register', [
-                'param' => $param,
-                'action' => $action
-            ])->with('success', 'Please check your email to verify and complete registration .');
+            return redirect()->route('register')->with('success', 'Please check your email to verify and complete registration .');
 
         }
         return redirect()->route('showRegistrationForm')->with('error', 'Registration failed, please try again.');

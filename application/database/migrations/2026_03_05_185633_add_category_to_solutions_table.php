@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('solutions', function (Blueprint $table) {
             //
+            Schema::table('solutions', function (Blueprint $table) {
+                $table->string('category')->nullable()->after('cost');
+            });
         });
     }
 
@@ -21,10 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('solutions', function (Blueprint $table) {
             //
-            Schema::table('payments', function (Blueprint $table) {
-               $table->dropForeign(['solution_id']); // drop foreign key
+            Schema::table('solutions', function (Blueprint $table) {
+                $table->dropColumn('category');
             });
         });
     }

@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('email_verifications', function (Blueprint $table) {
             //
+             $table->integer('solution_id')->nullable();
         });
     }
 
@@ -21,11 +22,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
+        Schema::table('email_verifications', function (Blueprint $table) {
             //
-            Schema::table('payments', function (Blueprint $table) {
-               $table->dropForeign(['solution_id']); // drop foreign key
-            });
+            $table->dropColumn('solution_id');
+
         });
     }
 };

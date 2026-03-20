@@ -1,3 +1,9 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 .bold-text {
     font-weight: bold;
 }
@@ -179,50 +185,27 @@ footer a:hover {
   padding: 10px; /* Optional padding for better spacing */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for a subtle effect */
 }
+  .section {
+    padding-left: 150px;   
+    padding-right: 150px;
+    padding-top: 50px;
+    padding-bottom: 50px;
 
+  }
 
-
-
-
-
-
-
-.faq-header {
-  font-size: 2rem;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 20px;
+  .title {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #000000;
 }
-.faq-item {
-  border: 1px solid #ddd;
-  margin-bottom: 10px;
-}
-.faq-question {
-  font-weight: bold;
-  font-size: 1.2rem;
-  color: #1a2d54;
-}
-.faq-button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  background-color: #f9f9f9;
-  padding: 10px 20px;
-  cursor: pointer;
-}
-.faq-button:hover {
-  background-color: #e6e6e6;
-}
-.faq-button .icon {
-  color: #1a7cb6;
-  font-size: 1.5rem;
-}
-.faq-content {
-  padding: 20px;
-  border-top: 1px solid #ddd;
-  background-color: #f9f9f9;
-}
+
+
+
+
+
+
 
 .nav-link.active {
   border-bottom: 2px solid blue;
@@ -252,5 +235,163 @@ footer a:hover {
 
 
 
+.left-full-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+    
+}
+
+.why-jjhealth{
+    padding:80px 0;
+    background:#f8f9fb;
+}
+
+
+.subtitle{
+    color:#6c757d;
+    font-size:16px;
+}
+
+.feature-card{
+    display:flex;
+    gap:20px;
+    padding:30px;
+    border-radius:15px;
+    border:1px solid #e3e6ef;
+    background:white;
+    height:100%;
+    transition:0.3s;
+}
+
+.feature-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.05);
+}
+
+.icon-box{
+    width:55px;
+    height:55px;
+    border:2px solid #3f6df6;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#3f6df6;
+    font-size:22px;
+}
+
+.feature-card h5{
+    font-size:18px;
+    margin-bottom:6px;
+}
+
+.feature-card p{
+    color:#6c757d;
+    font-size:14px;
+    margin:0;
+}
+
+
+.why-choose-section{
+  background-color: #e6f4ff;
+  margin-top: 40px;
+  margin-bottom: 40px;
+
+}
+
+.feature-box{
+  background-color: #f8f9fb;
+}
+
+/* Full section */
+.full-width {
+    width: 100%;
+    overflow: hidden;
+    border-bottom-right-radius: 80px;
+    background: #6c757d;
+
+}
+
+/* Image Column */
+.image-column {
+    padding: 0;
+    height: 500px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Image with gradient fade */
+.image-column img.card-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Blend right edge with header color */
+    mask-image: linear-gradient(to right, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+}
+
+/* Text Column */
+.text-column {
+    color: white;
+    padding-left: 100px;
+    padding-top: 80px;
+    background: #6c757d;
+}
+
+/* Button */
+.curved-btn{
+  background:#0d9488;
+  color:white;
+  padding:12px 25px;
+  border:none;
+  border-radius:25px;
+  font-size:16px;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+}
+
+
+.treat-card{
+    border-radius:20px;
+    padding:22px 30px;
+    box-shadow:0px 5px 15px rgba(0,0,0,0.08);
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.treat-card:hover{
+    background:#e2e2e2;
+}
+
+.treat-text{
+    font-size:20px;
+    color:#1f3b4d;
+}
+
+
+@media (max-width: 768px) {
+    .section {
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 20px;  /* optional smaller top/bottom padding */
+        padding-bottom: 20px;
+    }
+
+    /* Image with gradient fade */
+    .image-column img.card-icon {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        /* Blend right edge with header color */
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+    }
+
+}
 
 

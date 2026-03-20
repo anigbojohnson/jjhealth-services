@@ -408,7 +408,6 @@ if (response.message === 'success') {
     const fieldLabelMap = {
         sickLeave: "Sick leave from studies",
         resumeStudies: " Fit to resume studies",
-
     };
     function getValueByKey(key) {
         return fieldLabelMap[key] || key; // Use mapped label or fallback to key if no label is found
@@ -481,12 +480,6 @@ if (response.message === 'success') {
     }
 });
 });
-
-
-
-
-
-
 
 
 //medical Details 

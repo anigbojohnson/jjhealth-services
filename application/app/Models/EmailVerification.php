@@ -20,7 +20,8 @@ class EmailVerification extends Model
         'last_name',
         'first_name',
         'password',
-        'change_time'
+        'change_time',
+        'solution_id'
         // Add other fillable attributes here if any
     ];
 }

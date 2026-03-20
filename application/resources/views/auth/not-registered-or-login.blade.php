@@ -2,7 +2,6 @@
 @section('title', "")
 @section('content')
 <div class="container">
-<h4> {{ $param }}</h4>
 
 <hr class="mt-4">
 
@@ -15,10 +14,10 @@
                <b> <p class="text-center mb-0"> Login or Create Your account </p></b>
             </div>
             <div class="col-md-4 ">
-                <a href="{{ route('login', ['param' =>  Str::slug($param ),'action'=>$action]) }}" class="btn btn-success w-100 mt-3">Login</a>
+                <a href="{{ route('login') }}" class="btn btn-success w-100 mt-3">Login</a>
             </div>
             <div class="col-md-4">
-                <a href="{{ route('register', ['param' =>  $param ,'action'=>$action]) }}" class="btn btn-primary w-100 mt-3">Register</a>
+                <a href="{{ route('register') }}" class="btn btn-primary w-100 mt-3">Register</a>
             </div>
         </div>
 

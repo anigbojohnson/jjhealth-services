@@ -1,23 +1,20 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
 use App\Models\User;
-
 use Illuminate\Http\Request;
 
-class AuthMicrosoftLoginController extends Controller
+class AuthMicrosoftRegisterController extends Controller
 {
-    //
 
 public function redirect(Request $request)
 {
     // Retrieve query parameters
     $query = http_build_query([
         'client_id' => config('services.microsoft.client_id'),
-        'redirect_uri' => config('services.microsoft.redirect_login'),
+        'redirect_uri' => config('services.microsoft.redirect_register'),
         'response_type' => 'code',
         'scope' => 'User.Read', // Adjust scopes as needed
         'state' => csrf_token() 
@@ -34,7 +31,7 @@ public function callback(Request $request) {
             'client_id' => config('services.microsoft.client_id'),
             'client_secret' => config('services.microsoft.client_secret'),
             'code' => $request->input('code'),
-            'redirect_uri' => config('services.microsoft.redirect_login'),
+            'redirect_uri' => config('services.microsoft.redirect_register'),
             'grant_type' => 'authorization_code',
         ],
     ]);
@@ -57,7 +54,7 @@ public function callback(Request $request) {
 
         if($userExists){
             // Redirect with error message and additional data
-              return redirect()->route('login')->withErrors(['error' => 'You have different means of login.']);
+              return redirect()->route('register')->withErrors(['error' => 'You have different means of login.']);
 
             }
         $user = User::where([

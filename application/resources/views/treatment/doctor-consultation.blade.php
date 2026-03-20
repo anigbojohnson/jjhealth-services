@@ -1,154 +1,65 @@
 @extends('welcome')
-@section('title',"Home")
+@section('title',"Doctor Consultation")
 @section('content')
+@vite(['resources/js/app.js', 'resources/js/telehealth-consultation.js'])
+
 <div style="width: 100%; text-align: center;">
-    <img src="{{ asset('images/home-page.png') }}" alt="Home page image" style="width: 100%; height: 650px; max-width: 100%;">
+    <img src="{{ asset('images/p.png') }}" alt="Home page image" style="width: 100%; height: 650px; max-width: 100%;">
 </div>
-<div class="container">
-     
+<div class="container mt-5">
+<h2 style="text-align: center;" class="mt-4 mb-4">How Can We Help You Today?</h2>
+<p style="text-align: center;" >If you're experiencing chest pain, shortness of breath, or any symptoms requiring urgent medical attention, please visit the nearest emergency department or call 000 to request an ambulance.</p>
 
-
-    <div  class="container container-fluid d-flex justify-content-center align-items-center mt-4">
-      <h3>How can we help you today?</h3>
-
-    </div>
-    @if (session('success'))
-            <div class="alert alert-success mt-3">
-                {{ session('success') }}
+        <div class="row">
+            <!-- Option 1: I am feeling unwell -->
+            <div class="col-md-12 mb-3">
+                <a href="{{ route('consult-category') }}"  style="text-decoration: none;" class="option-card d-flex justify-content-between align-items-center p-3">
+                    <div class="d-flex align-items-center">
+                        <img src="https://via.placeholder.com/40" alt="Feeling Unwell" class="option-icon">
+                        <span class="ms-3 option-text">I need to treat medical condition</span>
+                    </div>
+                    <span class="arrow-icon">&rarr;</span>
+                </a>
             </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
-    <div class="row gy-3 mt-5">
-      <div class="col-md-6">
-        <div class="card">
-          <img class="card-img-top" src="{{ asset('images/MC_Logo.png') }}"  style="width:7%;font-size: 3rem; position: relative; right: -10px; top: 10px;">
-          <div class="card-body">
-            <h5>Medical Certificates</h5>
-            <li>For work, uni, school or carers</li>
-            <li>Sent to your email in minutes</li>    
-            <a href="{{ route('certificate') }}" class="btn btn-primary w-100 mt-3">Request Certificates</a>
-          </div>
         </div>
-      </div>
-  
-      <div class="col-md-6">
-        <div class="card">
-        <i class="fa-solid fa-mobile" style="width:13%;height:10%;font-size: 3rem; position: relative; right: -10px; top: 10px;"></i>
-          <div class="card-body">
-            <h5>Telehealth Consultations</h5>
-            <li>For when you need to speak to a doctor</li>
-            <li>Fast access to medical advice</li>    
-            <a href="{{ route('telehealth') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-  
-    <div class="row gy-3 mt-3">
-      <div class="col-md-6">
-        <div class="card">
-        <i class="fa-solid fa-weight-scale" style="font-size: 3rem; position: relative; right: -10px; top: 10px;"></i> <!-- Adjust position here -->
-          <div class="card-body">
-            <h5>Weight Loss Treatment</h5>
-            <li>Weight loss medical management</li>
-            <li>Doctor consults & treatment options</li>    
-            <a href="{{ route('weight-loss') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
-          </div>
-        </div>
-      </div>
-    
-      <div class="col-md-6">
-        <div class="card">
-        <i class="fa-solid fa-user-doctor" style="font-size: 3rem; position: relative; right: -10px; top: 10px;"></i>
-          <div class="card-body">
-            <h5>Specialist Referrals</h5>
-            <li>For skin checks, eye tests and more</li>
-            <li>Referrals sent to your email</li>    
-            <a href="{{ route('specialist-referral-home') }}"  class="btn btn-primary w-100 mt-3">Request Referrals</a>
-          </div>
-        </div>
-      </div>
     </div>
 </div>
 
-<section class="why-choose-section text-center py-5">
-    <div class="container">
 
-        <h2 class="mb-3">Why choose JJHealth?</h2>
+    <div class="row vh-90 section">
+        <h2 class="title h2 text-center">How it Works</h2>
+        <p class="text-center">Your health and privacy come first. Our licensed doctors provide expert care for sexual health concerns — from STI testing and treatment to contraception and performance support — all through discreet, affordable telehealth appointments, on your schedule and from the comfort of home.</p>
 
-        <p class="text-muted mb-5">
-            JJHealth is the leading provider of convenient, high-quality telehealth in Australia.
-            <br>
-            Here's a guide to how it works:
-        </p>
+      <!-- Left Panel -->
+        <div class="col-12 col-md-6 d-flex flex-column justify-content-center align-items-start text-white bg-dark p-5"
+           style="background-image: url('your-image.jpg'); background-size: cover; background-position: center;">
+        <h2 class="display-6 fw-semibold">Use Image Here</h2>
+      </div>
 
-        <div class="row g-4">
-
-        <div class="col-md-4">
-           <img src="{{ asset('images/choose_jjhealth.png') }}"  class="left-full-img" alt="image">
+      <!-- Right Panel -->
+      <div class="col-12 col-md-6 d-flex flex-column justify-content-center p-5 bg-light">
+        <div id="step-content">
+          <!-- Step content gets updated here by JavaScript -->
         </div>
-        <div class="col-md-8">
-          <div class="row g-4" >
 
-            <div class="col-md-4">
-                <div class="feature-box p-4 border rounded">
-                    <h5>Experienced Australian doctors</h5>
-                    <p>Committed to providing you with the highest quality care.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-box p-4 border rounded">
-                    <h5>Secure and private platform</h5>
-                    <p>Highest Australian standards for privacy and security.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-box p-4 border rounded">
-                    <h5>Fast appointment booking</h5>
-                    <p>Book your appointment easily online in minutes.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-box p-4 border rounded">
-                    <h5>Affordable pricing</h5>
-                    <p>Transparent pricing and various payment options.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-box p-4 border rounded">
-                    <h5>Prescriptions and referrals</h5>
-                    <p>We provide prescriptions and referrals for pathology and radiology.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="feature-box p-4 border rounded">
-                    <h5>Medical certificates</h5>
-                    <p>Personal or carer’s certificates for work, school or university.</p>
-                </div>
-            </div>
-          </div>
+        <!-- Navigation Buttons -->
+        <div id="stepNav" class="mt-4 d-flex justify-content-between">
+          <button id="prevBtn" class="btn btn-outline-secondary text-uppercase fw-semibold" onclick="goToPrevious()" style="display: none;">
+            &larr; Previous
+          </button>
+          <button id="nextBtn" class="btn btn-link text-uppercase fw-semibold text-dark ps-0" onclick="goToNext()">
+            Next &rarr;
+          </button>
         </div>
       </div>
     </div>
-</section>
-
-<div class="faq-section py-5 " style="width: 100%;background-color: #FFF9ED;ma">
-    <div class="container" >
-      
+  </div>
+</div>
 
 
-       
+
+ <div class="faq-section py-5 " style="width: 100%;background-color: #FFF9ED;">
+    <div class="container" >      
 <div class="row">
   <div class="col-md-4 d-flex flex-column align-items-center"
      style="border:1px; min-height:100%;">
@@ -276,4 +187,5 @@
     </div>
 </div> 
 
-  @endsection
+ 
+@endsection
