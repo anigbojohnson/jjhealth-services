@@ -145,11 +145,8 @@ $(document).ready(function () {
                         if (fileInput && fileInput.files.length > 0) {
                             formData.append('fileUpload', fileInput.files[0]);
                         }
-                            console.log("jesus is lord");
 
-                        for (let pair of formData.entries()) {
-                            console.log(pair[0], pair[1]);
-                        }
+                 
                         // Payment succeeded, redirect to success page
                         $.ajax({
                             type: 'POST',

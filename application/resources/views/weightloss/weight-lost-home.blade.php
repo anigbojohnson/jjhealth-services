@@ -1,10 +1,28 @@
 @extends('welcome')
 @section('title',"Weight Loss")
 @section('content')
+@vite(['resources/js/app.js', 'resources/js/weight-loss.js'])
+
 
 <div class="full-width-container">
     <div class="relative-container">
-        <a style=" width:30%;" href="{{ route('weight-loss-consultation', ['param' =>  str_replace(' ', ' ','Weight lost '),'action'=>'weight-loss']) }}" class="btn bg-dark btn-primary btn-lg top-button">Get started</a>
+
+            <form method="POST" id='weight-lost-form' action="{{ route('weight-loss-consultation') }}">
+                @csrf
+                <input type="hidden" name="id" value="{{ $solutions[0]->id }}">
+                <input type="hidden" name="solution_id" value="{{ $solutions[0]->solution_id }}">
+                <input type="hidden" name="solution_name" value="{{ $solutions[0]->solution_name }}">
+                <input type="hidden" name="cost" value="{{ $solutions[0]->cost }}">
+                <input type="hidden" name="description" value="{{ $solutions[0]->description }}">
+
+
+                <button type="submit" class="btn bg-dark btn-primary btn-lg top-button">
+                    Get started
+                </button>
+            </form>
+
+        
+        
         <img class="full-width-image" src="{{ asset('images/WL.jpg') }}" alt="weight loss poster">
     </div>
 </div>
@@ -30,6 +48,68 @@
     @endif
 </div>
 
+<section>
+  <div class="container">
+    <div class="row align-items-center g-5">
+ 
+      <!-- Left -->
+      <div class="col-lg-6">
+        <h1>Clinician-led weight<br/>loss treatment</h1>
+        <p class="subtitle">
+          Our weight loss programme offers personalised care tailored to your needs, 
+          all under the guidance of experienced medical professionals.
+        </p>
+ 
+        <ul class="feature-list">
+          <li>
+            <span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Approved medical treatments
+          </li>
+          <li>
+            <span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Clinically monitored body weight reduction
+          </li>
+          <li>
+            <span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            Free MyFitnessPal tracking
+          </li>
+          <li>
+            <span class="dot"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            And more
+          </li>
+        </ul>
+ 
+        <p class="note">
+          With JJHealth , healthcare is convenient, secure, and tailored to your lifestyle — 
+          so you can focus on feeling your best.
+        </p>
+
+        <p class="fw-medium">${{ $solutions[0]->cost }}. Speak to a doctor today.</p>
+            <form method="POST" action="{{ route('weight-loss-consultation') }}">
+                @csrf
+                <input type="hidden" name="id" value="{{ $solutions[0]->id }}">
+                <input type="hidden" name="solution_id" value="{{ $solutions[0]->solution_id }}">
+                <input type="hidden" name="solution_name" value="{{ $solutions[0]->solution_name }}">
+                <input type="hidden" name="cost" value="{{ $solutions[0]->cost }}">
+                <input type="hidden" name="description" value="{{ $solutions[0]->description }}">
+                <button type="submit" class="btn-start">
+                     Start my journey
+                    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </form>
+      </div>
+ 
+      <!-- Right -->
+      <div class="col-lg-6">
+        <div class="img-wrap">
+          <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&q=80" alt="Doctor consultation"/>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+</section>
+
 <div class="row section gy-3 " style="background-color:#f0f8ff;margin-top:5px;">
  
     <h4 class="text-center" style="padding-bottom:20px;">Why JJHealth is prefered for specialist referral </h4>
@@ -37,7 +117,6 @@
         <img src="{{ asset('images/specialist-referral.-page-header.jpg') }}" 
         alt="discover" 
         class="card-icon">
-
      </div>
      <div class="col-md-6 d-flex flex-column gap-3">
         
@@ -73,25 +152,25 @@
       <!-- Left Panel -->
         <div class="col-12 col-md-6 d-flex flex-column justify-content-center align-items-start text-white bg-dark p-5"
            style="background-image: url('your-image.jpg'); background-size: cover; background-position: center;">
-        <h2 class="display-6 fw-semibold">Use Image Here</h2>
-      </div>
-
-      <!-- Right Panel -->
-      <div class="col-12 col-md-6 d-flex flex-column justify-content-center p-5 bg-light">
-        <div id="step-content">
-          <!-- Step content gets updated here by JavaScript -->
+           <h2 class="display-6 fw-semibold">Use Image Here</h2>
         </div>
 
-        <!-- Navigation Buttons -->
-        <div id="stepNav" class="mt-4 d-flex justify-content-between">
-          <button id="prevBtn" class="btn btn-outline-secondary text-uppercase fw-semibold" onclick="goToPrevious()" style="display: none;">
-            &larr; Previous
-          </button>
-          <button id="nextBtn" class="btn btn-link text-uppercase fw-semibold text-dark ps-0" onclick="goToNext()">
-            Next &rarr;
-          </button>
+        <!-- Right Panel -->
+        <div class="col-12 col-md-6 d-flex flex-column justify-content-center p-5 bg-light">
+                <div id="step-content">
+                <!-- Step content gets updated here by JavaScript -->
+                </div>
+
+            <!-- Navigation Buttons -->
+            <div id="stepNav" class="mt-4 d-flex justify-content-between">
+                <button id="prevBtn" class="btn btn-outline-secondary text-uppercase fw-semibold" onclick="goToPrevious()" style="display: none;">
+                    &larr; Previous
+                </button>
+                <button id="nextBtn" class="btn btn-link text-uppercase fw-semibold text-dark ps-0" onclick="goToNext()">
+                    Next &rarr;
+                </button>
+            </div>
         </div>
-      </div>
     </div>
   </div>
 </div>

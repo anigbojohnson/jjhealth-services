@@ -2,7 +2,7 @@
 @section('title',"Home")
 @section('content')
 <div style="width: 100%; text-align: center;">
-    <img src="{{ asset('images/home-page.png') }}" alt="Home page image" style="width: 100%; height: 650px; max-width: 100%;">
+    <img src="{{ asset('images/home-page.png') }}" class="home-headings-image"alt="Home page image">
 </div>
 <div class="container">
      
@@ -24,7 +24,7 @@
             </div>
         @endif
     <div class="row gy-3 mt-5">
-      <div class="col-md-6">
+      <div class="col-md-4">
         <div class="card">
           <img class="card-img-top" src="{{ asset('images/MC_Logo.png') }}"  style="width:7%;font-size: 3rem; position: relative; right: -10px; top: 10px;">
           <div class="card-body">
@@ -36,34 +36,46 @@
         </div>
       </div>
   
-      <div class="col-md-6">
-        <div class="card">
-        <i class="fa-solid fa-mobile" style="width:13%;height:10%;font-size: 3rem; position: relative; right: -10px; top: 10px;"></i>
-          <div class="card-body">
-            <h5>Telehealth Consultations</h5>
-            <li>For when you need to speak to a doctor</li>
-            <li>Fast access to medical advice</li>    
-            <a href="{{ route('telehealth') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
-          </div>
+        <div class="col-md-4">
+            <div class="card">
+                <i class="fa-solid fa-mobile" style="width:13%;height:10%;font-size: 3rem; position: relative; right: -10px; top: 10px;"></i>
+                <div class="card-body">
+                    <h5>Telehealth Consultations</h5>
+                    <li>For when you need to speak to a doctor</li>
+                    <li>Fast access to medical advice</li>    
+                    <a href="{{ route('telehealth') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <i class="fa-solid fa-mobile" style="width:13%;height:10%;font-size: 3rem; position: relative; right: -10px; top: 10px;"></i>
+                <div class="card-body">
+                    <h5>Pathology</h5>
+                    <li>For when you need to speak to a doctor</li>
+                    <li>Fast access to medical advice</li>    
+                    <a href="{{ route('pathology') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
+                </div>
+            </div>
+        </div>
     </div>
     
   
     <div class="row gy-3 mt-3">
-      <div class="col-md-6">
-        <div class="card">
-        <i class="fa-solid fa-weight-scale" style="font-size: 3rem; position: relative; right: -10px; top: 10px;"></i> <!-- Adjust position here -->
-          <div class="card-body">
-            <h5>Weight Loss Treatment</h5>
-            <li>Weight loss medical management</li>
-            <li>Doctor consults & treatment options</li>    
-            <a href="{{ route('weight-loss') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
-          </div>
-        </div>
+      <div class="col-md-4">
+            <div class="card">
+                <i class="fa-solid fa-weight-scale" style="font-size: 3rem; position: relative; right: -10px; top: 10px;"></i> <!-- Adjust position here -->
+                <div class="card-body">
+                    <h5>Weight Loss Treatment</h5>
+                    <li>Weight loss medical management</li>
+                    <li>Doctor consults & treatment options</li>    
+                    <a href="{{ route('weight-loss') }}" class="btn btn-primary w-100 mt-3">Request Consultation</a>
+                </div>
+            </div>
       </div>
-    
-      <div class="col-md-6">
+
+      <div class="col-md-4">
         <div class="card">
         <i class="fa-solid fa-user-doctor" style="font-size: 3rem; position: relative; right: -10px; top: 10px;"></i>
           <div class="card-body">

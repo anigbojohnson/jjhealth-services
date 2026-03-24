@@ -1,6 +1,10 @@
 <?php
 use App\Http\Controllers\Telehealth\TelehealthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use App\Models\Category;
+use App\Models\Solutions;
+use Illuminate\Http\Request;
 
 
 Route::get('/search-solutions', function (Request $request) {
@@ -42,27 +46,48 @@ Route::get('/search-solutions', function (Request $request) {
 })->name('search-solutions');
 
 
+Route::post('/telehealth-consultation', function (Request $request) {
+    $credentials = new \stdClass();
+    $id = $request->input('id'); 
+    $solution_id = $request->input('solution_id'); 
+    $solution_name = $request->input('solution_name'); 
+    $description = $request->input('description');
+    $cost = $request->input('cost');
 
-Route::get('/telehealth-consultation/{param}', function ($param) {
-    $title = Str::of($param)->explode('~~');
 
+    $credentials->id =  $id;
+    $credentials->solution_id =  $solution_id;
+    $credentials->solution_name =  $solution_name;
+    $credentials->description =  $description;
+    $credentials->cost =  $cost;
 
-    session()->put('action', 'telehealth-request');
-    session()->put('param',  $title[1]);
-    session()->put('tele-consult-number', $title[0]);
+    session()->put('credentials', $credentials);
+
 
     if (Auth::check()) {
-        $user = Auth::user();
-        return view('treatment.telehealth-request', ['param' =>  $title[1],'user'=>$user]);
+        return response()->json([
+            'status' => 'success',
+            'redirect_url' => route('telehealth-request') // a GET route
+        ]);
     } else {
-
-        return view('auth.not-registered-or-login', ['param' =>  $title[1],'action'=>'telehealth-request']);
+        return response()->json([
+            'status' => 'error',
+            'redirect_url' => route('not-registered-or-login')
+        ]);
     }
+
 })->name('telehealth-consultation');
 
 
 
+Route::get('/telehealth-request', function () {
+     return view('treatment.telehealth-request');
+})->name('telehealth-request');
 
+
+Route::get('/not-registered-or-login', function () {
+      return view('auth.not-registered-or-login');
+})->name('not-registered-or-login');
 
 Route::middleware(['auth'])->group(function () {
     
@@ -88,7 +113,7 @@ Route::get('/consult-category', function () {
               ->from('solutions')
               ->groupBy('solution_id');
     })
-    ->where('category', 'Telehealth Consult')  // Add this condition to filter
+    ->where('category_id', 1)  
     ->get();
 
         // Pass the solutions data to the view

@@ -20,7 +20,7 @@
             </div>
     </div>
     <!-- Step Text -->
-    <div class="step-text">Step 1 of 3</div>
+    <div class="step-text text-center">Step 1 of 4</div>
 
 
 

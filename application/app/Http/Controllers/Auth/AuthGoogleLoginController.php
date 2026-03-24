@@ -29,12 +29,13 @@ public function redirect()
         return redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
 }
 public function callback(Request $request) {
-       
+      
 
         // Check for errors from Google
         if ($request->has('error')) {
             return redirect('/login')->withErrors(['error' => 'Google authentication was cancelled.']);
         }
+
 
         // Step 1: Exchange code for access token
         $tokenResponse = Http::post('https://oauth2.googleapis.com/token', [

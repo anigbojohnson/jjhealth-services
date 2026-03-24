@@ -8,10 +8,12 @@ use App\Models\User;
 use App\Models\WeightLoss;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Solutions;
-use App\Http\Controllers\Payment as PaymentController;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Payment\PaymentController as PaymentController;
 use Carbon\Carbon;
 use App\Models\Payment;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyConsultationMail;
 
 
 class WeightLostController extends Controller
@@ -80,6 +82,7 @@ class WeightLostController extends Controller
             return response()->json(['message' => 'invalid'], 200);
 
         }
+        $validatedData['fileUpload'] = "";
         session()->put('medicalDetails', $validatedData);
 
             return response()->json(['message' => ''], 200);
@@ -89,9 +92,8 @@ class WeightLostController extends Controller
     }
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'like', 'WL%')->get()->last();        
         $payment = new PaymentController();
-        $ecretKey = $payment->make($solutions);
+        $ecretKey = $payment->make();
         // Check the response and handle accordingly
         
         return response()->json([ 'secret_key'=>$ecretKey], 200);
@@ -99,9 +101,11 @@ class WeightLostController extends Controller
 
 
     public function  saveConsultDetails(Request $request)
-    {
+    {        
+
 
         $userData = session()->get('personalDetails');
+
 
         $user = User::updateOrCreate(
             ['email' => Auth::user()->email], // Condition to find the user
@@ -117,43 +121,17 @@ class WeightLostController extends Controller
         );
 
 
-        $validatedData = $request->validate([      
-            'medication_used' => 'required|in:Yes,No',
-            'diseases_pancreas_liver_kidneys' => 'required|in:Yes,No',
-            'taking_insulin' => 'required|in:Yes,No',
-            'allergic_reaction' => 'required|in:Yes,No',
-            'any_allergies' => 'required|in:Yes,No',
-            'pregnant' => 'required|in:Yes,No',
-            'eating_disorder' => 'required|in:Yes,No',
-            'cardiovascular_disease' => 'required|in:Yes,No',
-            'strong_pain_killers' => 'required|in:Yes,No',
-            'severe_heart_failure' => 'required|in:Yes,No',
-            'brain_tumour' => 'required|in:Yes,No',
-            'bariatric_surgery' => 'required|in:Yes,No',
-            'gastroparesis' => 'required|in:Yes,No',
-            'medicalConditionImage' => 'required|in:Yes,No', // Ensures the value is required and must be either Yes or No
-            'fileUpload' => 'required_if:medicalConditionImage,Yes|nullable|mimes:jpg,jpeg,png,pdf|max:5120', // File required only if 'Yes'
-
-        ]);
-
-        if($validatedData['diseases_pancreas_liver_kidneys']=="Yes"){
-            return response()->json(['message' => 'invalid'], 200);
-
-        }
         $fileName ="";
         if ($request->hasFile('fileUpload')) {
             // Get the file content
             $file = $request->file('fileUpload');
             $fileName = time() . '_' . $file->getClientOriginalName();
             $fileContent = base64_encode(file_get_contents($file));
+            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
 
-            $filePath = Storage::disk('s3')->putFileAs($file, $fileName);
-
-            // Generate the URL to the file
-            $fileUrl = Storage::disk('s3')->url($filePath);
         }
 
-        $validData= session('medicalDetails');
+        $validatedData = session('medicalDetails');
 
 
         $consultationData = session()->get('consultationDetails');
@@ -180,11 +158,10 @@ class WeightLostController extends Controller
              'file_name' => $validatedData['medicalConditionImage']=='Yes' ? $fileName :null, // The original file name
 
          ]);
-         $solutions = Solutions::where('solution_id', 'like', 'WL%')->get()->last();
 
          $payment = new Payment();
          $payment->payment_id = session('payment_intent_id');
-         $payment->product_id =  $solutions->solution_id;
+         $payment->product_id =  session('credentials')->id;
          $payment->customer_email = Auth::user()->email;
          $payment->weight_loss_id  = $wl->id;    
          $payment->payment_status = "pending";    
@@ -192,15 +169,19 @@ class WeightLostController extends Controller
          $payment->save();
  
  
-         session()->forget(['payment_intent_id']);
- 
+       
+
+        $data = [
+        'first_name' => $userData['fname'],
+         'last_name' => $userData['lname'],
+        'solution_name' => session('credentials')->solution_name,
+        'cost' =>  session('credentials')->cost,
+        ];
+        
+        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
+        session()->forget(['payment_intent_id','credentials']);
          return response()->json([
-             'redirect_url' => route('weight-loss', ['messege' => "Your payment is pending when your request is fullfilled"])
+             'redirect_url' => route('weight-loss', ['messege' => "Successful! please check your email for details"])
          ]);
-
-
-
     }
-
-
 }

@@ -1,3 +1,12 @@
+let step = 1;
+const totalSteps = 3;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
+
 $(document).ready(function() {
         let cardNumber="" 
 
@@ -29,7 +38,6 @@ $(document).ready(function() {
         var formData = new FormData(form); // Pass the DOM form element to FormData
 
 
-        console.log($('#register-form').serialize())
         $.ajax({
             url: "/telehealth-personal-details",
             method: 'POST',
@@ -40,7 +48,10 @@ $(document).ready(function() {
             success: function (response) {
                 // Handle success, clear error message
                 $('#pesonalDetails').hide('d-none')
-                $('#consultationRequest').show()                
+                $('#consultationRequest').show()   
+                if(step < totalSteps)  
+                    step++;    
+                updateProgress();             
             },
             error: function (response) {
                 // Handle errors
@@ -179,14 +190,11 @@ form.addEventListener('submit', function(event) {
             url: '/telehealth-consultation-details', // Adjust this URL to your actual route
             data: formData,
             success: function(response) {
-                // Handle success response (redirect, show a success message, etc.)
-          //      window.location.href = response.message.original[0]
-
           $('#paymentRequest').show('d-none')
           $('#consultationRequest').hide('d-none')    
-          
-          
-
+                if(step < totalSteps)  
+                    step++;    
+                updateProgress();
           
             },
             error: function(xhr) {
@@ -390,3 +398,15 @@ document.addEventListener("DOMContentLoaded", function () {
   renderStep();
 
 });
+
+
+
+$('#back-personal-details').on('click', function () {
+    $('#pesonalDetails').show()
+    $('#consultationRequest').hide('d-none')
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
+})
+
+ 

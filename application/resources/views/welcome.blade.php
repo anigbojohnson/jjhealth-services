@@ -79,6 +79,10 @@
                   <a class="nav-link {{ Route::currentRouteName() == 'specialist-referral-home' ? 'active' : '' }}" 
                     href="{{ route('specialist-referral-home') }}">Specialist Referrals</a>
               </li>
+                <li class="nav-item">
+                  <a class="nav-link {{ Route::currentRouteName() == 'pathology' ? 'active' : '' }}" 
+                    href="{{ route('pathology') }}">Pathology</a>
+              </li>
         </ul>
 
 
@@ -117,7 +121,7 @@
 
   <!-- Footer -->
   <footer
-          class="text-center text-lg-start text-dark mt-5"
+          class="text-center text-lg-start text-dark"
           style="background-color: #ECEFF1"
           >
     <!-- Section: Social media -->

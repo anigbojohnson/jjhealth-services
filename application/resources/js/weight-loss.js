@@ -1,3 +1,13 @@
+
+let step = 1;
+const totalSteps = 4;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
+
 $(document).ready(function () {
     $('#personal-detail-form').on('submit', function (e) {
         e.preventDefault();
@@ -19,7 +29,11 @@ $(document).ready(function () {
 
 
                 $('#pesonalDetails').hide('d-none')
-                $('#consultationRequest').show()                
+                $('#consultationRequest').show()
+                
+                if(step < totalSteps)  
+                    step++;    
+                updateProgress();
             },
             error: function (response) {
                 // Handle errors
@@ -116,6 +130,10 @@ $(document).ready(function () {
                
                 $('#medicalDetails').show()
                 $('#consultationRequest').hide('d-none')
+
+                if(step < totalSteps)  
+                    step++;    
+                updateProgress();
             },
             error: function (response) {
                 // Handle errors
@@ -149,14 +167,20 @@ $(document).ready(function () {
         $(this).addClass('btn-primary text-white');
     });
 
-    $('#back-personalDetails').on('click', function () {
+    $('#back-personal-details').on('click', function () {
         $('#pesonalDetails').show()
         $('#consultationRequest').hide('d-none')
+        if(step < totalSteps)  
+            step--;
+        updateProgress();
     })
 
     $('#back-consultDetails').on('click', function () {
         $('#medicalDetails').hide()
         $('#consultationRequest').show()
+        if(step < totalSteps)  
+            step--;
+        updateProgress();
     })
 
     $('#medicalConditionImageYes').click(function() {
@@ -195,6 +219,9 @@ $(document).ready(function () {
                     $('#paymentRequest').show('d-none')
                     $('#medicalDetails').hide('d-none') 
                 }
+                if(step < totalSteps)  
+                    step++;    
+                updateProgress();
             },
             error: function(xhr, status, error) {
                 // Handle errors
@@ -234,11 +261,15 @@ $(document).ready(function () {
                         // Display error message in #card-errors
                         $('#card-errors').text(result.error.message);
                     } else {
-                        // Payment succeeded, redirect to success page
+                        let file = $('input[name="fileUpload"]')[0].files[0];
+                        let formData = new FormData();
+                        formData.append('fileUpload', file);
                         $.ajax({
                             type: 'POST',
                             url: '/save-weight-loss-details', // Adjust this route to your actual backend route
-                            data:$('#medical-detail-form').serialize() ,
+                            data:formData,
+                            processData: false,   
+                            contentType: false,   
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 window.location.href = response.redirect_url
@@ -314,7 +345,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Change next button text
     nextBtn.innerHTML =
-      currentStep < steps.length - 1 ? "Next &rarr;" : "Select specialist referrals";
+      currentStep < steps.length - 1 ? "Next &rarr;" : "Make request now";
   }
 
   window.goToNext = function () {
@@ -323,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
       renderStep();
     } else {
    
-    window.location.href = "/specialist-referral/select";
+    document.getElementById('weight-lost-form').submit();
     }
   };
 

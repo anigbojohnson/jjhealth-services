@@ -103,6 +103,8 @@ require __DIR__.'/referrals.php';
 require __DIR__.'/medical_certificates.php';
 require __DIR__.'/treatment.php';
 require __DIR__.'/WeightLoss.php';
+require __DIR__.'/pathology.php';
+
 
 
 

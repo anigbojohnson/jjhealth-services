@@ -18,10 +18,9 @@ class PaymentController extends Controller
     //
 
 
-public function make($request) 
+public function make() 
 {
     $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
-
     // Create a PaymentIntent with manual capture method
     $paymentIntent = $stripe->paymentIntents->create([
         'amount' => session('credentials')->cost * 100,  // Stripe expects amount in cents

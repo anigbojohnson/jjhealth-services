@@ -31,7 +31,6 @@ class EmailVerificationService{
         $savedVerification = EmailVerification::where('email', $email)->update([
             'token' => $token,
             'expires_at' => $expiresAt,
-            'solution_id' => session('credentials')->solution_id
         ]);
   
 

@@ -5,7 +5,7 @@ use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use App\Models\EmailVerification;
 use App\Models\Solutions;
@@ -29,15 +29,15 @@ public function redirect()
         return redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
 }
 public function callback(Request $request) {
-       
+
 
         // Check for errors from Google
         if ($request->has('error')) {
-            return redirect('/login')->withErrors(['error' => 'Google authentication was cancelled.']);
+            return redirect('/register')->withErrors(['error' => 'Google authentication was cancelled.']);
         }
 
         // Step 1: Exchange code for access token
-        $tokenResponse = Http::post('https://oauth2.googleapis.com/token', [
+    $tokenResponse = Http::post('https://oauth2.googleapis.com/token', [
             'client_id'     => config('services.google.client_id'),
             'client_secret' => config('services.google.client_secret'),
             'redirect_uri'  => config('services.google.redirect_register'),
@@ -46,17 +46,17 @@ public function callback(Request $request) {
         ]);
 
         if ($tokenResponse->failed()) {
-            return redirect('/login')->withErrors(['error' => 'Failed to retrieve access token from Google.']);
+            return redirect('/register')->withErrors(['error' => 'Failed to retrieve access token from Google.']);
         }
-
         $accessToken = $tokenResponse->json()['access_token'];
+
 
         // Step 2: Get user info from Google
         $userResponse = Http::withToken($accessToken)
             ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 
         if ($userResponse->failed()) {
-            return redirect('/login')->withErrors(['error' => 'Failed to retrieve user info from Google.']);
+            return redirect('/register')->withErrors(['error' => 'Failed to retrieve user info from Google.']);
         }
 
         $googleUser = $userResponse->json();
@@ -68,7 +68,7 @@ public function callback(Request $request) {
 
         if($userExists){ 
             // Redirect with error message and additional data
-            return redirect()->route('login')->withErrors(['error' => 'You have different means of login.']);
+            return redirect()->route('register')->withErrors(['error' => 'You have different means of login.']);
         }
         $user = User::where([
             'provider-id' => $googleUser['sub'],

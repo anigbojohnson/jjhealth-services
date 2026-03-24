@@ -90,11 +90,11 @@
 
     <!-- Social login buttons -->
     <div class="d-grid gap-2 mb-2">
-        <a href="{{ url('/auth/register/microsoft/redirect') }}?page=register" class="btn btn-microsoft w-100 border mt-3 mb-3">
+        <a href="{{ url('/auth/register/microsoft/redirect') }}" class="btn btn-microsoft w-100 border mt-3 mb-3">
             <i class="fab fa-microsoft"></i> Register with Microsoft
         </a>
 
-        <a href="{{ url('/auth/register/google/redirect') }}?page=register" class="btn btn-google w-100 border">
+        <a href="{{ url('/auth/registr/google/redirect') }}" class="btn btn-google w-100 border">
             <i class="fab fa-google"></i> Register with Google
         </a>
     </div>

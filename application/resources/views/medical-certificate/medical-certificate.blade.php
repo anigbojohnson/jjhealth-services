@@ -5,7 +5,7 @@
 @vite(['resources/js/app.js', 'resources/js/medical-certificate.js'])
 
 <div style="width: 100%;">
-    <img src="{{ asset('images/MC-home.png') }}" alt="MC home image" style="width:100%; padding:0; height: 450px; max-width: 100%; margin:0;">
+    <img src="{{ asset('images/MC-home.png') }}" alt="MC home image" style="width:100%; padding:0; height: auto; max-width: 100%; margin:0;">
 </div>
 @php
     $mc01= $solutions->firstWhere('solution_id', 'MC01');

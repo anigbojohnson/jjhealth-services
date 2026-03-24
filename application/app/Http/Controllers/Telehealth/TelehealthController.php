@@ -9,8 +9,10 @@ use App\Models\Payment;
 
 use App\Models\User;
 use App\Models\Solutions;
-use App\Http\Controllers\Payment as PaymentController;
+use App\Http\Controllers\Payment\PaymentController as PaymentController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyConsultationMail;
 
 class TelehealthController extends Controller
 {
@@ -81,9 +83,8 @@ class TelehealthController extends Controller
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('id',  session('tele-consult-number'))->get()->last();
         $payment = new PaymentController();
-        $secretKey = $payment->make($solutions);
+        $secretKey = $payment->make();
         // Check the response and handle accordingly
         
         return response()->json([ 'secret_key'=>$secretKey], 200);
@@ -122,20 +123,26 @@ class TelehealthController extends Controller
     
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id = session('tele-consult-number');
+        $payment->product_id = session('credentials')->solution_id;
         $payment->customer_email = Auth::user()->email;
         $payment->treatment_id = $tr->id;    
         $payment->payment_status = "pending";    
 
         $payment->save();
+              $data = [
+        'first_name' => $userData['fname'],
+         'last_name' => $userData['lname'],
+        'solution_name' => session('credentials')->solution_name,
+        'cost' =>  session('credentials')->cost,
+        ];
 
+        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
 
-        session()->forget(['payment_intent_id','tele-consult-number']);
+        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('consult-category', ['messege' => "Your payment is pending when your request is fullfilled"])
+            'redirect_url' => route('consult-category', ['messege' => "Successful! please check your email for details"])
         ]);
-
 
     }
 
