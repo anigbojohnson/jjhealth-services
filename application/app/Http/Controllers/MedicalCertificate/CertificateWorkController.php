@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Payment;
+namespace App\Http\Controllers\MedicalCertificate;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\Solutions;
 use App\Models\User;
 use App\Models\MedicalCertificate;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
-use Stripe\PaymentIntent;
-use Stripe\Stripe;
-use App\Http\Controllers\Payment as PaymentController;
-
+use App\Http\Controllers\Payment\PaymentController;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyConsultationMail;
+use Illuminate\Support\Facades\Storage;
 
 class CertificateWorkController extends Controller
 {
@@ -52,7 +51,12 @@ class CertificateWorkController extends Controller
         // Define the expected 'validTo' date
         $validToDate = $today->copy()->addDays(3);
         $validatedData = $request->validate([
-            
+            'days_type' => 'required|in:single,multiple',
+            'singleDay' => [
+                'date',
+                'nullable',
+                'required_if:days_type,single'
+             ],
             'preExistingHealth' => 'required|in:,Yes,No',
             'medicationsRegularly' => 'required|in:,Yes,No',
             'informationPreExistingHealthYes' => [
@@ -73,7 +77,7 @@ class CertificateWorkController extends Controller
                     },
                 ],
                 'validFrom' => [
-                    'required',
+                    'required_if:days_type,multiple',
                     'date',
                     function ($attribute, $value, $fail) use ($today, $tomorrow) {
                         $date = \Carbon\Carbon::parse($value)->startOfDay();
@@ -106,7 +110,7 @@ class CertificateWorkController extends Controller
                 ],
 
                 'validTo' => [
-                    'required',
+                    'required_if:days_type,multiple',
                     'date',
                     function ($attribute, $value, $fail) use ($validFrom) {
     
@@ -118,7 +122,10 @@ class CertificateWorkController extends Controller
                         if (!$date->between($validFromDate, $maxValidDate)) {
                             $fail('valid to must be any date between ' . $validFromDate->toFormattedDateString() . ' and ' . $maxValidDate->toFormattedDateString());
                         }
-                    }
+                    },
+                    'medicalConditionImage' => 'required|in:Yes,No', // Ensures the value is required and must be either Yes or No
+                    'fileUpload' => 'required_if:medicalConditionImage,Yes|nullable|mimes:jpg,jpeg,png,pdf|max:5120', // File required only if 'Yes'
+
                 ],
                 [
                     'medicationsRegularlyInfo.required_if' => 'This field is required ',
@@ -148,26 +155,28 @@ class CertificateWorkController extends Controller
     public function workDetails(Request $request)
     {
 
-
         $validatedData = $request->validate([
-     
-            'work' => 'required|in:sickLeave,FitToReturn,startWork,adjustWork',
-            'IAgree' => [
-                'required_if:work,FitToReturn,startWork',
+         
+            'jobDescription' => [
+                'required',
                 'string',
-                'max:255'
+                function ($attribute, $value, $fail) {
+                    $wordCount = str_word_count($value);
+                    if ($wordCount < 5) {
+                        $fail('The job description must contain at least 5 words.');
+                    }
+                },
             ],
-            'adjustmentsReasons' => [
-                'required_if:work,adjustWork',
+            'symptomsRelationToJobs' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $wordCount = str_word_count($value);
+                    if ($wordCount < 5) {
+                        $fail('The symptoms relation to jobs must contain at least 5 words.');
+                    }
+                },
             ],
-            [
-                'adjustmentsReasons.required_if' => 'The adjustments reasons field is required ',
-                'IAgree.required_if' => 'You must check the IAgree box',
-                'dailyWorkActivities.required' => 'The daily work activities field is required.',
-                'IAgree' => 'This button is required.'
-
-
-            ]
         ]);
         session()->put('workDetails', $validatedData);
 
@@ -175,25 +184,18 @@ class CertificateWorkController extends Controller
 
     }
     public function storeMCDetails(Request $request){
-        $seeking = '';
     
-        Stripe::setApiKey(config('services.stripe.secret'));
-    
-        $paymentIntent = PaymentIntent::retrieve(session('payment_intent_id'));
-
-
-        $validatedData = session('workDetails');
-
-        if ($validatedData['work'] == 'sickLeave') {
-            $seeking = 'Sick leave from work';
-        } elseif ($validatedData['work'] == 'FitToReturn') {
-            $seeking = 'Fit to return to work';
-        } elseif ($validatedData['work'] == 'startWork') {
-            $seeking = 'Fit to start work';
-        } elseif ($validatedData['work'] == 'adjustWork') {
-            $seeking = 'Adjusting work duties';
-        }
         $validatedData = session('personalDetails');
+
+        $fileName ="";
+        if ($request->hasFile('fileUpload')) {
+            // Get the file content
+            $file = $request->file('fileUpload');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileContent = base64_encode(file_get_contents($file));
+            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
+
+        }
 
         $user = User::updateOrCreate(
             ['email' => Auth::user()->email], // Condition to find the user
@@ -210,15 +212,12 @@ class CertificateWorkController extends Controller
         $validatedData = session('medicalDetails');
         $validatedWork = session('workDetails');
 
-        try {
         $medicalCertificate = MedicalCertificate::create([
             'requestDate' => Carbon::now(),
             'user_email' => Auth::user()->email,
             'preExistingHealth' => $validatedData['preExistingHealth']??null,
             'medicationsRegularly' => $validatedData['medicationsRegularly']??null,
-            'seeking' => $seeking??null, // Assuming seeking is part of the request
-            'IAgree' => $validatedWork['IAgree']??null,
-            'adjustmentsReasons' => $validatedWork['adjustmentsReasons']??null,
+            'seeking' => session('credentials')->solution_name??null, // Assuming seeking is part of the request
             'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes']??null,
             'privacy' => $validatedData['privacy']??null,
             'medicationsRegularlyInfo' => $validatedData['medicationsRegularlyInfo']??null,
@@ -228,46 +227,46 @@ class CertificateWorkController extends Controller
             'symptomsStartDate' => $validatedData['startDateSymptoms']??null,
             'currentStatus' => $validatedData['currentStatus']??null,
             'validTo' => $validatedData['validTo']??null,
+            'jobDescription'=> $validatedData['jobDescription']??null,
+             'fileUpload' => $fileName??null, 
+            'symptomsRelationToJobs'=> $validatedData['symptomsRelationToJobs']??null,
             'request_status'=>"new request"
         ]);
      
-            $solutions = Solutions::where('solution_id', 'like', 'MC01')->first();
     
             $payment = new Payment();
             $payment->payment_id = session('payment_intent_id');
-            $payment->product_id =  'MC01';
+            $payment->product_id = session('credentials')->id;
             $payment->customer_email = Auth::user()->email;
             $payment->mc_id  =  $medicalCertificate->id;    
             $payment->payment_status = "pending";    
     
             $payment->save();
     
-    
-            session()->forget(['payment_intent_id']);
-    
-            return response()->json([
-                'redirect_url' => route('certificate', ['messege' => "Your payment is pending when your request is fullfilled"])
-            ]);
-    
-        } catch (\Stripe\Exception\CardException $e) {
-            if ($e->getError()->code === 'insufficient_funds') {
-                return response()->json(['error' => 'The payment failed due to insufficient funds.']);
-            } else {
-                return response()->json(['error' => 'Payment failed: ' . $e->getMessage()]);
-            }
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()]);
-        }
+
+        $data = [
+            'first_name' =>  $user->first_name,
+            'last_name' =>  $user->last_name,
+            'solution_name' => session('credentials')->solution_name.' Medical Certificate',
+            'cost' =>  session('credentials')->cost,
+        ];
 
 
+        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
+
+        session()->forget(['payment_intent_id','credentials']);
+
+        return response()->json([
+            'redirect_url' => route('certificate', ['messege' => "Successful! please check your email for details"])
+        ]);
+    
     }
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'MC01')->first();
         
         $payment = new PaymentController();
-        $ecretKey = $payment->make($solutions);
+        $ecretKey = $payment->make();
         // Check the response and handle accordingly
         
         return response()->json([ 'secret_key'=>$ecretKey], 200);

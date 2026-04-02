@@ -11,6 +11,9 @@ function updateProgress() {
 $(document).ready(function () {
     $('#personal-detail-form').on('submit', function (e) {
         e.preventDefault();
+        
+        $('#validate-button').prop('disabled', false).text('Processing');
+            
 
         $.ajax({
             url: "/weight-loss-personal-details",
@@ -58,6 +61,9 @@ $(document).ready(function () {
                 if (errors.indigene) {
                     $('#indigene-error').text(errors.indigene[0]);
                 }
+            },
+            complete: function() {
+              $('#validate-button').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -114,6 +120,9 @@ $(document).ready(function () {
 
     $('#consultation-loss-form').on('submit', function (e) {
         e.preventDefault();
+        
+        $('#consult').prop('disabled', false).text('Processing');
+            
 
         $.ajax({
             url: "/weight-loss-consultation-details",
@@ -147,6 +156,9 @@ $(document).ready(function () {
                 if (errors.weight) {
                     $('#weight-error').text(errors.weight[0]);
                 }
+            },
+            complete: function() {
+              $('#consult').prop('disabled', false).text('Continue');
             }
         });
     });            
@@ -196,6 +208,9 @@ $(document).ready(function () {
 
         var formData = $(this).serialize(); // Serialize form data
 
+        $('#submit-weight-loss').prop('disabled', false).text('Processing');
+            
+
         // Send AJAX request
         $.ajax({
             type: 'POST',
@@ -231,6 +246,9 @@ $(document).ready(function () {
                         $('#' + key + '-error').text(value[0]); // Display error message
                     });
                 }
+            },
+            complete: function() {
+              $('#submit-weight-loss').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -238,9 +256,11 @@ $(document).ready(function () {
 
 
 
-
     $('#validate-payment').click(function(e) {
         e.preventDefault(); // Prevent form submission
+
+        $('#validate-payment').prop('disabled', false).text('Processing');
+            
 
         // Step 1: Send an AJAX request to the backend to get the client secret
         $.ajax({
@@ -285,6 +305,9 @@ $(document).ready(function () {
             error: function(xhr) {
                 // Handle error if the request fails
                 console.error("Error creating PaymentIntent:", xhr);
+            },
+            complete: function() {
+              $('#validate-payment').prop('disabled', false).text('Continue');
             }
         });
     });

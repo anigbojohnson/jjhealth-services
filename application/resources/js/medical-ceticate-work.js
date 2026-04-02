@@ -1,3 +1,13 @@
+let step = 1;
+const totalSteps = 4;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
+
+
 let formData = new Map();
 let formDataObject=""
 
@@ -38,25 +48,36 @@ $('#validFrom').attr('max', tomorrow);
 $('#validTo').attr('min', today);
 $('#validTo').attr('max', threeDaysFromToday);
 
+$('#singleDay').attr('min', today);
+$('#singleDay').attr('max', tomorrow);
 
 
-
+$(document).ready(function() {
 
 
       
 document.getElementById('back-personal-details').addEventListener('click', function() {
     $('#pesonalDetails').show();   
     $('#work').hide();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
   });
 
   document.getElementById('back-work').addEventListener('click', function() {
     $('#medicalDetails').hide();   
     $('#work').show();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
   });
 
   document.getElementById('back-medicals').addEventListener('click', function() {
     $('#medicalDetails').show();   
     $('#previewDetails').hide();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
   });
 
   $('#informationPreExistingHealthYes,#currentStatus, #medicationsRegularlyInfo, #detailedSymptoms,#startDateSymptoms').on('input', function() {
@@ -85,11 +106,6 @@ function formatDate(date) {
     var yyyy = date.getFullYear();
     return yyyy + '-' + mm + '-' + dd;
 }
-document.getElementById('back-home').addEventListener('click', function() {
-    // Redirect to the 'certificate' route
-    window.location.href = "/certificate";
-
-});
 
 
 $('button[data-target="preExistingHealth"]').click(function () {
@@ -113,6 +129,20 @@ $('button[data-target="preExistingHealth"]').click(function () {
         $('#informationPreExistingHealthYes').prop('required', false); // Remove required
         $('#informationPreExistingHealthYes').val(''); // Clear the input field
     }
+});
+
+
+$('#medicalConditionImageYes').click(function() {
+    $('#fileUploadGroup').show();
+});
+
+$('#medicalConditionImageNo').click(function() {
+    $('#fileUploadGroup').hide();
+});
+
+document.getElementById('fileUpload').addEventListener('change', function () {
+    const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+    document.getElementById('file-name').textContent = fileName;
 });
 
 
@@ -175,11 +205,23 @@ $('button[data-target="medicationsRegularly"]').click(function () {
     }
 });
 
+$('#singleDay').on('input', function() {
+    var singleDay = $('#singleDay').val();
 
+    // Clear previous errors
+    $('#singleDay-error').text('');
+
+    if (!singleDay) {
+        $('#singleDay-error').text("Please select a valid date.");
+    } 
+
+});
       
 $('#medical-form').on('submit', function(e) {
     e.preventDefault(); // Prevent default form submission
-    console.log($(this).serialize());
+
+
+    $('#validate-medical').prop('disabled', false).text('Proccessing'); 
 
     $.ajax({
         url: '/validate-medicalDetails-work-medical-certificate', // URL to handle the medical details form submission
@@ -257,6 +299,9 @@ $('#medical-form').on('submit', function(e) {
                 generateReviewSection();
                 $('#previewDetails').show();
                 $('#medicalDetails').hide();
+                    if(step < totalSteps)  
+                        step++;
+                    updateProgress();
 
                 // Optionally redirect or show a success message
             }
@@ -271,50 +316,79 @@ $('#medical-form').on('submit', function(e) {
             } else {
                 alert('An error occurred while submitting medical details.');
             }
-        }
+        },
+        complete: function() {
+              $('#validate-medical').prop('disabled', false).text('Continue');
+         }
     });
 });
 
 $('#submit-work-medical-certificate').on('click', function(e) {
     $('#paymentRequest').show()
     $('#previewDetails').hide('d-none')
+    $('#submit-work-medical-certificate').prop('disabled', false).text('Proccessing');
+
 });
 
 
 
-    $('#FitToReturn, #startWork,#adjustWork,#sickLeave').on('change', function() {
-        $('#seeking').text('');
-        const isWorkChecked = $("#adjustWork").is(":checked") || $("#sickLeave").is(":checked");
-        if (isWorkChecked) {
-            // Uncheck IAgree and clear the error message
-            $("#IAgree").prop("checked", false);
-        } 
-    });
 
-    $('#IAgree').on('change', function() {
-        var errorMessage = "This field is required";
-        $('#IAgree-error').text(!$("#IAgree").is(":checked") ? errorMessage : '');
-        
-    });
-    $('#adjustmentsReasons').on('input', function() {
-        var errorMessage = "This field is required";
-        var isAdjustWorkChecked = $("#adjustWork").is(":checked");
-        var value = $(this).val();
+$('.option-btn').click(function () {
+        var target = $(this).data('target');
+        var value = $(this).data('value');
+      
+
+
+        $('#' + target).val(value);
+        $('#' + target + '-error').text('');
+
+        $('button[data-target="' + target + '"]').css('background-color', '');
+        $('button[data-target="' + target + '"]').css('color','blue');
+
+
+        $('button[data-target="' + target + '"]').removeClass('btn-primary btn-secondary text-white');
+        $(this).addClass('btn-primary text-white');
+});
+
+    function countWords(str) {
+        return str.trim().split(/\s+/).filter(word => word !== '').length;
+    }
     
-        if (isAdjustWorkChecked && !value) {
-            $('#adjustmentsReasons-error').text(errorMessage);
-        } else {
-            $('#adjustmentsReasons-error').text('');
-        }
-    });
-    
-    
-$(document).ready(function () {
-  
     $('#work-register-form').on('submit', function(e) {
         e.preventDefault();  // Prevent the default form submission
     
         var formData = $(this).serialize();  // Automatically serialize the form fields
+
+
+        let isValid = true;
+
+        // Job Description
+        const jobDesc = $("#jobDescription").val();
+        if (countWords(jobDesc) < 5) {
+            $("#jobDescription").addClass("is-invalid");
+            $("#jobDescription_error").text("Job description must contain at least 5 words.");
+            isValid = false;
+        } else {
+            $("#jobDescription").removeClass("is-invalid");
+            $("#jobDescription_error").text("");
+        }
+        
+
+        // Symptoms Relation To Jobs
+        const symptoms = $("#symptomsRelationToJobs").val();
+        if (countWords(symptoms) < 5) {
+            $("#symptomsRelationToJobs").addClass("is-invalid");
+            $("#symptomsRelationToJobs_error").text("Symptoms field must contain at least 5 words.");
+            isValid = false;
+        } else {
+            $("#symptomsRelationToJobs").removeClass("is-invalid");
+            $("#symptomsRelationToJobs_error").text("");
+        }
+
+        if (!isValid) {
+            $('#validate-work-details').prop('disabled', false).text('Continue');
+            e.preventDefault(); // Stop form submission
+        }
     
         $.ajax({
             url: '/validate-workDetails-work-medical-certificate',  // Replace with your endpoint URL
@@ -324,6 +398,9 @@ $(document).ready(function () {
                 // Handle success, for example:
                 $('#work').hide();
                 $('#medicalDetails').show();
+                if(step < totalSteps)  
+                    step++;
+                updateProgress();
             },
             error: function(xhr) {
                 // Handle validation errors and other errors
@@ -342,59 +419,14 @@ $(document).ready(function () {
                 } else {
                     alert('An error occurred while submitting medical details.');
                 }
+            },
+            complete: function() {
+                        $('#validate-work-details').prop('disabled', false).text('Continue');
             }
         });
     });
-$('#sickLeave').click(function() {
-          $('#workAdjustments').hide();
-          $('#acknoledgement').hide();
-          $('#IAgree-error').text('');
-          $('#adjustmentsReasons-error').text('');
-          $('.medicalLetterReasons').show();
-          $('.previewMedicalLetterReasons').show();
 
 
-
-
-      });
-
-$('#startWork').click(function() {
-          $('#workAdjustments').hide();
-          $('#acknoledgement').show();
-          $('#IAgree-error').text('');
-          $('#adjustmentsReasons-error').text('');
-          $('.medicalLetterReasons').hide();
-          $('.previewMedicalLetterReasons').show();
-
-
-
-
-      });
-
-$('#FitToReturn').click(function() {
-          $('#workAdjustments').hide();
-          $('#acknoledgement').show();
-          $('#IAgree-error').text('');
-          $('#adjustmentsReasons-error').text('');
-          $('.medicalLetterReasons').hide();
-          $('.previewMedicalLetterReasons').hide();
-
-
-
-      });
-
-      $('#adjustWork').click(function() {
-          $('#workAdjustments').show();
-          $('#acknoledgement').hide();
-          $('#IAgree-error').text('');
-          $('#adjustmentsReasons-error').text('');
-          $('.medicalLetterReasons').hide();
-          $('.previewMedicalLetterReasons').hide();
-
-      });
-    });
-
-    $(document).ready(function() {
       // Function to perform validation for the first name field while typing
       $('#fname').on('input', function() {
           let value = $(this).val();
@@ -487,7 +519,9 @@ $('#FitToReturn').click(function() {
             indigene: $('#indigene').val(),
             address: $('#address').val()
         };
-    
+
+        $('#validate-button').prop('disabled', false).text('Progressing');
+            
         // Perform AJAX request
         $.ajax({
             url: '/validate-personalDetails-work-medical-certificate', // Replace with your server endpoint URL
@@ -498,6 +532,9 @@ $('#FitToReturn').click(function() {
                 // Hide and show sections as needed
                 $('#pesonalDetails').hide();
                 $('#work').show();
+                    if(step < totalSteps)  
+                        step++;
+                    updateProgress();
             },
             error: function(xhr, status, error) {
                 // Handle error response
@@ -521,6 +558,9 @@ $('#FitToReturn').click(function() {
                 if (errors.indigene) {
                     $('#indigene-error').text(errors.indigene[0]);
                 }
+            },
+            complete: function() {
+                $('#validate-button').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -577,6 +617,7 @@ cardCvc.mount('#card-cvc');
 
 $('#validate-payment').click(function(e) {
     e.preventDefault(); // Prevent form submission
+    $('#validate-payment').prop('disabled', false).text('Proccessing');
 
     // Step 1: Send an AJAX request to the backend to get the client secret
     $.ajax({
@@ -600,6 +641,17 @@ $('#validate-payment').click(function(e) {
                     $('#card-errors').text(result.error.message);
                 } else {
                     // Payment succeeded, redirect to success page
+                                            let formData = new FormData();
+                        let medicalConditionImage = $('input[name="medicalConditionImage"]').val(); // 'Yes' or 'No'
+                        let fileInput = $('input[name="fileUpload"]')[0];
+                        let file = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+                        // if user said Yes but didn't upload a file
+                        if (medicalConditionImage === 'Yes' && file) {
+                            file = $('input[name="fileUpload"]')[0].files[0];
+                            formData.append('fileUpload', file);
+                        }
+
                     $.ajax({
                         type: 'POST',
                         url: '/submit-work-medical-certificate', // Adjust this route to your actual backend route
@@ -610,18 +662,25 @@ $('#validate-payment').click(function(e) {
                         success: function(response) {
                             // Redirect to success page or handle successful response
                             console.log(response)
+                                if(step < totalSteps)  
+                                    step--;
+                                updateProgress();
                          window.location.href = response.redirect_url
                         },
                         error: function(xhr) {
                             // Handle error if something goes wrong with the post-payment processing
                             alert("Failed to complete backend processing");
-                        }
+                        },
+                     complete: function() {
+                        $('#validate-payment').prop('disabled', false).text('Continue');
+                      }
                     });
                 }
             });
         },
         error: function(xhr) {
             // Handle error if the request fails
+            $('#validate-payment').prop('disabled', false).text('Continue');
             console.error("Error creating PaymentIntent:", xhr);
         }
     });

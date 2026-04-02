@@ -4,14 +4,19 @@
 
 @vite(['resources/js/app.js', 'resources/js/medical-certificate.js'])
 
-<div style="width: 100%;">
-    <img src="{{ asset('images/MC-home.png') }}" alt="MC home image" style="width:100%; padding:0; height: auto; max-width: 100%; margin:0;">
+<div style="width: 100%; width:auto; height:auto;">
+    <img src="{{ asset('images/medical-certificate/MC-home.png') }}" alt="MC home image" style="width:100%; padding:0; height: auto; max-width: 100%; margin:0;">
 </div>
+
+{{-- Build paired single/multiple collections before the loop --}}
 @php
-    $mc01= $solutions->firstWhere('solution_id', 'MC01');
-    $mc02= $solutions->firstWhere('solution_id', 'MC02');
-    $mc03= $solutions->firstWhere('solution_id', 'MC03');
-    $mc04= $solutions->firstWhere('solution_id', 'MC04');
+$singles = $solutions->whereIn('solution_id', ['MC01', 'MC02', 'MC03', 'MC04'])->values();
+      $images = [
+        7 => 'work.jpg',
+        8 => 'school.jpg',
+        9 => 'carer.jpg',
+        10 => 'holiday and traveller.jpg',
+    ];
 @endphp
 
 <div id="home-content" class="container"> 
@@ -33,59 +38,75 @@
                 {{ request('messege') }}
             </div>
         @endif
-    <div class="row gy-3 mt-5">
-      <div class="col-md-4">
-        <div class="card">
-          <img class="card-img-top"  src="{{ asset('images/MC-work.jpg') }}"  alt="Card image cap">
-          <div class="card-body">
-            <h5>Work</h5>
-            <span style="background-color: lightblue;font-weight: bold;" class="text-white rounded px-2 py-1">price: ${{ $mc01->cost }}</span>
-            <a href="{{ route('medical-certificate', ['param' =>  str_replace(' ', ' ','Medical Certificate For Work'), 'action' => 'work-medical-certificate']) }}"  class="btn btn-primary w-100 mt-3">Request Work Certificate</a>
-          </div>
-        </div>
-      </div>
-      
+<div class="row gy-3 mt-5">
+    @foreach ($singles as $index => $solution)
+        @php
+            $cardId   = $solution->id;
+        @endphp
+ 
         <div class="col-md-4">
-          <div class="card">
-            <img class="card-img-top" src="{{ asset('images/MC-School.png') }}"  alt="Card image cap">
-            <div class="card-body">
-              <h5>School</h5>
-              <span style="background-color: lightblue;font-weight: bold;" class="text-white rounded px-2 py-1">price: ${{ $mc02->cost }}</span>
-  
-              <a href="{{ route('medical-certificate', ['param' =>  str_replace(' ', ' ','Medical Certificate For School'),'action'=>'studies-medical-certificate']) }}" class="btn btn-primary w-100 mt-3">Request School Certificate</a>
-            </div>
-          </div>
-        </div>
-  
-        
-            <div class="col-md-4">
-              <div class="card">
-                <img class="card-img-top" src="{{ asset('images/MC-holiday-traveller.jpg') }}" alt="Card image cap">
-                <div class="card-body">
-                  <h5>Travel and holiday Cancellation</h5>
-                  <span style="background-color: lightblue;font-weight: bold;" class="text-white rounded px-2 py-1">price: ${{ $mc04->cost }}</span>
-                  <a href="{{ route('medical-certificate', ['param' =>  str_replace(' ', ' ', 'Request Travel and holiday Certificate'),'action'=>'travel-and-holiday-certificate']) }}" class="btn btn-primary w-100 mt-3">Request Travel and holiday Certificate</a>
-
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+ 
+                {{-- Image --}}
+                <div style="position: relative;">
+                    <img class="card-img-top"
+                         src="{{ asset('images/medical_certificate/' . $images[$solution->category_id]) }}"
+                         alt="{{ $solution->solution_name }}"
+                         style="height: 180px; object-fit: cover; width: 100%;">
+                    <span style="position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.92); border-radius: 999px; padding: 3px 12px; font-size: 11px; font-weight: 600; color: #185FA5; letter-spacing: 0.04em;">
+                        MEDICAL CERTIFICATE
+                    </span>
                 </div>
-              </div>
-            </div>   
-        </div>
-    <div class="row gy-3 mt-5">
-        <div class="col-md-4">
-            <div class="card">
-                <img class="card-img-top" src="{{ asset('images/MC-carer.jpg') }}" alt="Card image cap">
-                <div class="card-body">
-                    <h5>Carer's Leave</h5>
-                
-                    <span style="background-color: lightblue;font-weight: bold;" class="text-white rounded px-2 py-1">price: ${{ $mc03->cost }}</span>
-        
-                    <a href="{{ route('medical-certificate', ['param' =>  str_replace(' ', ' ','Request Carer Leave Certificate'),'action'=>'carers-Leave-certificate']) }}" class="btn btn-primary w-100 mt-3">Request Carer's Leave Certificate</a>
+ 
+                <div class="card-body px-3 pt-3 pb-4">
+ 
+                    {{-- Title + Price --}}
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="mb-0 fw-semibold" id="title-{{ $cardId }}" style="font-size: 17px;">
+                            {{ $solution->solution_name }}
+                        </h5>
+                        <span id="price-{{ $cardId }}" class="fw-semibold" style="font-size: 13px; color: #185FA5; background: #E6F1FB; padding: 3px 12px; border-radius: 999px;">
+                            ${{ $solution->cost }}
+                        </span>
+                    </div>
+ 
+                    {{-- Description --}}
+                    <p id="desc-{{ $cardId }}" class="text-muted mb-3" style="font-size: 12.5px; line-height: 1.5; min-height: 36px;">
+                        {{ $solution->description }}
+                    </p>
+ 
+                    {{-- Toggle --}}
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="billing-toggle-wrap w-100">
+                            <div class="toggle-pill" id="pill-{{ $cardId }}"></div>
+                            <button class="toggle-btn active w-50 btn-single"
+                                    data-card="{{ $cardId }}"
+                                    data-solution='@json($solution)'
+                                    data-solutions='@json($solutions)'>
+                                Single Day
+                            </button>
+                            <button class="toggle-btn w-50 btn-multiple"
+                                    data-card="{{ $cardId }}"
+                                    data-solution='@json($solution)'
+                                    data-solutions='@json($solutions)'>
+                                Multiple Days
+                            </button>
+                        </div>
+                    </div>
+ 
+                    {{-- CTA --}}
+                    <a id="cta-{{ $cardId }}"
+                        href="#"
+                        class="btn w-100 fw-semibold cta-btn"
+                        data-solution='@json($solution)'
+                        style="background: #185FA5; color: #fff;">
+                        Request {{ $solution->solution_name }}
+                    </a>
                 </div>
             </div>
-        </div>      
-    </div>
-  </div>
-
+        </div>
+    @endforeach
+</div>
 
     
 <div class="row mt-5 " style="background-color: #f2f2f2; ">
@@ -203,4 +224,188 @@
     </div>
 </div> 
    
+{{-- JS cardMeta: pairs single (MC01–MC04) with multiple (MC05–MC08) --}}
+<script>
+
+$(document).on('click', '.btn-single, .btn-multiple', function () {
+
+    const cardId   = $(this).data('card');
+    const mode     = $(this).hasClass('btn-single') ? 'single' : 'multiple';
+    const solution = $(this).data('solution');
+    const solutions = $(this).data('solutions');
+
+    const pill      = $('#pill-' + cardId);
+    const btnSingle = $('.btn-single[data-card="' + cardId + '"]');
+    const btnMulti  = $('.btn-multiple[data-card="' + cardId + '"]');
+    const priceEl   = $('#price-' + cardId);
+    const descEl    = $('#desc-' + cardId);
+    const titleEl   = $('#title-' + cardId);
+    const ctaEl     = $('#cta-' + cardId);
+
+    let data;
+
+    if (mode === 'single') {
+        // UI toggle
+        pill.css({
+            transform: 'translateX(0)',
+            width: btnSingle.outerWidth()
+        });
+
+        btnSingle.addClass('active');
+        btnMulti.removeClass('active');
+
+        data = solution;
+
+    } else {
+        // UI toggle
+        pill.css({
+            transform: `translateX(${btnSingle.outerWidth() + 2}px)`,
+            width: btnMulti.outerWidth()
+        });
+
+        btnMulti.addClass('active');
+        btnSingle.removeClass('active');
+
+        // find matching "multiple"
+        data = solutions.find(item =>
+            item.category_id === solution.category_id &&
+            item.id !== solution.id
+        );
+    }
+
+    // update UI
+    if (data) {
+        priceEl.text('$' + data.cost);
+        descEl.text(data.description);
+        titleEl.text(data.solution_name);
+
+        // 🔥 VERY IMPORTANT: update CTA data
+        ctaEl.text('Request ' + data.solution_name);
+        ctaEl.data('solution', data);
+    }
+});
+
+
+// ✅ CTA CLICK
+$(document).on('click', '.cta-btn', function (e) {
+    e.preventDefault();
+
+    const solution = $(this).data('solution');
+
+    handleCtaClick(solution);
+    
+});
+
+
+// ✅ YOUR FUNCTION
+function handleCtaClick(solution) {
+    console.log(solution);
+
+    $.ajax({
+    type: 'POST',
+    url: '/medical-certificate/request',
+    data: JSON.stringify(solution),
+    contentType: 'application/json',   // FIXED
+    processData: false,
+
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
+
+    success: function(response) {
+        window.location.href = response.redirect_url;
+    },
+    error: function(xhr) {
+        console.error(xhr.responseText);
+    }
+});
+
+}
+ 
+
+
+
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            document.querySelectorAll('.billing-toggle-wrap').forEach(function (wrap) {
+                const pill      = wrap.querySelector('.toggle-pill');
+                const btnSingle = wrap.querySelector('.toggle-btn.active');
+                if (pill && btnSingle) {
+                    pill.style.width = btnSingle.offsetWidth + 'px';
+                }
+            });
+        }, 50);
+    });
+/*
+
+
+
+function handleCtaClick(solution) {
+        const solution = $(this).data('solution');
+
+    console.log(solution); // already a JS object
+
+
+
+    const cardId = el.dataset.cardId;
+    const mode   = activeMode[cardId] || 'single'; // default to single if not set yet
+    const meta   = cardMeta[cardId][mode];
+    const payload = {
+        id: data.id,
+        solution_id: cardId,
+        cost:   meta.price,
+        solution_name:   meta.title,
+        description:   meta.desc,
+    };
+
+
+
+
+}
+*/
+</script>
+ 
+
+<style>
+    .billing-toggle-wrap {
+        display: inline-flex;
+        align-items: center;
+        background: #f1f1f1;
+        border-radius: 999px;
+        padding: 4px;
+        position: relative;
+        gap: 2px;
+    }
+
+    .billing-toggle-wrap .toggle-pill {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        height: calc(100% - 8px);
+        background: #1a1a1a;
+        border-radius: 999px;
+        transition: transform 0.25s cubic-bezier(.4,0,.2,1), width 0.25s cubic-bezier(.4,0,.2,1);
+        z-index: 0;
+    }
+
+    .billing-toggle-wrap .toggle-btn {
+        position: relative;
+        z-index: 1;
+        background: transparent;
+        border: none;
+        padding: 7px 0;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        color: #999;
+        transition: color 0.2s;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .billing-toggle-wrap .toggle-btn.active {
+        color: #fff;
+    }
+</style>
 @endsection

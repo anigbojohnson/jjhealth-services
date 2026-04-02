@@ -1,5 +1,45 @@
 
-    
+let step = 1;
+const totalSteps = 5;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
+
+
+
+
+
+$('.option-btn').click(function () {
+        var target = $(this).data('target');
+        var value = $(this).data('value');
+      
+
+
+        $('#' + target).val(value);
+        $('#' + target + '-error').text('');
+
+        $('button[data-target="' + target + '"]').css('background-color', '');
+        $('button[data-target="' + target + '"]').css('color','blue');
+
+
+        $('button[data-target="' + target + '"]').removeClass('btn-primary btn-secondary text-white');
+        $(this).addClass('btn-primary text-white');
+});
+
+
+
+$('#medicalConditionImageYes').click(function() {
+    $('#fileUploadGroup').show();
+});
+
+$('#medicalConditionImageNo').click(function() {
+    $('#fileUploadGroup').hide();
+});
+
+
 $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -34,20 +74,31 @@ $.ajaxSetup({
         $('#validFrom').attr('max', tomorrow);
         $('#validTo').attr('min', today);
         $('#validTo').attr('max', threeDaysFromToday);
+        $('#singleDay').attr('min', today);
+        $('#singleDay').attr('max', tomorrow);
 
 document.getElementById('back-personal-details').addEventListener('click', function() {
     $('#pesonalDetails').show();   
     $('#studiesDetials').hide();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
   });
 
   document.getElementById('back-work').addEventListener('click', function() {
     $('#medicalDetails').hide();   
     $('#studiesDetials').show();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
   });
 
   document.getElementById('back-medicals').addEventListener('click', function() {
     $('#medicalDetails').show();   
     $('#previewDetails').hide();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
   });
 
   $('#medicationsRegularlyYes').click(function() {
@@ -66,32 +117,7 @@ document.getElementById('back-personal-details').addEventListener('click', funct
       $('#preExistingHealthNo').click(function() {
           $('#healthConditions').hide();
       });
-
-      document.getElementById('back-home').addEventListener('click', function() {
-        // Redirect to the 'certificate' route
-        window.location.href = "/certificate";
-    
-    });
   
-
-$(document).ready(function () {
-
-$('#sickLeave').click(function() {
-          $('#howLongFor').show();
-       
-
-      });
-
-$('#resumeStudies').click(function() {
-          $('#howLongFor').hide();
-          $('#validFrom').val('');
-          $('#validTo').val('');
-      });   
-})
-
-
-
-
 
 
 
@@ -193,7 +219,9 @@ $(document).ready(function() {
           indigene: $('#indigene').val(),
           address: $('#address').val()
       };
-  
+
+       $('#validate-button').prop('disabled', false).text('Proccessing');
+
       // Perform AJAX request
       $.ajax({
           url: '/validate-personalDetails-studies-medical-certificate', // Replace with your server endpoint URL
@@ -204,11 +232,15 @@ $(document).ready(function() {
               // Hide and show sections as needed
               $('#pesonalDetails').hide();
               $('#studiesDetials').show();
+
+                if(step < totalSteps)  
+                    step++;   
+                updateProgress();
           },
           error: function(xhr, status, error) {
               // Handle error response
               var errors = xhr.responseJSON.errors;
-              
+              console.log(xhr.responseJSON)
               if (errors.address) {
                   $('#address-error').text(errors.address[0]);
               }
@@ -227,7 +259,10 @@ $(document).ready(function() {
               if (errors.indigene) {
                   $('#indigene-error').text(errors.indigene[0]);
               }
-          }
+          }, 
+        complete: function() {
+              $('#validate-button').prop('disabled', false).text('Continue');
+            }
       });
   });
   
@@ -235,23 +270,6 @@ $(document).ready(function() {
 
 
 
-
-
-
-
-
-
-
-// studies details
-$('input[name="studies"]').on('input', function() {
-    // Clear the error message first
-    $('#studies-error').text('');
-
-    // Check if no radio button is selected
-    if ($('input[name="studies"]:checked').length === 0) {
-        $('#studies-error').text('Please select one of the options.');
-    }
-});
 
 $('#yourStudiesPlace').on('input blur', function() {
     // Clear any previous error message
@@ -265,6 +283,21 @@ $('#yourStudiesPlace').on('input blur', function() {
         $('#yourStudiesPlace-error').text('Please confirm where you attend your studies.');
     }
 });
+
+
+$('#singleDay').on('input', function() {
+    var singleDay = $('#singleDay').val();
+
+    // Clear previous errors
+    $('#singleDay-error').text('');
+
+    if (!singleDay) {
+        $('#singleDay-error').text("Please select a valid date.");
+    } 
+
+
+});
+
 
 $('#validFrom, #validTo').on('input', function() {
     var validFrom = $('#validFrom').val();
@@ -317,6 +350,9 @@ $('#validate-studies-details').on('click', function(e) {
 
     // Serialize form data
     var formData = $('#register-studies-form').serialize();
+              
+    $('#validate-studies-details').prop('disabled', false).text('Proccessing');
+            
 
     // Clear previous error messages
     $('.text-danger').text('');
@@ -327,10 +363,13 @@ $('#validate-studies-details').on('click', function(e) {
         data: formData,
         success: function(response) {
             // If the server returns success
-            if (response.message === 'success') {
                 $("#medicalDetails").show();
                 $('#studiesDetials').hide();
-            }
+
+                if(step < totalSteps)  
+                    step++;   
+                updateProgress();
+            
         },
         error: function(xhr) {
             if (xhr.status === 422) {
@@ -344,6 +383,9 @@ $('#validate-studies-details').on('click', function(e) {
             } else {
                 alert('An error occurred while submitting the form.');
             }
+        },
+        complete: function() {
+              $('#validate-studies-details').prop('disabled', false).text('Continue');
         }
     });
 });
@@ -433,20 +475,28 @@ $('#submit-work-medical-certificate').on('click', function(e) {
    $('#previewDetails').hide('d-none')
 });
 
+
+document.getElementById('fileUpload').addEventListener('change', function () {
+    const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+    document.getElementById('file-name').textContent = fileName;
+});
   
 
       
 $('#validate-medical').on('click', function(e) {
     e.preventDefault(); // Prevent default form submission
-    console.log($("#register-medicalDetail-form").serialize());
+    $('#validate-medical').prop('disabled', false).text('Proccessing');
+        
 
     $.ajax({
         url: '/validate-medicalDetails-studies-medical-certificate', // URL to handle the medical details form submission
         type: 'POST',
-        data: $("#register-medicalDetail-form").serialize(), // Serialize form data
+        data: new FormData($("#register-medicalDetail-form")[0]), // Serialize form data
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // CSRF token for Laravel
         },
+         contentType: false,    
+         processData: false,  
         success: function(response) {
             if (response.message === 'success') {
                 let data = response.data
@@ -516,6 +566,9 @@ $('#validate-medical').on('click', function(e) {
                 generateReviewSection();
                 $('#previewDetails').show();
                 $('#medicalDetails').hide();
+                if(step < totalSteps)  
+                    step++;   
+                updateProgress();
 
                 // Optionally redirect or show a success message
             }
@@ -530,9 +583,11 @@ $('#validate-medical').on('click', function(e) {
             } else {
                 alert('An error occurred while submitting medical details.');
             }
+        },
+        complete: function() {
+              $('#validate-medical').prop('disabled', false).text('Continue');
         }
     });
-
 
 
     var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
@@ -584,7 +639,8 @@ $('#validate-medical').on('click', function(e) {
 
     $('#validate-payment').click(function(e) {
         e.preventDefault(); // Prevent form submission
-
+        $('#validate-payment').prop('disabled', false).text('Proccessing');
+        
         // Step 1: Send an AJAX request to the backend to get the client secret
         $.ajax({
             type: 'POST',
@@ -605,17 +661,39 @@ $('#validate-medical').on('click', function(e) {
                         $('#card-errors').text(result.error.message);
                     } else {
                         // Payment succeeded, redirect to success page
+                        let formData = new FormData();
+                        let medicalConditionImage = $('input[name="medicalConditionImage"]').val(); // 'Yes' or 'No'
+                        let fileInput = $('input[name="fileUpload"]')[0];
+                        let file = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+                        // if user said Yes but didn't upload a file
+                        if (medicalConditionImage === 'Yes' && file) {
+                            file = $('input[name="fileUpload"]')[0].files[0];
+                            formData.append('fileUpload', file);
+                        }
                         $.ajax({
                             type: 'POST',
                             url: '/submit-studies-medical-certificate', // Adjust this route to your actual backend route
-                            data:'',
+                            data:formData,
+                            processData: false,        // ← missing
+                            contentType: false,        // ← missing
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // ← missing
+                            },
                             success: function(response) {
                                 // Redirect to success page or handle successful response
+                                if(step < totalSteps)  
+                                    step++;   
+                                updateProgress();
                                 window.location.href = response.redirect_url
                             },
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
                                 alert("Failed to complete backend processing");
+                            },
+                            
+                            complete: function() {
+                               $('#validate-payment').prop('disabled', false).text('Continue');
                             }
                         });
                     }
@@ -624,6 +702,7 @@ $('#validate-medical').on('click', function(e) {
             error: function(xhr) {
                 // Handle error if the request fails
                 console.error("Error creating PaymentIntent:", xhr);
+                $('#validate-payment').prop('disabled', false).text('Continue');
             }
         });
     });

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Referrals\SpecialistReferralsController;
+use App\Http\Controllers\Pathology\PathologyController;
 use App\Models\Category;
 use App\Models\Solutions;
 use Illuminate\Support\Facades\DB;
@@ -59,11 +59,9 @@ Route::get('/specialist-referral-home', function () {
 })->name('specialist-referral-home');
 
 
-Route::middleware(['auth'])->group(function () {
-    
+Route::middleware(['auth'])->group(function () { 
     Route::post('/create-specialist-refferals-payment-intent', [SpecialistReferralsController::class,'getSecretKey'])->name('create-specialist-refferals-payment-intent');
     Route::post('/ save-specialist-refferals-details', [SpecialistReferralsController::class,'saveConsultDetails'])->name('save-specialist-refferals-details');
-
     Route::post('/special-refferals-consultation-details', [SpecialistReferralsController::class,'consultationDetails'])->name('special-refferals-consultation-details');
     Route::post('/specialist-referral-personal-details', [SpecialistReferralsController::class,'personalDetails'])->name('specialist-referral-personal-details');
 });

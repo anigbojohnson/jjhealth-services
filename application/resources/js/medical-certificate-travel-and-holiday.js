@@ -1,4 +1,12 @@
 
+let step = 1;
+const totalSteps = 4;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
     
 $.ajaxSetup({
     headers: {
@@ -7,21 +15,20 @@ $.ajaxSetup({
 });
 
 
-
-document.getElementById('back-home').addEventListener('click', function() {
-    // Redirect to the 'certificate' route
-    window.location.href = "/certificate";
-
-});
-
 document.getElementById('back-personal').addEventListener('click', function() {
     $('#medicalDetails').hide('d-none');   
     $('#pesonalDetails').show();
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
 });
 
 document.getElementById('back-medicals').addEventListener('click', function() {
     $('#medicalDetails').show();   
     $('#previewDetails').hide('d-none');
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
 });
 
 
@@ -41,16 +48,6 @@ $('#preExistingHealthYes').click(function() {
 $('#preExistingHealthNo').click(function() {
   $('#healthConditions').hide();
 });
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -137,6 +134,8 @@ $(document).ready(function() {
                 };
 
             // Perform AJAX request
+            $('#validate-button').prop('disabled', false).text('Progressing');
+
         $.ajax({
 
             url: '/validate-personalDetails-travelAndHoliday-medical-certificate', // Replace with your server endpoint URL
@@ -147,6 +146,9 @@ $(document).ready(function() {
                 // Hide and show sections as needed
                 $('#pesonalDetails').hide();
                 $('#medicalDetails').show();
+                if(step < totalSteps)  
+                    step++;   
+                updateProgress();
             },
             error: function(xhr, status, error) {
                 // Handle error response
@@ -170,29 +172,14 @@ $(document).ready(function() {
                 if (errors.indigene) {
                     $('#indigene-error').text(errors.indigene[0]);
                 }
+            },
+            complete: function() {
+              $('#validate-button').prop('disabled', false).text('Continue');
             }
         });
     });
 
 });
-
-
-
-
-
-
-
-
-
-
-
-// carer details
-
-
-
-
-
-
 
 
 
@@ -277,7 +264,10 @@ $('button[data-target="medicationsRegularly"]').click(function () {
 $('#submit-holidayAndTravelCouncillation-medical-certificate').on('click', function(e) {
     $('#paymentRequest').show(); 
     $('#previewDetails').hide('d-none')
-
+    $('#submit-holidayAndTravelCouncillation-medical-certificate').prop('disabled', false).text('Progressing');
+    if(step < totalSteps)  
+        step++;       
+    updateProgress();
 });
 
 
@@ -330,6 +320,8 @@ cardCvc.mount('#card-cvc');
 
 $('#validate-medical').on('click', function(e) {
         e.preventDefault(); // Prevent default form submission
+        $('#validate-medical').prop('disabled', false).text('Progressing');
+
 
     $.ajax({
 
@@ -409,7 +401,9 @@ $('#validate-medical').on('click', function(e) {
         generateReviewSection();
         $('#previewDetails').show();
         $('#medicalDetails').hide();
-
+        if(step < totalSteps)  
+            step++;
+        updateProgress();
         // Optionally redirect or show a success message
         }
     },
@@ -423,6 +417,9 @@ $('#validate-medical').on('click', function(e) {
             } else {
                 alert('An error occurred while submitting medical details.');
             }
+        },
+        complete: function() {
+            $('#validate-medical').prop('disabled', false).text('Continue');
         }
     });
 
@@ -431,6 +428,9 @@ $('#validate-medical').on('click', function(e) {
 
     $('#validate-payment').click(function(e) {
         e.preventDefault(); // Prevent form submission
+
+        $('#validate-button').prop('disabled', false).text('Progressing');
+            
 
         // Step 1: Send an AJAX request to the backend to get the client secret
         $.ajax({
@@ -466,6 +466,9 @@ $('#validate-medical').on('click', function(e) {
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
                                 alert("Failed to complete backend processing");
+                            },
+                            complete: function() {
+                                $('#validate-button').prop('disabled', false).text('Continue');
                             }
                         });
                     }

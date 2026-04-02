@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Payment;
+namespace App\Http\Controllers\MedicalCertificate;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\Solutions;
 use App\Models\User;
 use App\Models\MedicalCertificate;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
-use App\Http\Controllers\Payment as PaymentController;
-
+use App\Http\Controllers\Payment\PaymentController;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyConsultationMail;
+use Illuminate\Support\Facades\Storage;
 
 
 class CertificateStudiesController extends Controller
@@ -48,12 +49,16 @@ class CertificateStudiesController extends Controller
         $tomorrow = $today->copy()->addDay();
         $validFrom = $request->validFrom;  // Get validFrom from the request
         $validatedData = $request->validate([
-            'studies' => 'required|in:sickLeave,resumeStudies',
+            'days_type' => 'required|in:single,multiple',
             'yourStudiesPlace' => 'required|string',
-            
+            'singleDay' => [
+            'date',
+            'nullable',
+             'required_if:days_type,single'
+             ],
             // Validation for validFrom
             'validFrom' => [
-                'required_if:studies,sickLeave',  // Only required if studies is 'sickLeave'
+                'required_if:days_type,multiple',  // Only required if studies is 'sickLeave'
                 'date',
                 'nullable',
                 function ($attribute, $value, $fail) use ($today, $tomorrow) {
@@ -70,7 +75,7 @@ class CertificateStudiesController extends Controller
             
             // Validation for validTo
             'validTo' => [
-                'required_if:studies,sickLeave',
+                'required_if:days_type,multiple',
                 'date',
                 'nullable',
                 function ($attribute, $value, $fail) use ($validFrom, $today) {
@@ -94,9 +99,9 @@ class CertificateStudiesController extends Controller
         ],
         [
             // Custom error messages for required_if rule
-            'validTo.required_if' => 'This field is required when sick leave selected',
-            'validFrom.required_if' => 'This field is required when sick leave selected',
-            'studies'=>'either option must be selected'
+            'validTo.required_if' => 'This field is required',
+            'validFrom.required_if' => 'This field is required',
+            'singleDay.required_if' => 'this field is required'
         ]);
         
         
@@ -170,6 +175,9 @@ class CertificateStudiesController extends Controller
                 }
             },
         ],
+        'medicalConditionImage' => 'required|in:Yes,No', // Ensures the value is required and must be either Yes or No
+        'fileUpload' => 'required_if:medicalConditionImage,Yes|nullable|mimes:jpg,jpeg,png,pdf|max:5120', // File required only if 'Yes'
+
         ], [
             'medicalLetterReasons.required' => 'The medical letter reason is required.',
             'currentStatus.required' => 'The current status is required.',  
@@ -179,7 +187,9 @@ class CertificateStudiesController extends Controller
 
         ]);
 
+        unset($validatedData['fileUpload']);
         session()->put('medicalsDetails', $validatedData);
+
 
         $combinedData = [];
 
@@ -198,16 +208,9 @@ class CertificateStudiesController extends Controller
     }
 
     public function storeMCDetails(Request $request){
-        $seeking = '';
     
-
         $validatedData = session('studiesDetails');
 
-        if ($validatedData['studies'] == 'sickLeave') {
-            $seeking = 'Sick leave from studies';
-        } elseif ($validatedData['studies'] == 'resumeStudies') {
-            $seeking = 'Fit to resume studies';
-        } 
         $validatedData = session('personalDetails');
 
         $user = User::updateOrCreate(
@@ -226,6 +229,16 @@ class CertificateStudiesController extends Controller
         $validatedData = session('medicalsDetails');
         $validatedStudies = session('studiesDetails');
 
+        $fileName ="";
+        if ($request->hasFile('fileUpload')) {
+            // Get the file content
+            $file = $request->file('fileUpload');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileContent = base64_encode(file_get_contents($file));
+            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
+
+        }
+
 
         
         $medicalCertificate = MedicalCertificate::create([
@@ -233,7 +246,7 @@ class CertificateStudiesController extends Controller
             'user_email' => Auth::user()->email,
             'preExistingHealth' => $validatedData['preExistingHealth'],
             'medicationsRegularly' => $validatedData['medicationsRegularly']??null,
-            'seeking' => $seeking??null, // Assuming seeking is part of the request
+            'seeking' => session('credentials')->solution_name.' Medical Certificate'??null, // Assuming seeking is part of the request
             'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes']??null,
             'privacy' => $validatedData['privacy']??null,
             'medicationsRegularlyInfo' => $validatedData['medicationsRegularlyInfo']??null,
@@ -244,34 +257,44 @@ class CertificateStudiesController extends Controller
             'symptomsStartDate' => $validatedData['startDateSymptoms']??null,
             'currentStatus' => $validatedData['currentStatus']??null,
             'validTo' => $validatedStudies['validTo']??null,
-            'request_status'=>"new request"
-
+            'request_status'=>"new request",
+            'fileUpload' => $fileName??null, 
+            'days_type'=> $validatedStudies['days_type']??null,
+            'singleDay'=> $validatedStudies['days_type']??null
         ]);
 
 
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  'MC02';
+        $payment->product_id = session('credentials')->id;
         $payment->customer_email = Auth::user()->email;
         $payment->mc_id  =  $medicalCertificate->id;    
         $payment->payment_status = "pending";    
 
         $payment->save();
 
+        $data = [
+            'first_name' => $user->first_name,
+            'last_name' => $user->first_name,
+            'solution_name' => session('credentials')->solution_name.' Medical Certificate',
+            'cost' =>  session('credentials')->cost,
+        ];
 
-        session()->forget(['payment_intent_id']);
+
+        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
+
+        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('certificate', ['messege' => "Your payment is pending when your request is fullfilled"])
+            'redirect_url' => route('certificate', ['messege' => "Successful! please check your email for details"])
         ]);
     }
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'MC02')->first();
         
         $payment = new PaymentController();
-        $ecretKey = $payment->make($solutions);
+        $ecretKey = $payment->make();
         // Check the response and handle accordingly
         
         return response()->json([ 'secret_key'=>$ecretKey], 200);

@@ -32,6 +32,9 @@ $(document).ready(function() {
         $('#pnumber-error').text('');
         $('#indigene-error').text('');
 
+        $('#personal-detail-form').prop('disabled', false).text('Processing');
+
+
         var form = $('#register-form')[0]; // jQuery object -> raw DOM element
 
         // Create FormData object
@@ -76,6 +79,9 @@ $(document).ready(function() {
                 if (errors.indigene) {
                     $('#indigene-error').text(errors.indigene[0]);
                 }
+            },
+            complete: function() {
+              $('#personal-detail-form').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -167,6 +173,8 @@ form.addEventListener('submit', function(event) {
 
     $('#validate-medical').click(function(e) {
         e.preventDefault(); // Prevent default form submission
+        $('#validate-button').prop('disabled', true).text('Processing...');
+
 
         // Gather form data
         var formData = {
@@ -221,6 +229,9 @@ form.addEventListener('submit', function(event) {
                 if (errors.detailedSymptoms) {
                     $('#detailedSymptoms-error').text(errors.detailedSymptoms[0]);
                 }
+            },
+            complete: function() {
+              $('#validate-medical').prop('disabled', false).text('Continue');
             }
         });
 
@@ -276,6 +287,8 @@ form.addEventListener('submit', function(event) {
 
         $('#validate-payment').click(function(e) {
             e.preventDefault(); // Prevent form submission
+            $('#validate-payment').prop('disabled', true).text('Processing...');
+
     
             // Step 1: Send an AJAX request to the backend to get the client secret
             $.ajax({
@@ -319,6 +332,9 @@ form.addEventListener('submit', function(event) {
                 error: function(xhr) {
                     // Handle error if the request fails
                     console.error("Error creating PaymentIntent:", xhr);
+                },
+                complete: function() {
+                   $('#validate-payment').prop('disabled', false).text('Continue');
                 }
             });
         });

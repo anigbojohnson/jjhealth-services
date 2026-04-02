@@ -89,7 +89,7 @@ footer a:hover {
     display: none;
 
   }                   
-  #medicalDetails ,#howLongFor, #work , #studiesDetials, #previewDetails ,#carerDetails,#medicalDetails, #consultationRequest, #paymentRequest {
+  #medicalDetails , #work , #studiesDetials, #previewDetails ,#carerDetails,#medicalDetails, #consultationRequest, #paymentRequest {
     display: none;
 
   }

@@ -26,7 +26,7 @@ class LoginController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function login(Request $request,$param, $action)
+    public function login(Request $request)
     {
         
         // Validate the form data
@@ -48,15 +48,30 @@ class LoginController extends Controller
 
         // Attempt to authenticate the user
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            // Authentication successful, redirect to the intended page
-       if ($param ==="login_form") {
-             return redirect()->route('/');
+
+            $solutionId = data_get(session('credentials'), 'solution_id');
+        if ($solutionId !== null) {
+
+            if (str_starts_with($solutionId, 'MC')) {
+                if ($solutionId ==='MC01') {
+                    return view('medical-certificate.work-medical-certificate');
+                } elseif ($solutionId === 'MC02') {
+                    return view('medical-certificate.studies-medical-certificate');
+                } elseif ($solutionId === 'MC03') {
+                    return view('medical-certificate.carers-Leave-certificate');
+                } elseif ($solutionId === 'MC04') {
+                    return view('medical-certificate.travel-and-holiday-certificate');
+                }
+            } elseif (str_starts_with($solutionId, 'TR')) {
+                return view('treatment.telehealth-request');
+            } elseif (str_starts_with($solutionId, 'R')) {
+                return view('referals.specialist-referrals-request');
+            } elseif (str_starts_with($solutionId, 'PR')) {
+                return view('pathology.pathology-request');
+            }
 
         } else {
-            $action = session()->get('action');
-            
-            $data = ['param' => session()->get('param'),'user' =>  Auth::user() ]; // Data to pass
-            return view('auth.'.$action, $data);
+             return redirect()->route('dashboard');
 
         }
 

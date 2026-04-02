@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Payment;
+namespace App\Http\Controllers\MedicalCertificate;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\MedicalCertificate;

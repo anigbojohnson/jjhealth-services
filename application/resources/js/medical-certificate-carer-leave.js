@@ -1,4 +1,14 @@
 
+let step = 1;
+const totalSteps = 4;
+
+function updateProgress() {
+    const progress = (step / totalSteps) * 100;
+    $('.progress-bar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('.step-text').text(`Step ${step} of ${totalSteps}`);
+}
+
+
 $.ajaxSetup({
     headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -10,17 +20,26 @@ $.ajaxSetup({
 $('#back-care').click(function() {
     $('#carerDetails').show('d-none');   
     $('#medicalDetails').hide('d-none');
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
 });
 
 $('#back-personal').click(function() {
     $('#carerDetails').hide('d-none');   
     $('#pesonalDetails').show('d-none');
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
 });
 
 
 $('#back-medicals').click(function() {
     $('#medicalDetails').show('d-none');   
     $('#previewDetails').hide('d-none');
+    if(step < totalSteps)  
+        step--;
+    updateProgress();
 });
 
 $('#medicationsRegularlyYes').click(function() {
@@ -138,6 +157,8 @@ $(document).ready(function() {
                 indigene: $('#indigene').val(),
                 address: $('#address').val()
                 };
+              $('#validate-button').prop('disabled', false).text('Proccessing');
+            
 
             // Perform AJAX request
         $.ajax({
@@ -150,6 +171,10 @@ $(document).ready(function() {
                 // Hide and show sections as needed
                 $('#pesonalDetails').hide('d-none');
                 $('#carerDetails').show('d-none');
+
+                if(step < totalSteps)  
+                    step++;   
+                updateProgress();
             },
             error: function(xhr, status, error) {
                 // Handle error response
@@ -173,6 +198,9 @@ $(document).ready(function() {
                 if (errors.indigene) {
                     $('#indigene-error').text(errors.indigene[0]);
                 }
+            },
+            complete: function() {
+              $('#validate-button').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -231,8 +259,7 @@ $('#validFrom, #validTo').on('input', function() {
     // Validation for 'validTo'
     if (validTo) {
         var validToDate = new Date(validTo);
-console.log(validToDate)
-console.log(new Date(validFrom))
+
 
         // Ensure 'validTo' is between today and 3 days from today
          if (validFrom && validToDate <= new Date(validFrom)) {
@@ -285,6 +312,8 @@ $('#personCared').on('change', function() {
 });
 $('#carer-button').on('click', function(e) {
     e.preventDefault(); // Prevent default form submission
+    $('#carer-button').prop('disabled', false).text('Proccessing');
+            
 
     // Gather form data
     $.ajax({
@@ -296,6 +325,9 @@ $('#carer-button').on('click', function(e) {
                 // Handle success (redirect, show message, etc.)
                 $('#medicalDetails').show('d-none');   
                 $('#carerDetails').hide('d-none');
+                if(step < totalSteps)  
+                    step++;   
+                updateProgress();
             } 
         },
         error: function(xhr, status, error) {
@@ -309,6 +341,9 @@ $('#carer-button').on('click', function(e) {
             } else {
                 alert('An error occurred while submitting medical details.');
             }
+        },
+        complete: function() {
+           $('#carer-button').prop('disabled', false).text('Continue');
         }
     });
 });
@@ -384,6 +419,8 @@ $('#medicalLetterReasons').on('change', function() {
 
 $('#validate-medical').on('click', function(e) {
     e.preventDefault(); // Prevent default form submission
+    $('#validate-medical').prop('disabled', false).text('Proccessing');
+            
 
     
 $.ajax({
@@ -455,6 +492,7 @@ if (response.message === 'success') {
             }
         }
 
+       
         // Insert the generated HTML into a review area in the document
         document.getElementById('reviewDetails').innerHTML = reviewHtml;
     }
@@ -463,7 +501,9 @@ if (response.message === 'success') {
     generateReviewSection();
     $('#previewDetails').show();
     $('#medicalDetails').hide();
-
+     if(step < totalSteps)  
+            step++;   
+    updateProgress();
     // Optionally redirect or show a success message
     }
 },
@@ -477,7 +517,10 @@ if (response.message === 'success') {
         } else {
             alert('An error occurred while submitting medical details.');
         }
-    }
+    },
+    complete: function() {
+        $('#validate-button').prop('disabled', false).text('Continue');
+}
 });
 });
 
@@ -622,6 +665,9 @@ var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
     $('#validate-payment').click(function(e) {
         e.preventDefault(); // Prevent form submission
 
+              $('#validate-payment').prop('disabled', false).text('Proccessing');
+            
+
         // Step 1: Send an AJAX request to the backend to get the client secret
         $.ajax({
             type: 'POST',
@@ -661,6 +707,10 @@ var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
             error: function(xhr) {
                 // Handle error if the request fails
                 console.error("Error creating PaymentIntent:", xhr);
+            },
+
+            complete: function() {
+              $('#validate-payment').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -676,6 +726,9 @@ var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
 $('#submit-care-medical-certificate').on('click', function(e) {
     e.preventDefault(); // Prevent the default action of the button
 
+    $('#submit-care-medical-certificate').prop('disabled', false).text('Proccessing');
+            
+
     $.ajax({
         url: '/submit-carer-medical-certificate', // The URL to handle the request
         type: 'POST',
@@ -684,7 +737,10 @@ $('#submit-care-medical-certificate').on('click', function(e) {
         },
         success: function(response) {
                 // Handle success, e.g., update the UI, show a message
-                window.location.href = response.message.original[0]            
+                window.location.href = response.message.original[0] 
+                 if(step < totalSteps)  
+                   step++;   
+                updateProgress();           
         },
         error: function(xhr) {
             if (xhr.status === 422) {
@@ -696,6 +752,10 @@ $('#submit-care-medical-certificate').on('click', function(e) {
             } else {
                 alert('An error occurred while submitting the work medical certificate.');
             }
+            
+        },
+        complete: function() {
+            $('#submit-care-medical-certificate').prop('disabled', false).text('Proccessing');
         }
     });
 });

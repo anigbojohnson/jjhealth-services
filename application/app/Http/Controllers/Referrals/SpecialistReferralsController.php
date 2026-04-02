@@ -120,10 +120,10 @@ class SpecialistReferralsController extends Controller
         $payment->save();
 
 
-        session()->forget(['payment_intent_id']);
+        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('specialist-referral-home', ['messege' => "Your payment is pending when your request is fullfilled"])
+            'redirect_url' => route('specialist-referral-home', ['messege' => "Successful! please check your email for details"])
         ]);
 
     }

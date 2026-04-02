@@ -51,6 +51,7 @@ $imagePath = $image ? asset('images/treatment/'.$image) : asset('images/treatmen
          style="cursor:pointer;"
          data-id="{{ $solution->id }}"
          data-name="{{ $solution->solution_name }}"
+         data-solution-id="{{ $solution->solution_id }}"
          data-cost="{{ $solution->cost }}"
          data-description="{{ $solution->description }}">
 
@@ -94,7 +95,8 @@ $(document).ready(function () {
 $(document).on('click', '.telehealth-card', function () {
         console.log('JS loaded');
 
-    let solutionId = $(this).data('id');
+   let id = $(this).data('id');
+    let solutionId = $(this).data('solution-id');
     let solutionName = $(this).data('name');
     let cost = $(this).data('cost');
     let description = $(this).data('description');
@@ -107,6 +109,7 @@ $(document).on('click', '.telehealth-card', function () {
         type: 'POST',
         data: {
             _token: $('meta[name="csrf-token"]').attr('content'),
+            id: id
             solution_id: solutionId,
             solution_name: solutionName,
             cost: cost,

@@ -6,12 +6,31 @@
    <!-- resources/views/auth/register.blade.php -->
 @vite(['resources/js/app.js', 'resources/js/medical-certificate-carer-leave.js'])
 
+
+<div style="background-color:#D3D3D3; padding-bottom:30px;padding-top:80px;min-height:100%; "> 
+<div class="container" style="background-color:white; padding-bottom:30px;padding-top:30px;box-shadow: 0 2px 8px rgba(0,0,0,0.05);border-radius: 8px;border:2px solid #F2F2F2; ">
+         <div class="progress mb-2">
+            <div 
+                class="progress-bar bg-info" 
+                role="progressbar" 
+                style="width: 33.33%" 
+                aria-valuenow="33" 
+                aria-valuemin="0" 
+                aria-valuemax="100">
+            </div>
+    </div>
+    <!-- Step Text -->
+    <div class="step-text text-center">Step 1 of 4</div>
+
 <div class="container">
       
 <div id="pesonalDetails">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h3 class="text-center"  style="font-weight: 600;">{{$param}}</h3>
+            <h3 class="text-center" style="font-weight: 600;">
+                Medical Certificate 
+                (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
+            </h3>
             <hr>
 
             <h5>Verify Pesonal Details</h5>
@@ -25,14 +44,14 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label style="font-weight: 600;" for="fname" class="form-label fw-semibold">First Name</label>
-                        <input id="fname" type="text" name="fname" value="{{ old('fname', $user->first_name) }}" required autocomplete="fname" autofocus class="form-control">
+                        <input id="fname" type="text" name="fname" value="{{ old('fname', Auth::user()->first_name) }}" required autocomplete="fname" autofocus class="form-control">
                         <span class="text-danger" id="fname-error"></span>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label style="font-weight: 600;" for="lname" class="form-label">Last Name</label>
-                        <input id="lname" type="text" name="lname" value="{{ old('lname', $user->last_name) }}" required autocomplete="lname" autofocus class="form-control">
+                        <input id="lname" type="text" name="lname" value="{{ old('lname', Auth::user()->last_name) }}" required autocomplete="lname" autofocus class="form-control">
                         <span class="text-danger" id="lname-error"></span>
                     </div>
                 </div>
@@ -42,14 +61,14 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label style="font-weight: 600;" for="dob" class="form-label">Date Of Birth</label>
-                        <input id="dob" type="date" name="dob" value="{{ old('dob', $user->dob) }}" required autocomplete="dob" autofocus class="form-control">
+                        <input id="dob" type="date" name="dob" value="{{ old('dob', Auth::user()->dob) }}" required autocomplete="dob" autofocus class="form-control">
                         <span class="text-danger" id="dob-error"></span>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label style="font-weight: 600;" for="pnumber" class="form-label">Phone Number</label>
-                        <input id="pnumber" type="number" name="pnumber" value="{{ old('pnumber', $user->phone_number) }}" required autocomplete="pnumber" autofocus class="form-control">
+                        <input id="pnumber" type="number" name="pnumber" value="{{ old('pnumber', Auth::user()->phone_number) }}" required autocomplete="pnumber" autofocus class="form-control">
                         <span class="text-danger" id="pnumber-error"></span>
                     </div>
                 </div>
@@ -59,7 +78,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label style="font-weight: 600;" for="gender" class="form-label">Gender</label>
-                        <select class="form-select genderSelector" name="gender" id="gender" value="{{ old('gender', $user->gender) }}" required>
+                        <select class="form-select genderSelector" name="gender" id="gender" value="{{ old('gender', Auth::user()->gender) }}" required>
                             <option value="not say" selected>Prefer not to say</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
@@ -70,7 +89,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label style="font-weight: 600;" for="indigene" class="form-label">Indigenous origin?</label>
-                        <select class="form-select genderSelector" name="indigene" id="indigene" value="{{ old('indigene', $user->indigene) }}" required>
+                        <select class="form-select genderSelector" name="indigene" id="indigene" value="{{ old('indigene', Auth::user()->indigene) }}" required>
                             <option value="not say" selected>Prefer not to say</option>
                             <option value="no">No</option>
                             <option value="Aboriginal">Yes Aboriginal</option>
@@ -83,19 +102,19 @@
 
             <div class="form-group mb-5">
                 <label style="font-weight: 600;" for="address" class="form-label">Address</label>
-                <input id="address" type="text" name="address" value="{{ old('address', $user->address) }}" required autocomplete="address" class="form-control">
+                <input id="address" type="text" name="address" value="{{ old('address', Auth::user()->address) }}" required autocomplete="address" class="form-control">
                 <span class="text-danger" id="address-error"></span>
             </div>
 
-            <div class="row">
+            <div class="row gy-3">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <button type="button" id="back-home" class="btn btn-light btn-block rounded border border-grey">Back</button>
+                        <button type="button" id="back-home" class="btn btn-light btn-block rounded border border-grey w-100">Back</button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <button type="button" id="validate-button" class="btn btn-dark btn-block">Continue</button>
+                        <button type="button" id="validate-button" class="btn btn-dark btn-block w-100">Continue</button>
                     </div>
                 </div>
             </div>
@@ -109,7 +128,10 @@
 <div id="carerDetails">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h3 class="text-center"  style="font-weight: 600;">{{$param}}</h3>
+            <h3 class="text-center" style="font-weight: 600;">
+                Medical Certificate 
+                (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
+            </h3>
             <hr>
 
             <h5>Carer Information</h5>
@@ -171,15 +193,15 @@
         <li>If suitable, your Partner Doctor might change the end date based on what they believe is appropriate.</li>
 
 
-        <div class="row">
+        <div class="row gy-100">
             <div class="col-md-6">
                 <div class="form-group">
-                    <button type="button" id="back-personal" class="btn btn-light btn-block rounded border border-grey">Back</button>
+                    <button type="button" id="back-personal" class="btn btn-light btn-block rounded border border-grey w-100">Back</button>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <button type="button" id="carer-button" class="btn btn-dark btn-block">Continue</button>
+                    <button type="button" id="carer-button" class="btn btn-dark btn-block w-100">Continue</button>
                 </div>
             </div>
         </div>
@@ -191,7 +213,10 @@
 <div id="medicalDetails">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h3 class="text-center"  style="font-weight: 600;">{{$param}}</h3>
+            <h3 class="text-center" style="font-weight: 600;">
+                Medical Certificate 
+                (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
+            </h3>
             <hr>
 
             <h5>Your unforeseen illness or injury</h5>
@@ -233,7 +258,7 @@
 
                 </div>
             </div>
-            <input type="hidden" id="treatment_category" name="treatment_category" value="{{ $param }}">
+            <input type="hidden" id="treatment_category" name="treatment_category" value="{{ session('credentials')->solution_name }}">
 
             
             <div id="medicationRegimen" >
@@ -322,15 +347,15 @@
 
 
     
-            <div class="row mt-5">
+            <div class="row mt-5 gy-3">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <button type="button" id="back-care" class="btn btn-light btn-block rounded border border-grey">Back</button>
+                        <button type="button" id="back-care" class="btn btn-light btn-block rounded border border-grey w-100">Back</button>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <button type="submit" id="validate-medical" class="btn btn-dark btn-block">Continue</button>
+                        <button type="submit" id="validate-medical" class="btn btn-dark btn-block w-100">Continue</button>
                     </div>
                 </div>
             </div>
@@ -344,7 +369,10 @@
 <div id="previewDetails">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h3 class="text-center"  style="font-weight: 600;">{{$param}}</h3>
+            <h3 class="text-center" style="font-weight: 600;">
+                Medical Certificate 
+                (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
+            </h3>
             <hr>
 
             <h5 id="reviewDetails">Review your details</h5>
@@ -359,7 +387,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <button type="button" id="submit-care-medical-certificate" class="btn btn-dark btn-block">Continue</button>
+                        <button type="button" id="submit-care-medical-certificate" class="btn btn-dark btn-block w-100">Continue</button>
                     </div>
                 </div>
             </div>
@@ -372,7 +400,10 @@
 <div id="paymentRequest">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h3 class="text-center"  style="font-weight: 600;">{{$param}}</h3>
+                <h3 class="text-center" style="font-weight: 600;">
+                Medical Certificate 
+                (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
+            </h3>
             <hr>
 
             <h5>Payment Information</h5>
@@ -419,6 +450,8 @@
         </form>
 
         </div>
+        </div>
+</div>
     </div>
 </div>
 </div>

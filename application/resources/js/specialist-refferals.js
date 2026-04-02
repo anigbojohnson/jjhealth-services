@@ -14,6 +14,8 @@ $(document).ready(function () {
     $('#personal-detail-form').on('submit', function (e) {
         e.preventDefault();
 
+        $('#validate-payment').prop('disabled', true).text('Processing...');
+
         $.ajax({
             url: "/specialist-referral-personal-details",
             method: 'POST',
@@ -64,6 +66,9 @@ $(document).ready(function () {
                 if (errors.indigene) {
                     $('#indigene-error').text(errors.indigene[0]);
                 }
+            },
+            complete: function() {
+              $('#validate-payment').prop('disabled', false).text('Continue');
             }
         });
     });
@@ -113,6 +118,7 @@ $(document).ready(function () {
 
     $('#validate-payment').click(function(e) {
         e.preventDefault(); // Prevent form submission
+        $('#validate-payment').prop('disabled', true).text('Processing...');
 
         // Step 1: Send an AJAX request to the backend to get the client secret
         $.ajax({
@@ -161,6 +167,9 @@ $(document).ready(function () {
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
                                 alert("Failed to complete backend processing");
+                            },
+                            complete: function() {
+                                $('#validate-payment').prop('disabled', false).text('Continue');
                             }
                         });
                     }
@@ -169,13 +178,17 @@ $(document).ready(function () {
             error: function(xhr) {
                 // Handle error if the request fails
                 console.error("Error creating PaymentIntent:", xhr);
+            },
+            complete: function() {
+              $('#validate-payment').prop('disabled', false).text('Continue');
             }
         });
     });
 
     $('#consultation-special-refferals-form').on('submit', function (e) {
         e.preventDefault();
-        
+        $('#consult').prop('disabled', true).text('Processing...');
+
         $('#requestReason-error').text('');
         $('#medicalConditionImage-error').text('');
         $('#fileUpload-error').text('');
@@ -210,6 +223,9 @@ $(document).ready(function () {
                     }
                 }
             
+            },
+            complete: function() {
+              $('#consult').prop('disabled', false).text('Continue');
             }
         });
     }); 
@@ -251,15 +267,6 @@ $(document).ready(function () {
             step--;
         updateProgress();
         
-    })
-
-    $('#back-home').on('click', function () {
-        $('#pesonalDetails').hide('d-none')
-                if(step < totalSteps)  
-                    step--;
-                updateProgress();
-        window.location.href = '/specialist_referrals'
-
     })
 
 });

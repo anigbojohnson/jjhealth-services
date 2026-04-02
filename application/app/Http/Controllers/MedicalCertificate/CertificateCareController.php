@@ -4,13 +4,15 @@ namespace App\Http\Controllers\MedicalCertificate;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Payment as PaymentController;
+use App\Http\Controllers\Payment\PaymentController;
 use App\Models\User;
 use App\Models\MedicalCertificate;
 use Carbon\Carbon;
-use App\Models\Solutions;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyConsultationMail;
+use Illuminate\Support\Facades\Storage;
 
 
 
@@ -217,18 +219,15 @@ class CertificateCareController extends Controller
     }
 
     public function getSecretKey(Request $request)
-    {
-        $solutions = Solutions::where('solution_id', 'MC03')->first();
-        
+    {        
         $payment = new PaymentController();
-        $ecretKey = $payment->make($solutions);
+        $ecretKey = $payment->make();
         // Check the response and handle accordingly
         
         return response()->json([ 'secret_key'=>$ecretKey], 200);
     }
 
     public function storeMCDetails(Request $request){
-        $seeking = "Carer's Leave Medical certificate";
     
 
         $validatedData = session('personalDetails');
@@ -256,7 +255,7 @@ class CertificateCareController extends Controller
             'user_email' => Auth::user()->email,
             'preExistingHealth' => $validatedData['preExistingHealth'],
             'medicationsRegularly' => $validatedData['medicationsRegularly']??null,
-            'seeking' => $seeking??null, 
+            'seeking' => session('credentials')->solution_name??null, 
             'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes']??null,
             'privacy' => $validatedData['privacy']??null,
             'medicationsRegularlyInfo' => $validatedData['medicationsRegularlyInfo']??null,
@@ -275,7 +274,7 @@ class CertificateCareController extends Controller
         
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id = 'MC03';
+        $payment->product_id = session('credentials')->id;
         $payment->customer_email = Auth::user()->email;
         $payment->mc_id  =  $medicalCertificate->id;    
         $payment->payment_status = "pending";    
@@ -283,13 +282,20 @@ class CertificateCareController extends Controller
         $payment->save();
 
 
-        session()->forget(['payment_intent_id']);
+        $data = [
+                'first_name' => $user->first_name,
+                'last_name' => $user->first_name,
+                'solution_name' => session('credentials')->solution_name.' Medical Certificate',
+                'cost' =>  session('credentials')->cost,
+                ];
+
+
+        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
+
+        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('certificate', ['messege' => "Your payment is pending when your request is fullfilled"])
+            'redirect_url' => route('certificate', ['messege' => "Successful! please check your email for details"])
         ]);
-
-
-      
     }
 }

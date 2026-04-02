@@ -7,6 +7,7 @@
 
    @vite(['resources/js/app.js', 'resources/js/specialist-refferals.js'])
 
+   
 <div style="background-color:#D3D3D3; padding-bottom:30px;padding-top:80px; "> 
 <div class="container" style="background-color:white; padding-bottom:30px;padding-top:30px;box-shadow: 0 2px 8px rgba(0,0,0,0.05);border-radius: 8px;border:2px solid #F2F2F2; ">
         <div class="progress mb-2">
@@ -121,19 +122,13 @@
                 </div>
     
                 <div class="row gy-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <button type="button" id="back-home"  class="btn btn-light w-100 btn-block rounded border border-grey">Back</button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
                             <button type="submit" id="validate-button"  class="btn btn-dark btn-block w-100">Continue</button>
                         </div>
                     </div>
                 </div>
             </form>
-    
             </div>
         </div>
     </div>
@@ -148,7 +143,7 @@
                 <hr>
 
     
-                @if(session()->has('success'))
+            @if(session()->has('success'))
                 <div class="alert alert-success">
                     {{ session()->get('success') }}
                 </div>

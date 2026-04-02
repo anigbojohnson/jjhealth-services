@@ -73,6 +73,7 @@ Route::get('/specialist-refferrals-payment', function () {
     return view('auth.specialist-referrals-home');
 })->name('specialist-refferrals-payment');
 
+/*
 
 Route::middleware(['auth'])->group(function () {
     
@@ -85,7 +86,7 @@ Route::middleware(['auth'])->group(function () {
   //  Route::post('/payment', [PaymentController::class, 'make'])->name('payment');
     Route::get('/dashboard',[DashboardController::class,'index'] )->name('user.account');
 });
-
+*/
 Route::get('/auth/show-file-drives', [AuthGoogleDriveController::class, 'showProvider'])->name('show-google-drive');
 Route::get('/auth/google-drive/redirect', [AuthGoogleDriveController::class, 'googleRedirect'])->name('auth.google-drive.redirect');
 Route::get('/auth/google-drive/callback', [AuthGoogleDriveController::class, 'googleCallback'])->name('auth.google-drive.callback');
@@ -96,6 +97,9 @@ Route::get('/auth/dropbox/callback', [AuthGoogleDriveController::class, 'dropbox
 Route::post('/dropbox-downloaded-files', [AuthGoogleDriveController::class, 'downloadDropboxFiles']);
 
 
+Route::get('/not-registered-or-login', function () {
+      return view('auth.not-registered-or-login');
+})->name('not-registered-or-login');
 
 
 

@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Payment;
+namespace App\Http\Controllers\MedicalCertificate;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
-use App\Http\Controllers\Payment as PaymentController;
+use App\Http\Controllers\Payment\PaymentController as PaymentController;
 use Carbon\Carbon;
-use App\Models\Solutions;
 use App\Models\User;
 use App\Models\MedicalCertificate;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyConsultationMail;
+use Illuminate\Support\Facades\Storage;
 
 
 class CertificateTravelAndHolidayController extends Controller
@@ -119,18 +120,18 @@ class CertificateTravelAndHolidayController extends Controller
     
         $seeking ="Travel and Holiday cancellation";
 
-        $validatedData = session('personalDetails');
+        $userData = session('personalDetails');
 
         $user = User::updateOrCreate(
             ['email' => Auth::user()->email], // Condition to find the user
             [
-                'first_name' => $validatedData['fname'],
-                'last_name' => $validatedData['lname'],
-                'dob' => $validatedData['dob'],
-                'gender' => $validatedData['gender'],
-                'indigene' => $validatedData['indigene'],
-                'address' => $validatedData['address'],
-                'phone_number'=>$validatedData['pnumber']
+                'first_name' => $userData['fname'],
+                'last_name' => $userData['lname'],
+                'dob' => $userData['dob'],
+                'gender' => $userData['gender'],
+                'indigene' => $userData['indigene'],
+                'address' => $userData['address'],
+                'phone_number'=>$userData['pnumber']
             ]
         );
 
@@ -154,33 +155,40 @@ class CertificateTravelAndHolidayController extends Controller
 
         ]);
 
-        $solutions = Solutions::where('solution_id', 'MC04')->first();
 
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  $solutions->id;
+        $payment->product_id =  session('credentials')->id;
         $payment->customer_email = Auth::user()->email;
         $payment->mc_id  =  $medicalCertificate->id;    
         $payment->payment_status = "pending";    
 
         $payment->save();
 
+        $data = [
+        'first_name' => $userData['fname'],
+        'last_name' => $userData['lname'],
+        'solution_name' => session('credentials')->solution_name.' Medical Certificate',
+        'cost' =>  session('credentials')->cost,
+        ];
 
-        session()->forget(['payment_intent_id']);
+
+        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
+
+        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('certificate', ['messege' => "Your payment is pending when your request is fullfilled"])
+            'redirect_url' => route('certificate', ['messege' => "Successful! please check your email for details"])
         ]);
     }
     
 
     public function getSecretKey(Request $request)
     {
-        $solutions = Solutions::where('solution_id', 'MC04')->first();
         
         
         $payment = new PaymentController();
-        $ecretKey = $payment->make($solutions);
+        $ecretKey = $payment->make();
         // Check the response and handle accordingly
         
         return response()->json([ 'secret_key'=>$ecretKey], 200);

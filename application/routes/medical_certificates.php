@@ -6,6 +6,7 @@ use App\Http\Controllers\MedicalCertificate\CertificateStudiesController;
 use App\Http\Controllers\MedicalCertificate\CertificateTravelAndHolidayController;
 use App\Http\Controllers\MedicalCertificate\CertificateCareController;
 use App\Models\Solutions;
+use Illuminate\Http\Request;
 
 Route::middleware(['auth'])->group(function () {
 
@@ -48,7 +49,7 @@ Route::get('/certificate', function () {
               ->from('solutions')
               ->groupBy('solution_id');
     })
-    ->where('category_id', 2)  // Add this condition to filter
+    ->whereIn('category_id', [7, 8, 9, 10])  // Add this condition to filter
     ->get();
 
     return view('medical-certificate.medical-certificate',compact('solutions'));
@@ -56,14 +57,72 @@ Route::get('/certificate', function () {
 
 
 
-Route::get('/medical-certificate/{param}/{action}', function ($param, $action) {
-    if (Auth::check()) {
-        $user = Auth::user();
-        return view('medical-certificate.'.$action, ['param' => $param,'user'=>$user]);
-    } else {
-        session()->put('action', $action);
-        session()->put('param', $param);
+Route::post('/medical-certificate/request', function (Request $request) {
+    $credentials = new \stdClass();
+    $id = $request->input('id'); 
+    $solution_id = $request->input('solution_id'); 
+    $solution_name = $request->input('solution_name'); 
+    $description = $request->input('description');
+    $cost = $request->input('cost');
 
-        return view('auth.not-registered-or-login', ['param' => $param,'action'=>$action]);
+
+    $credentials->id =  $id;
+    $credentials->solution_id =  strtoupper($solution_id);
+    $credentials->solution_name =  $solution_name;
+    $credentials->description =  $description;
+    $credentials->cost =  $cost;
+    $credentials->days_number = in_array($request->input('solution_id'), ['MC01','MC02','MC03','MC04']) ? 'single' : 'multiple';
+    session()->put('credentials', $credentials);
+
+    if (Auth::check()) {
+        if(in_array(session('credentials')->solution_id , ['MC01','MC05']) )
+            return response()->json([
+                'status' => 'success',
+                'redirect_url' => route('medical-certificate.work') 
+            ]);
+        
+        if(in_array(session('credentials')->solution_id , ['MC02','MC06']))
+            return response()->json([
+                'status' => 'success',
+                'redirect_url' => route('medical-certificate.studies') 
+            ]);
+        if(in_array(session('credentials')->solution_id , ['MC03','MC07']))
+            return response()->json([
+                'status' => 'success',
+                'redirect_url' => route('medical-certificate.carer') 
+            ]);
+        if(in_array(session('credentials')->solution_id , ['MC04','MC08']))
+            return response()->json([
+                'status' => 'success',
+                'redirect_url' => route('medical-certificate.travel-and-holiday') 
+            ]);
+    } else {
+        return response()->json([
+            'status' => 'error',
+            'redirect_url' => route('not-registered-or-login')
+        ]);
     }
-})->name('medical-certificate');
+})->name('medical-certificate.request');
+
+
+
+Route::get('/medical-certificate-application', function () {
+
+
+})->name('medical-certificate-application');
+
+Route::get('/medical-certificate-work', function () {
+      return view('medical-certificate.work-medical-certificate');
+})->name('medical-certificate.work');
+
+Route::get('/medical-certificate-studies', function () {
+      return view('medical-certificate.studies-medical-certificate');
+})->name('medical-certificate.studies');
+
+Route::get('/medical-certificate-carer', function () {
+      return view('medical-certificate.carers-Leave-certificate');
+})->name('medical-certificate.carer');
+
+Route::get('/medical-certificate-travel-and-holiday', function () {
+      return view('medical-certificate.travel-and-holiday-certificate');
+})->name('medical-certificate.travel-and-holiday');

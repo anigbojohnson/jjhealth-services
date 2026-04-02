@@ -85,9 +85,7 @@ Route::get('/telehealth-request', function () {
 })->name('telehealth-request');
 
 
-Route::get('/not-registered-or-login', function () {
-      return view('auth.not-registered-or-login');
-})->name('not-registered-or-login');
+
 
 Route::middleware(['auth'])->group(function () {
     

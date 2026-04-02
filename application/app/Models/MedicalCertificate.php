@@ -17,8 +17,6 @@ class MedicalCertificate extends Model
         'preExistingHealth',
         'medicationsRegularly',
         'seeking',
-        'IAgree',
-        'adjustmentsReasons',
         'preExistingHealthConditionInformation',
         'privacy',
         'medicationsRegularlyInfo',
@@ -30,7 +28,9 @@ class MedicalCertificate extends Model
         'validTo',
         'careForSomeone',
         'personCared',
-         'request_status'
+        'request_status',
+        'jobDescription',
+        'symptomsRelationToJobs',
     ];
     
     
