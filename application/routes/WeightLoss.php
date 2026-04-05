@@ -52,10 +52,22 @@ Route::post('/weight-loss-consultation', function (Request $request) {
 
 
 Route::get('/weight-loss', function () {
-    $categoryId = 5;
-    $solutions = Category::find($categoryId)->solutions;
-          //   $solutions = Solutions::where('solution_id', 'like', 'WL%')->get()->last();
+    if (CacheInvalidation::wasInvalidated('weightloss_solutions_5')) {
+        Cache::forget('weightloss_solutions_5');
+        CacheInvalidation::clearFlag('weightloss_solutions_5');
+    }
 
+
+    $solutions = Cache::rememberForever('weightloss_solutions_5', function () {
+        return Solutions::select('solutions.*')
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('solutions')
+                      ->groupBy('solution_id');
+            })
+            ->where('category_id', 5)
+            ->get();
+    });
 
     return view('weightloss.weight-lost-home',compact('solutions'));
 })->name('weight-loss');

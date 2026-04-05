@@ -42,15 +42,21 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/certificate', function () {
 
+if (CacheInvalidation::wasInvalidated('solutions_mc_7_8_9_10')) {
+    Cache::forget('solutions_mc_7_8_9_10');
+    CacheInvalidation::clearFlag('solutions_mc_7_8_9_10');
+}
 
-    $solutions  = Solutions::select('solutions.*')
-    ->whereIn('id', function ($query) {
-        $query->select(DB::raw('MAX(id)'))
-              ->from('solutions')
-              ->groupBy('solution_id');
-    })
-    ->whereIn('category_id', [7, 8, 9, 10])  // Add this condition to filter
-    ->get();
+$solutions = Cache::rememberForever('solutions_mc_7_8_9_10', function () {
+    return Solutions::select('solutions.*')
+        ->whereIn('id', function ($query) {
+            $query->select(DB::raw('MAX(id)'))
+                  ->from('solutions')
+                  ->groupBy('solution_id');
+        })
+        ->whereIn('category_id', [7, 8, 9, 10])
+        ->get();
+});
 
     return view('medical-certificate.medical-certificate',compact('solutions'));
 })->name('certificate');

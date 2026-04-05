@@ -5,7 +5,8 @@ use App\Models\Category;
 use App\Models\Solutions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-
+use App\Models\CacheInvalidation;
+use Illuminate\Support\Facades\Cache;
 
 
 
@@ -48,8 +49,23 @@ Route::post('/specialist-referrals/request', function (Request $request) {
 
 Route::get('/specialist-referral/select', function () {
 
-   $categoryId = 4;
-    $solutions = Category::find($categoryId)->solutions;
+   
+    if (CacheInvalidation::wasInvalidated('referrals_solutions_4')) {
+        Cache::forget('referrals_solutions_4');
+        CacheInvalidation::clearFlag('referrals_solutions_4');
+    }
+
+
+    $solutions = Cache::rememberForever('referrals_solutions_4', function () {
+        return Solutions::select('solutions.*')
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('solutions')
+                      ->groupBy('solution_id');
+            })
+            ->where('category_id', 4)
+            ->get();
+    });
     return view('referals.specialist-referrals-choice',compact('solutions') );
 })->name('referral.specialist-referral.select');
 

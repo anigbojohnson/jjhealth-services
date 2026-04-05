@@ -65,7 +65,7 @@
       <div class="col-md-5">
             <h4><b>Need something not listed? </b></h4>
             <p>Our doctors can provide referrals to a range of specialists. If you need a referral that's not listed above, click the button below</p>
-            <a href="{{ route('medical-certificate', ['param' =>  str_replace(' ', ' ','Medical Certificate For Work'), 'action' => 'work-medical-certificate']) }}"  class="btn btn-primary w-100 mt-3">Request {{ $solution->solution_name }}</a>
+            <a href="#"  class="btn btn-primary w-100 mt-3">Request {{ $solution->solution_name }}</a>
           
       </div>
      <div class="col-md-3"></div>

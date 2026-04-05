@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\Solutions;
 use Illuminate\Http\Request;
+use App\Models\CacheInvalidation;
+use Illuminate\Support\Facades\Cache;
 
 
 Route::get('/search-solutions', function (Request $request) {
@@ -103,20 +105,26 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/consult-category', function () {
 
- 
+    if (CacheInvalidation::wasInvalidated('teleconsult_solutions_1')) {
+        Cache::forget('teleconsult_solutions_1');
+        CacheInvalidation::clearFlag('teleconsult_solutions_1');
+    }
 
-    $solutions  = Solutions::select('solutions.*')
-    ->whereIn('id', function ($query) {
-        $query->select(DB::raw('MAX(id)'))
-              ->from('solutions')
-              ->groupBy('solution_id');
-    })
-    ->where('category_id', 1)  
-    ->get();
+
+    $solutions = Cache::rememberForever('teleconsult_solutions_1', function () {
+        return Solutions::select('solutions.*')
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                      ->from('solutions')
+                      ->groupBy('solution_id');
+            })
+            ->where('category_id', 1)
+            ->get();
+    });
 
         // Pass the solutions data to the view
-        $message = "";
-        return view('treatment.doctor-consult-category', compact('solutions', 'message'));
+    $message = "";
+    return view('treatment.doctor-consult-category', compact('solutions', 'message'));
 
 })->name('consult-category');
 
