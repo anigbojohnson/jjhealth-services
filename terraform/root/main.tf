@@ -147,7 +147,40 @@ module "rds" {
 }
 
 
+resource "aws_elasticache_subnet_group" "redis" {
+  name       = "${var.project_name}-redis-subnet"
+  subnet_ids = slice(module.vpc.private_subnets, 0, 2)
 
+  tags = {
+    Project = "${var.project_name}-redis"
+  }
+}
+
+resource "aws_elasticache_replication_group" "redis" {
+  replication_group_id = "${var.project_name}-redis"
+  description          = "Redis cache for ${var.project_name}"
+
+  engine               = "redis"
+  engine_version       = "7.0"
+  node_type            = "cache.t3.micro"
+
+  port                 = 6379
+
+  num_cache_clusters   = 2
+  automatic_failover_enabled = true
+  multi_az_enabled     = true
+
+  subnet_group_name    = aws_elasticache_subnet_group.redis.name
+  security_group_ids   = [module.security-group.redis_sg_id]
+
+  # 🔐 Recommended for production
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = true
+
+  tags = {
+    Project = "${var.project_name}-redis"
+  }
+}
 
 
 

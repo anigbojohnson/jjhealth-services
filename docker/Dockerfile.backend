@@ -18,6 +18,9 @@ RUN apk add --no-cache \
     postgresql-dev \
     oniguruma-dev
 
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
 # Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install \

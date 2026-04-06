@@ -55,7 +55,6 @@ Route::get('/pathology-referral-application', function () {
 
 
 Route::get('/pathology/select', function () {
-    dd(Cache::has('pathology_solutions_6'));
 
     if (CacheInvalidation::wasInvalidated('pathology_solutions_6')) {
         Cache::forget('pathology_solutions_6');

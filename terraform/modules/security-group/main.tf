@@ -147,6 +147,31 @@ resource "aws_security_group" "db_sg" {
   }
 }
 
+
+resource "aws_security_group" "redis_sg" {
+  name   = "redis-sg"
+  vpc_id = var.vpc_id
+
+  ingress {
+    description     = "Allow Redis from app nodes"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.app_sg.id] # 👈 restrict to EKS
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "redis-sg"
+  }
+}
+
 resource "aws_security_group" "alb_sg_CKV2_AWS_5" {
   # checkov:skip=CKV2_AWS_5:SG attached to ALB in another module
   description = "checkov:skip=CKV2_AWS_5:SG attached to ALB in another module"

@@ -45,3 +45,37 @@ spec:
               subPath: default.conf
 
             
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.worker.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.worker.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.worker.name }}
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          command: ["php", "artisan", "queue:work", "redis", "--tries=3", "--timeout=90"]
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.configMap.name }}-main-config"
+            - secretRef:
+                name: {{ .Values.secret.name }}
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
