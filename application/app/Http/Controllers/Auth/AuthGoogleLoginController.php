@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\EmailVerification;
 use App\Models\Solutions;
 use App\Models\Category;
-
+use App\Services\TracingService;
 
 class AuthGoogleLoginController extends Controller
 {
     //
+public function __construct(private TracingService $tracing) {}
+
 public function redirect()
 {
         $query = http_build_query([
