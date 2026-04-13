@@ -6,13 +6,19 @@ use Closure;
 use Illuminate\Http\Request;
 use OpenTelemetry\API\Trace\TracerInterface;
 use OpenTelemetry\API\Trace\StatusCode;
+use App\Services\MetricsService;
+
 
 class OpenTelemetryMiddleware
 {
-    public function __construct(private TracerInterface $tracer) {}
+    public function __construct(private TracerInterface $tracer,
+     private MetricsService $metrics) {}
 
     public function handle(Request $request, Closure $next): mixed
-    {
+    {        
+
+        $startTime = microtime(true);  // ← start timer
+
         $span = $this->tracer
             ->spanBuilder($request->method() . ' ' . $request->path())
             ->startSpan();
@@ -39,8 +45,15 @@ class OpenTelemetryMiddleware
             $span->setStatus(StatusCode::STATUS_ERROR, $e->getMessage());
             throw $e;
         } finally {
+
+            // record how long this request took as a metric
+            $duration = (microtime(true) - $startTime) * 1000;
+            $this->metrics->recordRequestDuration(
+                $duration,
+                $request->route()?->uri() ?? 'unknown'
+            );
             $scope->detach();
             $span->end();
         }
     }
-}
+    }

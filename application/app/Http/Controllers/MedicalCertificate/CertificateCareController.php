@@ -15,17 +15,19 @@ use App\Mail\VerifyConsultationMail;
 use Illuminate\Support\Facades\Storage;
 use OpenTelemetry\API\Trace\TracerInterface;  // ← import this
 use OpenTelemetry\API\Trace\StatusCode;
+use App\Services\MetricsService;
 
 
 class CertificateCareController extends Controller
 {
     //
-    public function __construct(private TracerInterface $tracer) {}
+    public function __construct(private TracerInterface $tracer,        
+                               private MetricsService $metrics ) {}
 
     public function personalDetails(Request $request)
     {
 
-    
+
         $span  = $this->tracer->spanBuilder('mc-carer-personal-details-validation')->startSpan();
         $scope = $span->activate();
 
@@ -53,6 +55,7 @@ class CertificateCareController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             $span->setAttribute('validation.status', 'failed');
             $span->setAttribute('validation.errors', json_encode($e->errors()));
+            $this->metrics->validationFailed('personal-details');
             $span->setStatus(StatusCode::STATUS_ERROR, 'Validation failed');
             throw $e;
 
@@ -75,7 +78,8 @@ class CertificateCareController extends Controller
 
 
         try {
-            $span->setAttribute('user.email', Auth::user()->email ?? 'guest');
+
+            $span->setAttribute('user.email', Auth::user()->email);
 
             $messages = [
                 'careForSomeone.required' => 'Please indicate if you are caring for someone within this period.',
@@ -152,7 +156,6 @@ class CertificateCareController extends Controller
                 }
             ]
     ],$messages);
-
     session()->put('carerDetails', $validatedData);
     $span->setAttribute('validation.status',    'passed');
 
@@ -369,6 +372,10 @@ class CertificateCareController extends Controller
                     'personCared'                  => $validatedCare['personCared'] ?? null,
                     'request_status'               => 'new request'
                 ]);
+                // record metric — certificate was created
+                $this->metrics->certificateCreated(
+                    session('credentials')->solution_name
+                );
 
                 $mcSpan->setAttribute('mc.id',             $medicalCertificate->id);
                 $mcSpan->setAttribute('mc.reason',         $validatedData['medicalLetterReasons'] ?? 'unknown');
@@ -392,8 +399,16 @@ class CertificateCareController extends Controller
                 $payment->payment_status = 'pending';
                 $payment->save();
 
+                // record metric — payment saved successfully
+                $this->metrics->paymentSucceeded();
+
                 $paySpan->setAttribute('payment.id',     $payment->payment_id);
                 $paySpan->setAttribute('payment.status', 'pending');
+
+            } catch (\Throwable $e) {
+                // record metric — payment failed
+                $this->metrics->paymentFailed($e->getMessage());
+                throw $e;
 
             } finally {
                 $payScope->detach();
@@ -414,6 +429,9 @@ class CertificateCareController extends Controller
 
                 Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
 
+                 // record metric — email sent
+                $this->metrics->emailSent();
+                
                 $mailSpan->setAttribute('email.sent_to', Auth::user()->email);
                 $mailSpan->setAttribute('email.status',  'sent');
 

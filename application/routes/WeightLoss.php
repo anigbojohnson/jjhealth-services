@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Solutions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Models\CacheInvalidation;
 
 
 Route::middleware(['auth'])->group(function () {

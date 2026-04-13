@@ -7,6 +7,7 @@ use App\Http\Controllers\MedicalCertificate\CertificateTravelAndHolidayControlle
 use App\Http\Controllers\MedicalCertificate\CertificateCareController;
 use App\Models\Solutions;
 use Illuminate\Http\Request;
+use App\Models\CacheInvalidation;
 
 Route::middleware(['auth'])->group(function () {
 

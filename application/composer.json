@@ -12,7 +12,11 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "league/flysystem-aws-s3-v3": "^3.0",
+        "open-telemetry/context": "^1.5",
+        "open-telemetry/exporter-otlp": "^1.4",
+        "open-telemetry/sdk": "^1.14",
         "predis/predis": "^3.4",
+        "promphp/prometheus_client_php": "^2.15",
         "stripe/stripe-php": "^14.10"
     },
     "require-dev": {
@@ -65,7 +69,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     },
     "minimum-stability": "stable",
