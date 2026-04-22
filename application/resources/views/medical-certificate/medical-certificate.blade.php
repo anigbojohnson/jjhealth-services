@@ -106,6 +106,8 @@ $singles = $solutions->whereIn('solution_id', ['MC01', 'MC02', 'MC03', 'MC04'])-
             </div>
         </div>
     @endforeach
+       </div>
+    </div>
 </div>
 
     

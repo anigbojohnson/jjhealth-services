@@ -6,217 +6,195 @@ use OpenTelemetry\API\Metrics\MeterInterface;
 
 class MetricsService
 {
-    // counters — things you count up
-    private $certificatesCreated;
-    private $validationErrors;
-    private $paymentSuccess;
-    private $paymentFailed;
-    private $emailsSent;
-    private $validationSucceded;
-    private $formSubmissions;
-    private $storeMcSuccess;
-    private $emailsFailed;
-    private $secretKeyRequests;
-    private $secretKeyErrors;
-    private $validationSucceeded;
-    private $fileUploadedSucceded;
-    private $fileUploadFailed;
-    // histograms — things you measure duration of
+    // Counters (RED model - simplified)
+    private $certificates;
+    private $validation;
+    private $payments;
+    private $emails;
+    private $forms;
+    private $studyMc;
+    private $secretKey;
+    private $fileUpload;
+
+    // Histograms
     private $requestDuration;
     private $dbQueryDuration;
     private $storeMcDuration;
 
     public function __construct(MeterInterface $meter)
     {
-        // ── counters ───────────────────────────────────────────
-        $this->certificatesCreated = $meter->createCounter(
-            'certificates.created',        // metric name
-            'certificates',                // unit
-            'Total medical certificates created'  // description
-        );
+        // ── Counters (ONE per domain) ─────────────────────────
 
-        $this->validationErrors = $meter->createCounter(
-            'validation.errors',
-            'errors',
-            'Total validation errors across all forms'
-        );
+        $this->certificates = $meter->createCounter('certificates.total');
 
-        $this->paymentSuccess = $meter->createCounter(
-            'payment.success',
-            'payments',
-            'Total successful payments'
-        );
+        $this->validation = $meter->createCounter('validation.total');
 
-        $this->paymentFailed = $meter->createCounter(
-            'payment.failed',
-            'payments',
-            'Total failed payments'
-        );
+        $this->payments = $meter->createCounter('payment.total');
 
-        $this->emailsSent = $meter->createCounter(
-            'emails.sent',
-            'emails',
-            'Total confirmation emails sent'
-        );
+        $this->emails = $meter->createCounter('emails.total');
 
-        $this->validationSucceded = $meter->createCounter(
-            'validation.success',
-            'success',
-            'Total validation success across all forms'
-        );
+        $this->forms = $meter->createCounter('form.submissions.total');
 
-        $this->formSubmissions = $meter->createCounter(
-            'form.submissions',
-            'requests',
-            'Total form submissions'
-        );
+        $this->studyMc = $meter->createCounter('studies.store_mc.total');
 
-        $this->storeMcSuccess = $meter->createCounter(
-            'studies.store_mc.success',
-            'requests',
-            'Successful MC store operations' 
-        );
+        $this->secretKey = $meter->createCounter('studies.secret_key.total');
 
-        $this->emailsFailed = $meter->createCounter(
-            'emails.failed',
-            'emails',
-            'Total failed emails'
-        );
+        $this->fileUpload = $meter->createCounter('fileupload.total');
 
-        $this->secretKeyRequests = $meter->createCounter(
-            'studies.payment.secret_key_requests',
-            'requests',
-            'Total payment secret key requests'
-        );
+        // ── Histograms ─────────────────────────────────────────
 
-        $this->secretKeyErrors = $meter->createCounter(
-            'studies.payment.secret_key_errors',
-            'errors',
-            'Total payment secret key generation failures'
-        );
+        $this->requestDuration = $meter->createHistogram('http_request_duration_ms');
 
-        $this->validationSucceeded = $meter->createCounter(
-            'validation.success',
-            'success',
-            'Total validation success across all forms'
-        );
-       $this->fileUploadedSucceded = $meter->createCounter(
-            'fileupload.success',
-            'fileupload',
-            'Total file upload success'
-        );
-        $this->fileUploadFailed=$meter->createCounter(
-                'fileupload.failed',
-                'fileupload',
-                'Total file upload failed'
-            );
-        // ── histograms ─────────────────────────────────────────
-        $this->requestDuration = $meter->createHistogram(
-            'http.request.duration',
-            'ms',
-            'Duration of HTTP requests'
-        );
+        $this->dbQueryDuration = $meter->createHistogram('db_query_duration_ms');
 
-        $this->dbQueryDuration = $meter->createHistogram(
-            'db.query.duration',
-            'ms',
-            'Duration of database queries'
-        );
-
-        $this->storeMcDuration = $meter->createHistogram(
-            'studies.store_mc.duration',
-            'ms',
-            'Duration of store MC operation'
-        );
+        $this->storeMcDuration = $meter->createHistogram('studies_store_mc_duration_ms');
     }
 
-
-    // ── counter methods ────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // CERTIFICATES
+    // ─────────────────────────────────────────────
 
     public function certificateCreated(string $reason): void
     {
-        $this->certificatesCreated->add(1, [
-            'medical.reason' => $reason   // tag by reason
+        $this->certificates->add(1, [
+            'event' => 'created',
+            'reason' => $reason
         ]);
     }
 
+    // ─────────────────────────────────────────────
+    // PAYMENTS
+    // ─────────────────────────────────────────────
+
     public function paymentSucceeded(): void
     {
-        $this->paymentSuccess->add(1);
+        $this->payments->add(1, [
+            'status' => 'success'
+        ]);
     }
 
     public function paymentFailed(string $reason): void
     {
-        $this->paymentFailed->add(1, [
-            'failure.reason' => $reason
+        $this->payments->add(1, [
+            'status' => 'failed',
+            'reason' => $reason
         ]);
     }
 
+    // ─────────────────────────────────────────────
+    // EMAILS
+    // ─────────────────────────────────────────────
+
     public function emailSent(): void
     {
-        $this->emailsSent->add(1);
+        $this->emails->add(1, [
+            'status' => 'sent'
+        ]);
     }
 
+    public function emailFailed(string $reason): void
+    {
+        $this->emails->add(1, [
+            'status' => 'failed',
+            'reason' => $reason
+        ]);
+    }
 
+    // ─────────────────────────────────────────────
+    // VALIDATION
+    // ─────────────────────────────────────────────
 
     public function validationSucceeded(string $form): void
     {
-        $this->validationSucceeded->add(1, [
+        $this->validation->add(1, [
+            'status' => 'success',
             'form.name' => $form
         ]);
     }
 
     public function validationFailed(string $form, array $errors): void
     {
-        foreach (array_keys($errors) as $field) {
-            $this->validationErrors->add(1, [
-                'validation.errors' => $form,
-                'field'     => $field
-            ]);
-        }
+        // ONE event per failed submission (not per field)
+        $this->validation->add(1, [
+            'status' => 'failed',
+            'form.name' => $form,
+            'error.count' => count($errors)
+        ]);
     }
+
+    // ─────────────────────────────────────────────
+    // FORMS
+    // ─────────────────────────────────────────────
+
+    public function formSubmitted(string $form): void
+    {
+        $this->forms->add(1, [
+            'form.name' => $form,
+            'status' => 'submitted'
+        ]);
+    }
+
+    // ─────────────────────────────────────────────
+    // STUDIES / MC
+    // ─────────────────────────────────────────────
 
     public function storeMcSuccess(string $type): void
     {
-        $this->storeMcSuccess->add(1, [
+        $this->studyMc->add(1, [
+            'status' => 'success',
             'mc.type' => $type
         ]);
     }
 
-        public function emailFailed(string $reason): void
+    public function storeMcFailed(string $type): void
     {
-        $this->emailsFailed->add(1, [
-            'failure.reason' => $reason
+        $this->studyMc->add(1, [
+            'status' => 'failed',
+            'mc.type' => $type
         ]);
     }
 
+    // ─────────────────────────────────────────────
+    // SECRET KEY
+    // ─────────────────────────────────────────────
+
     public function secretKeyRequested(): void
     {
-        $this->secretKeyRequests->add(1);
+        $this->secretKey->add(1, [
+            'status' => 'requested'
+        ]);
     }
 
     public function secretKeyFailed(string $reason): void
     {
-        $this->secretKeyErrors->add(1, [
-            'error.reason' => $reason
+        $this->secretKey->add(1, [
+            'status' => 'failed',
+            'reason' => $reason
         ]);
     }
 
-    public function fileUploadedSucceded(): void
-    {
-        $this->fileUploadedSucceded->add(1);
-    }
+    // ─────────────────────────────────────────────
+    // FILE UPLOAD
+    // ─────────────────────────────────────────────
 
-    
-        public function fileUploadFailed(string $reason): void
+    public function fileUploadedSucceeded(): void
     {
-        $this->fileUploadFailed->add(1, [
-            'failure.reason' => $reason
+        $this->fileUpload->add(1, [
+            'status' => 'success'
         ]);
     }
 
-      // ── histograms ─────────────────────────────────────────
+    public function fileUploadFailed(string $reason): void
+    {
+        $this->fileUpload->add(1, [
+            'status' => 'failed',
+            'reason' => $reason
+        ]);
+    }
 
+    // ─────────────────────────────────────────────
+    // HISTOGRAMS
+    // ─────────────────────────────────────────────
 
     public function recordRequestDuration(float $ms, string $route): void
     {
@@ -236,6 +214,4 @@ class MetricsService
     {
         $this->storeMcDuration->record($ms, $tags);
     }
-
-
 }

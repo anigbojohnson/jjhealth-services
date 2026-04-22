@@ -54,7 +54,7 @@ class CertificateStudiesController extends Controller
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             // record validation failure as a metric
-            $this->metrics->validationFailed('mc-studies-personal-details-validation');
+            $this->metrics->validationFailed('mc-studies-personal-details-validation', $e->errors());
             $span->setAttribute('validation.status', 'failed');
             $span->setAttribute('validation.errors', json_encode($e->errors()));
             $span->setStatus(StatusCode::STATUS_ERROR, 'Validation failed');
@@ -355,7 +355,7 @@ class CertificateStudiesController extends Controller
                     'public'
                 );
 
-                $this->metrics->fileUploadedSucceded();
+                $this->metrics->fileUploadedSucceeded();
 
             } catch (\Throwable $e) {
                 $this->metrics->fileUploadFailed($e->getMessage());

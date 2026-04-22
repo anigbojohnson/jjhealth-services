@@ -21,6 +21,7 @@ use OpenTelemetry\SDK\Metrics\MetricReader\ExportingMetricReader;
 use OpenTelemetry\Contrib\Otlp\MetricExporter;
 use OpenTelemetry\SDK\Metrics\MetricReader\ExportingReader;
 
+use OpenTelemetry\SDK\Metrics\Data\Temporality;
 
 use App\Services\MetricsService;              
 use OpenTelemetry\API\Metrics\MeterInterface;
@@ -62,10 +63,10 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         // 4. meter provider
         $this->app->singleton(MeterProvider::class, function ($app) {
             $transport = (new OtlpHttpTransportFactory())->create(
-                config('otel.endpoint', env('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://localhost:4318')),
-                'application/json'
+                config('otel.endpoint', env('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://localhost:4318')) . '/v1/metrics',
+                'application/x-protobuf'
             );
-            $exporter = new MetricExporter($transport);
+            $exporter = new MetricExporter($transport,Temporality::CUMULATIVE);
             $reader   = new ExportingReader($exporter, SystemClock::create());
 
 
@@ -85,8 +86,6 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $this->app->singleton(MetricsService::class, function ($app) {
             return new MetricsService($app->make(MeterInterface::class));
         });
-
-
     }
 
     public function boot(): void
@@ -96,5 +95,12 @@ class OpenTelemetryServiceProvider extends ServiceProvider
         $meterProvider = app(MeterProvider::class);
         $meterProvider->forceFlush();
     });
+
+        app()->terminating(function () {
+            $tracerProvider = app(TracerProvider::class);
+            $tracerProvider->forceFlush();
+        });
     }
 }
+
+
