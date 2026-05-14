@@ -1,0 +1,275 @@
+---
+# ─────────────────────────────────────────────────────────────
+# LOAD VAULT INIT DATA
+# ─────────────────────────────────────────────────────────────
+
+- name: Check if Vault keys file exists
+  ansible.builtin.stat:
+    path: "{{ vault_keys_file }}"
+  register: vault_keys_file_stat
+
+- name: Fail if Vault keys file is missing
+  ansible.builtin.fail:
+    msg: >
+      Vault keys file {{ vault_keys_file }} does not exist.
+      Vault must be initialized first.
+  when: not vault_keys_file_stat.stat.exists
+
+- name: Load Vault init data
+  ansible.builtin.slurp:
+    src: "{{ vault_keys_file }}"
+  register: vault_keys_raw
+  no_log: true
+
+- name: Parse Vault init data
+  ansible.builtin.set_fact:
+    vault_init_data: "{{ vault_keys_raw.content | b64decode | from_json }}"
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# CHECK VAULT STATUS
+# ─────────────────────────────────────────────────────────────
+
+- name: Check Vault status
+  ansible.builtin.command: vault status -format=json
+  register: vault_status
+  changed_when: false
+  failed_when: false
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:8200"
+
+- name: Set default Vault sealed state
+  ansible.builtin.set_fact:
+    vault_sealed: true
+
+- name: Parse Vault sealed status
+  ansible.builtin.set_fact:
+    vault_sealed: "{{ (vault_status.stdout | from_json).sealed }}"
+  when:
+    - vault_status.stdout is defined
+    - vault_status.stdout | trim | length > 0
+    - vault_status.stdout | trim is match('^\{')
+
+# ─────────────────────────────────────────────────────────────
+# UNSEAL VAULT
+# ─────────────────────────────────────────────────────────────
+
+- name: Unseal Vault
+  ansible.builtin.command: vault operator unseal {{ item }}
+  loop: "{{ vault_init_data.unseal_keys_b64[0:3] }}"
+  when: vault_sealed
+  no_log: true
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:8200"
+
+# ─────────────────────────────────────────────────────────────
+# SET VAULT ENVIRONMENT
+# ─────────────────────────────────────────────────────────────
+
+- name: Set Vault environment
+  ansible.builtin.set_fact:
+    vault_env:
+      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_TOKEN: "{{ vault_init_data.root_token }}"
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# CHECK EXISTING SECRETS ENGINES
+# ─────────────────────────────────────────────────────────────
+
+- name: Check secrets engines
+  ansible.builtin.command: vault secrets list -format=json
+  environment: "{{ vault_env }}"
+  register: secrets_list
+  changed_when: false
+
+- name: Parse secrets engines
+  ansible.builtin.set_fact:
+    secrets_json: "{{ secrets_list.stdout | from_json }}"
+
+# ─────────────────────────────────────────────────────────────
+# ENABLE AWS SECRETS ENGINE
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable AWS secrets engine
+  ansible.builtin.command: vault secrets enable aws
+  environment: "{{ vault_env }}"
+  when: secrets_json['aws/'] is not defined
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE AWS ROOT CREDS
+# ─────────────────────────────────────────────────────────────
+- name: Get AWS credentials from managed node environment
+  shell: echo $VAULT_AWS_ACCESS_KEY
+  register: aws_access_key
+  changed_when: false
+  no_log: true
+
+
+- name: Get AWS credentials from managed node environment
+  shell: echo $VAULT_AWS_ACCESS_KEY
+  register: aws_secret_key
+  changed_when: false
+  no_log: true
+
+
+- name: Set credential facts
+  set_fact:
+    vault_aws_access_key: "{{ aws_access_key.stdout }}"
+    vault_aws_secret_key: "{{ aws_secret_key.stdout }}"
+
+- name: Configure AWS root credentials
+  ansible.builtin.command: >
+    vault write aws/config/root
+      access_key="{{ vault_aws_access_key }}"
+      secret_key="{{ vault_aws_secret_key }}"
+      region="{{ vault_aws_region }}"
+  environment: "{{ vault_env }}"
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# CREATE AWS ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create AWS policy document file
+  ansible.builtin.copy:
+    dest: /tmp/aws-policy.json
+    content: "{{ vault_aws_role_policy | to_nice_json }}"
+    mode: "0600"
+
+- name: Create AWS role for Terraform
+  ansible.builtin.command: >
+    vault write aws/roles/{{ vault_aws_role_name }}
+      credential_type=iam_user
+      policy_document=@/tmp/aws-policy.json
+  environment: "{{ vault_env }}"
+
+- name: Remove temp AWS policy file
+  ansible.builtin.file:
+    path: /tmp/aws-policy.json
+    state: absent
+
+
+
+# ─────────────────────────────────────────────────────────────
+# CREATE POLICY FILE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create Terraform policy file
+  ansible.builtin.copy:
+    dest: /tmp/terraform-policy.hcl
+    content: |
+      path "aws/creds/{{ vault_aws_role_name }}" {
+        capabilities = ["read"]
+      }
+    mode: "0600"
+
+# ─────────────────────────────────────────────────────────────
+# APPLY POLICY
+# ─────────────────────────────────────────────────────────────
+
+- name: Apply Vault policy
+  ansible.builtin.command: >
+    vault policy write {{ vault_policy_name }} /tmp/terraform-policy.hcl
+  environment: "{{ vault_env }}"
+
+- name: Remove temporary policy file
+  ansible.builtin.file:
+    path: /tmp/terraform-policy.hcl
+    state: absent
+
+# ─────────────────────────────────────────────────────────────
+# CHECK AUTH METHODS
+# ─────────────────────────────────────────────────────────────
+
+- name: Check auth methods
+  ansible.builtin.command: vault auth list -format=json
+  environment: "{{ vault_env }}"
+  register: auth_list
+  changed_when: false
+
+- name: Parse auth methods
+  ansible.builtin.set_fact:
+    auth_json: "{{ auth_list.stdout | from_json }}"
+
+# ─────────────────────────────────────────────────────────────
+# ENABLE JWT AUTH
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable JWT auth
+  ansible.builtin.command: vault auth enable jwt
+  environment: "{{ vault_env }}"
+  when: auth_json['jwt/'] is not defined
+
+# ─────────────────────────────────────────────────────────────
+# CHECK JWT CONFIG
+# ─────────────────────────────────────────────────────────────
+
+- name: Check JWT config
+  ansible.builtin.command: vault read auth/jwt/config
+  environment: "{{ vault_env }}"
+  register: jwt_config
+  changed_when: false
+  failed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE JWT
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure JWT auth
+  ansible.builtin.command: >
+    vault write auth/jwt/config
+      oidc_discovery_url="{{ github_oidc_discovery_url }}"
+      bound_issuer="{{ github_oidc_discovery_url }}"
+  environment: "{{ vault_env }}"
+  when: jwt_config.rc != 0
+
+# ─────────────────────────────────────────────────────────────
+# CREATE JWT ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create JWT role payload
+  ansible.builtin.copy:
+    dest: /tmp/jwt-role.json
+    mode: "0600"
+    content: |
+      {
+        "role_type": "jwt",
+        "bound_audiences": [
+          "https://github.com/{{ github_org }}"
+        ],
+        "user_claim": "sub",
+        "bound_claims_type": "glob",
+        "bound_claims": {
+          "sub": "repo:{{ github_org }}/{{ github_repo }}:*"
+        },
+        "token_policies": [
+          "{{ vault_policy_name }}"
+        ],
+        "token_ttl": "1h"
+      }
+
+- name: Create JWT role
+  ansible.builtin.shell: >
+      vault write auth/jwt/role/{{ vault_jwt_role_name }}
+      @/tmp/jwt-role.json
+  environment: "{{ vault_env }}"
+
+- name: Remove JWT role payload
+  ansible.builtin.file:
+    path: /tmp/jwt-role.json
+    state: absent
+
+# ─────────────────────────────────────────────────────────────
+# SMOKE TESTS
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify AWS role
+  ansible.builtin.command: vault read aws/roles/{{ vault_aws_role_name }}
+  environment: "{{ vault_env }}"
+  changed_when: false
+
+- name: Verify JWT role
+  ansible.builtin.command: vault read auth/jwt/role/{{ vault_jwt_role_name }}
+  environment: "{{ vault_env }}"
+  changed_when: false

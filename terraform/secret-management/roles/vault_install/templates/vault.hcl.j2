@@ -1,0 +1,13 @@
+ui = true
+disable_mlock = true
+
+storage "file" {
+  path = "{{ vault_data_dir }}"
+}
+
+listener "tcp" {
+  address     = "{{ vault_listen_address }}"
+  tls_disable = "true"   # Set tls_disable = false and add cert_file/key_file for production
+}
+
+api_addr = "{{ vault_api_addr }}"

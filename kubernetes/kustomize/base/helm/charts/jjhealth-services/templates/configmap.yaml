@@ -41,3 +41,60 @@ data:
             deny all;
         }
       }
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: {{ .Values.otelCollector.namespace }}
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+          grpc:
+            endpoint: 0.0.0.0:4317
+ 
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 512
+      batch:
+        timeout: 5s
+      filter/dropempty:
+        error_mode: ignore
+        metrics:
+          datapoint:
+            - 'value_int == 0'
+            - 'value_double == 0.0'
+ 
+    exporters:
+      prometheus:
+        endpoint: 0.0.0.0:8889
+      debug:
+        verbosity: basic
+      otlphttp/grafana:
+        endpoint: {{ .Values.otelCollector.grafana.endpoint }}
+        headers:
+          Authorization: "Basic {{ .Values.otelCollector.grafana.auth }}"
+ 
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, filter/dropempty, batch]
+          exporters: [prometheus, otlphttp/grafana, debug]
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp/grafana, debug]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp/grafana, debug]
+
+

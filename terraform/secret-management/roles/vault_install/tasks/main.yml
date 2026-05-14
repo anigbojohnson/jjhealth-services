@@ -1,0 +1,181 @@
+---
+# ─────────────────────────────────────────────────────────────
+# INSTALL DEPENDENCIES
+# ─────────────────────────────────────────────────────────────
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - unzip
+      - wget
+      - curl
+    state: present
+    update_cache: true
+
+# ─────────────────────────────────────────────────────────────
+# CHECK INSTALLED VERSION
+# ─────────────────────────────────────────────────────────────
+
+- name: Check if Vault is already installed
+  ansible.builtin.command: vault version
+  register: vault_installed_version
+  failed_when: false
+  changed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# DOWNLOAD + INSTALL VAULT
+# ─────────────────────────────────────────────────────────────
+
+- name: Download Vault binary
+  ansible.builtin.get_url:
+    url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_{{ vault_arch }}.zip"
+    dest: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
+    mode: "0644"
+  when: vault_version not in (vault_installed_version.stdout | default(''))
+
+- name: Unzip Vault binary
+  ansible.builtin.unarchive:
+    src: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
+    dest: "{{ vault_install_dir }}"
+    remote_src: true
+    mode: "0755"
+  when: vault_version not in (vault_installed_version.stdout | default(''))
+
+# ─────────────────────────────────────────────────────────────
+# CREATE VAULT USER/GROUP
+# ─────────────────────────────────────────────────────────────
+
+- name: Create vault system group
+  ansible.builtin.group:
+    name: vault
+    system: true
+    state: present
+
+- name: Create vault system user
+  ansible.builtin.user:
+    name: vault
+    group: vault
+    system: true
+    shell: /bin/false
+    home: "{{ vault_data_dir }}"
+    create_home: false
+    state: present
+
+# ─────────────────────────────────────────────────────────────
+# CREATE REQUIRED DIRECTORIES
+# ─────────────────────────────────────────────────────────────
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: vault
+    group: vault
+    mode: "0750"
+  loop:
+    - "/etc/vault"
+    - "{{ vault_config_dir }}"
+    - "{{ vault_data_dir }}"
+    - "{{ vault_log_dir }}"
+
+# ─────────────────────────────────────────────────────────────
+# VAULT CONFIGURATION
+# ─────────────────────────────────────────────────────────────
+
+- name: Write Vault config file
+  ansible.builtin.template:
+    src: vault.hcl.j2
+    dest: "{{ vault_config_dir }}/vault.hcl"
+    owner: vault
+    group: vault
+    mode: "0640"
+  notify: restart vault
+
+- name: Install Vault systemd service
+  ansible.builtin.template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart vault
+
+# ─────────────────────────────────────────────────────────────
+# APPLY HANDLERS IMMEDIATELY
+# ─────────────────────────────────────────────────────────────
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+# ─────────────────────────────────────────────────────────────
+# START VAULT
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable and start Vault service
+  ansible.builtin.systemd:
+    name: vault
+    enabled: true
+    state: started
+    daemon_reload: true
+
+# ─────────────────────────────────────────────────────────────
+# WAIT FOR VAULT API
+# ─────────────────────────────────────────────────────────────
+
+- name: Wait for Vault to be reachable
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8200/v1/sys/health"
+    status_code: [200, 429, 472, 473, 501, 503]
+  register: vault_health
+  retries: 10
+  delay: 3
+  until: vault_health.status in [200, 429, 472, 473, 501, 503]
+
+# ─────────────────────────────────────────────────────────────
+# CHECK VAULT STATUS
+# ─────────────────────────────────────────────────────────────
+
+- name: Check Vault status
+  ansible.builtin.command: vault status -format=json
+  register: vault_status
+  changed_when: false
+  failed_when: false
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:8200"
+
+- name: Set default Vault initialized state
+  ansible.builtin.set_fact:
+    vault_initialized: false
+
+- name: Parse Vault initialized status
+  ansible.builtin.set_fact:
+    vault_initialized: "{{ (vault_status.stdout | from_json).initialized }}"
+  when:
+    - vault_status.stdout is defined
+    - vault_status.stdout | trim | length > 0
+    - vault_status.stdout | trim is match('^\{')
+
+# ─────────────────────────────────────────────────────────────
+# INITIALIZE VAULT (ONLY ONCE)
+# ─────────────────────────────────────────────────────────────
+
+- name: Initialize Vault
+  ansible.builtin.command: vault operator init -format=json
+  register: vault_init
+  when: not vault_initialized
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:8200"
+
+# ─────────────────────────────────────────────────────────────
+# STORE INIT DATA
+# ─────────────────────────────────────────────────────────────
+
+- name: Persist unseal keys and root token
+  ansible.builtin.copy:
+    dest: "{{ vault_keys_file }}"
+    content: "{{ vault_init.stdout }}"
+    owner: root
+    group: root
+    mode: "0600"
+  when: not vault_initialized
+  #no_log: true

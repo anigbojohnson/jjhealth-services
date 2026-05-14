@@ -1,0 +1,9 @@
+---
+- name: Configure HashiCorp Vault on EC2
+  hosts: vault_servers
+  become: true
+  gather_facts: false
+
+  roles:
+    - vault_install
+    - vault_configure
