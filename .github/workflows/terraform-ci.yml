@@ -24,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
@@ -36,7 +37,7 @@ jobs:
             aws/creds/terraform-role secret_key | AWS_SECRET_ACCESS_KEY;
             aws/creds/terraform-role security_token | AWS_SESSION_TOKEN
       
-      - name: Setup Terraform
+      - name: config Terraform 
         uses: hashicorp/setup-terraform@v3
 
       - name: Clean Terraform Directory
@@ -50,3 +51,7 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+
+
+
+
