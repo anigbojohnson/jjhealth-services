@@ -107,7 +107,7 @@
 
 
 - name: Get AWS credentials from managed node environment
-  shell: echo $VAULT_AWS_ACCESS_KEY
+  shell: echo $VAULT_AWS_SECRET_KEY
   register: aws_secret_key
   changed_when: false
   no_log: true
@@ -126,7 +126,7 @@
       region="{{ vault_aws_region }}"
   environment: "{{ vault_env }}"
   no_log: true
-
+1:43
 # ─────────────────────────────────────────────────────────────
 # CREATE AWS ROLE
 # ─────────────────────────────────────────────────────────────
