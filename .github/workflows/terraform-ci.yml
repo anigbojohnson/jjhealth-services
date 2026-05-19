@@ -24,11 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
-          url: http://3.8.102.179:8200
+          url: ${{ secrets.VAULT_ADDR }}
           role: gh-actions-role
           jwtGithubAudience: https://github.com/anigbojohnson
           method: jwt
@@ -36,9 +38,12 @@ jobs:
             aws/creds/terraform-role access_key | AWS_ACCESS_KEY_ID ;
             aws/creds/terraform-role secret_key | AWS_SECRET_ACCESS_KEY;
             aws/creds/terraform-role security_token | AWS_SESSION_TOKEN
-      
-      - name: config Terraform 
-        uses: hashicorp/setup-terraform@v3
+
+      - name: Wait for AWS credentials to propagate
+        run: sleep 10
+
+      - name: Verify AWS credentials
+        run: aws sts get-caller-identity
 
       - name: Clean Terraform Directory
         run: rm -rf .terraform
@@ -50,6 +55,7 @@ jobs:
         run: terraform plan
 
       - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
 
 
