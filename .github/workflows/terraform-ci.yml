@@ -30,14 +30,13 @@ jobs:
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
-          url: http://3.8.102.179:8200
+          url: http://18.169.50.104:8200
           role: gh-actions-role
           jwtGithubAudience: https://github.com/anigbojohnson
           method: jwt
           secrets: |
             aws/creds/terraform-role access_key | AWS_ACCESS_KEY_ID ;
             aws/creds/terraform-role secret_key | AWS_SECRET_ACCESS_KEY;
-            aws/creds/terraform-role security_token | AWS_SESSION_TOKEN
 
       - name: Wait for AWS credentials to propagate
         run: sleep 10
