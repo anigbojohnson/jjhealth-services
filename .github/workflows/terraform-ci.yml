@@ -32,7 +32,7 @@ jobs:
         with:
           url: http://18.169.192.97:8200
           role: gh-actions-role
-          jwtGithubAudience: https://github.com/anigbojohnson
+          jwtGithubAudience: sts.amazonaws.com
           method: jwt
           secrets: |
             aws/creds/terraform-role access_key | AWS_ACCESS_KEY_ID ;
