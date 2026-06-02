@@ -1,4 +1,4 @@
-name: Terraform Deployment
+name: Terraform deployment for jjhealth infrastructure 
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
-          url: http://13.42.8.39:8200
+          url: http://13.43.54.68:8200
           role: gh-actions-role
           jwtGithubAudience: https://github.com/anigbojohnson
           method: jwt
