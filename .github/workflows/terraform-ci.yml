@@ -30,7 +30,7 @@ jobs:
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
         with:
-          url: http://18.169.18.108:8200
+          url: http://18.175.180.60:8200
           role: gh-actions-role
           jwtGithubAudience: https://github.com/anigbojohnson
           method: jwt
