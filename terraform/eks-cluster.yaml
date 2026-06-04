@@ -10,7 +10,7 @@ managedNodeGroups:
   - name: app-nodes
     instanceType: t3.small
     desiredCapacity: 2
-    minSize: 3
+    minSize: 2
     maxSize: 5
     privateNetworking: true
     ssh:
