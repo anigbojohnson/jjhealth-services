@@ -47,6 +47,9 @@ jobs:
       - name: Clean Terraform Directory
         run: rm -rf .terraform
 
+      - name: destroy id
+        run: terraform force-unlock d9d5c631-6937-8945-8903-f3e966c7123b
+
       - name: Terraform Init
         run: terraform init -reconfigure
 
