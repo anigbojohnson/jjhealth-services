@@ -50,8 +50,8 @@ jobs:
       - name: Terraform Init
         run: terraform init -reconfigure
 
-      - name: destroy id
-        run: terraform force-unlock d9d5c631-6937-8945-8903-f3e966c7123b
+      - name: destroy id lock
+        run: terraform force-unlock -force d9d5c631-6937-8945-8903-f3e966c7123b
 
       - name: Terraform Plan
         run: terraform plan
