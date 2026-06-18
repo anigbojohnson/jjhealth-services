@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'terraform/vault/**'
+      - 'vault/**'
 
 jobs:
   detect-changes:
@@ -25,12 +28,10 @@ jobs:
     if: needs.detect-changes.outputs.terraform_changed == 'true'
     runs-on: ubuntu-latest
 
-    outputs:
-      vault_kms_key_id: ${{ steps.tf_output.outputs.vault_kms_key_id }}
-
+   
     defaults:
       run:
-        working-directory: terraform
+        working-directory: terraform/vault/
 
     steps:
       - uses: actions/checkout@v4
@@ -43,20 +44,13 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
-      - name: Get Terraform Output
-        id: tf_output
-        run: |
-          echo "vault_kms_key_id=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_OUTPUT
-
+      
   ansible:
     needs:
       - detect-changes
       - terraform
     if: always()
     runs-on: ubuntu-latest
-    outputs:
-      vault_kms_key_id: ${{ steps.tf_output.outputs.vault_kms_key_id }}
-      vault_instance_id: ${{ steps.tf_output.outputs.vault_instance_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -73,20 +67,13 @@ jobs:
         run: |
           ansible-galaxy collection install -r vault/requirements.yml
 
-
-      # If Terraform ran, use its output
-      - name: Set vault_kms_key_id from Terraform Job
-        if: needs.detect-changes.outputs.terraform_changed == 'true'
-        run: |
-          echo "VAULT_KMS_KEY_ID=${{ needs.terraform.outputs.vault_kms_key_id }}" >> $GITHUB_ENV
-
-      # If Terraform did not run, read from existing state
+    # If Terraform did not run, read from existing state
       - name: Read Terraform Output
         working-directory: terraform/vault
         run: |
           terraform init
-          echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_ENV
-          echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)" >> $GITHUB_ENV
+          echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" 
+          echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)"
 
       - name: Generate Ansible Inventory
         run: |
