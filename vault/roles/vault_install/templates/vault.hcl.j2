@@ -11,3 +11,8 @@ listener "tcp" {
 }
 
 api_addr = "{{ vault_api_addr }}"
+
+seal "awskms" {
+  region     = "{{ vault_aws_region }}"
+  kms_key_id = "{{ vault_kms_key_id }}"
+}

@@ -155,27 +155,57 @@
     - vault_status.stdout | trim | length > 0
     - vault_status.stdout | trim is match('^\{')
 
+
+
 # ─────────────────────────────────────────────────────────────
 # INITIALIZE VAULT (ONLY ONCE)
 # ─────────────────────────────────────────────────────────────
 
-- name: Initialize Vault
-  ansible.builtin.command: vault operator init -format=json
+- name: Initialize Vault with awskms auto-unseal
+  ansible.builtin.command: vault operator init -format=json -recovery-shares=5 -recovery-threshold=3
   register: vault_init
   when: not vault_initialized
   environment:
     VAULT_ADDR: "http://127.0.0.1:8200"
+  no_log: true
 
 # ─────────────────────────────────────────────────────────────
-# STORE INIT DATA
+# PARSE INIT OUTPUT
 # ─────────────────────────────────────────────────────────────
 
-- name: Persist unseal keys and root token
-  ansible.builtin.copy:
-    dest: "{{ vault_keys_file }}"
-    content: "{{ vault_init.stdout }}"
-    owner: root
-    group: root
-    mode: "0600"
+- name: Parse Vault init output
+  ansible.builtin.set_fact:
+    vault_init_data: "{{ vault_init.stdout | from_json }}"
   when: not vault_initialized
-  #no_log: true
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# STORE ROOT TOKEN IN SECRETS MANAGER
+# ─────────────────────────────────────────────────────────────
+
+- name: Store root token in AWS Secrets Manager
+  amazon.aws.secretsmanager_secret:
+    name: "{{ vault_secret_name_root_token }}"
+    secret_type: string
+    secret: "{{ vault_init_data.root_token }}"
+    region: "{{ vault_aws_region }}"
+    state: present
+    overwrite: true
+  when: not vault_initialized
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# STORE RECOVERY KEYS IN SECRETS MANAGER
+# ─────────────────────────────────────────────────────────────
+
+- name: Store recovery keys in AWS Secrets Manager
+  amazon.aws.secretsmanager_secret:
+    name: "{{ vault_secret_name_recovery_keys }}"
+    secret_type: string
+    secret: "{{ vault_init_data.recovery_keys_b64 | to_json }}"
+    region: "{{ vault_aws_region }}"
+    state: present
+    overwrite: true
+  when: not vault_initialized
+  no_log: true
+

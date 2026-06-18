@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'terraform/**'
+      - 'terraform/app/**'
   pull_request:
     branches: [main]
     paths:
-      - 'terraform/**'
+      - 'terraform/app/**'
 
 permissions:
   id-token: write
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./terraform/root
+        working-directory: ./terraform/app/root
 
     steps:
       - uses: actions/checkout@v4

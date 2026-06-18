@@ -1,77 +1,150 @@
 ---
 # ─────────────────────────────────────────────────────────────
-# LOAD VAULT INIT DATA
+# WAIT FOR VAULT TO BE UNSEALED (auto-unseal via KMS)
 # ─────────────────────────────────────────────────────────────
 
-- name: Check if Vault keys file exists
+- name: Wait for Vault to be unsealed
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8200/v1/sys/health"
+    status_code: [200]
+  register: vault_health
+  retries: 15
+  delay: 3
+  until: vault_health.status == 200
+  environment:
+    VAULT_ADDR: "http://127.0.0.1:8200"
+
+# ─────────────────────────────────────────────────────────────
+# CHECK IF APPROLE ALREADY BOOTSTRAPPED
+# ─────────────────────────────────────────────────────────────
+
+- name: Check if AppRole credentials file exists
   ansible.builtin.stat:
-    path: "{{ vault_keys_file }}"
-  register: vault_keys_file_stat
+    path: "{{ vault_approle_file }}"
+  register: approle_file_stat
 
-- name: Fail if Vault keys file is missing
-  ansible.builtin.fail:
-    msg: >
-      Vault keys file {{ vault_keys_file }} does not exist.
-      Vault must be initialized first.
-  when: not vault_keys_file_stat.stat.exists
+# ─────────────────────────────────────────────────────────────
+# RETRIEVE ROOT TOKEN FROM SECRETS MANAGER (bootstrap only)
+# ─────────────────────────────────────────────────────────────
 
-- name: Load Vault init data
-  ansible.builtin.slurp:
-    src: "{{ vault_keys_file }}"
-  register: vault_keys_raw
+- name: Retrieve root token from Secrets Manager
+  amazon.aws.secretsmanager_secret_info:
+    name: "{{ vault_secret_name_root_token }}"
+    region: "{{ vault_aws_region }}"
+  register: vault_root_token_secret
+  when: not approle_file_stat.stat.exists
   no_log: true
 
-- name: Parse Vault init data
-  ansible.builtin.set_fact:
-    vault_init_data: "{{ vault_keys_raw.content | b64decode | from_json }}"
-  no_log: true
-
-# ─────────────────────────────────────────────────────────────
-# CHECK VAULT STATUS
-# ─────────────────────────────────────────────────────────────
-
-- name: Check Vault status
-  ansible.builtin.command: vault status -format=json
-  register: vault_status
-  changed_when: false
-  failed_when: false
-  environment:
-    VAULT_ADDR: "http://127.0.0.1:8200"
-
-- name: Set default Vault sealed state
-  ansible.builtin.set_fact:
-    vault_sealed: true
-
-- name: Parse Vault sealed status
-  ansible.builtin.set_fact:
-    vault_sealed: "{{ (vault_status.stdout | from_json).sealed }}"
-  when:
-    - vault_status.stdout is defined
-    - vault_status.stdout | trim | length > 0
-    - vault_status.stdout | trim is match('^\{')
-
-# ─────────────────────────────────────────────────────────────
-# UNSEAL VAULT
-# ─────────────────────────────────────────────────────────────
-
-- name: Unseal Vault
-  ansible.builtin.command: vault operator unseal {{ item }}
-  loop: "{{ vault_init_data.unseal_keys_b64[0:3] }}"
-  when: vault_sealed
-  no_log: true
-  environment:
-    VAULT_ADDR: "http://127.0.0.1:8200"
-
-# ─────────────────────────────────────────────────────────────
-# SET VAULT ENVIRONMENT
-# ─────────────────────────────────────────────────────────────
-
-- name: Set Vault environment
+- name: Set Vault environment with root token
   ansible.builtin.set_fact:
     vault_env:
       VAULT_ADDR: "http://127.0.0.1:8200"
-      VAULT_TOKEN: "{{ vault_init_data.root_token }}"
+      VAULT_TOKEN: "{{ vault_root_token_secret.secrets[0].secret_value }}"
+  when: not approle_file_stat.stat.exists
   no_log: true
+
+
+# ─────────────────────────────────────────────────────────────
+# CHECK AUTH METHODS
+# ─────────────────────────────────────────────────────────────
+
+- name: Check auth methods
+  ansible.builtin.command: vault auth list -format=json
+  environment: "{{ vault_env }}"
+  register: auth_list
+  changed_when: false
+
+- name: Parse auth methods
+  ansible.builtin.set_fact:
+    auth_json: "{{ auth_list.stdout | from_json }}"
+
+    
+# ─────────────────────────────────────────────────────────────
+# BOOTSTRAP APPROLE (using root token — one time only)
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable AppRole auth method
+  ansible.builtin.command: vault auth enable approle
+  environment: "{{ vault_env }}"
+  when: auth_json['approle/'] is not defined
+  no_log: true
+
+- name: Write bootstrap policy for AppRole
+  ansible.builtin.template:
+    src: bootstrap-policy.hcl.j2
+    dest: /tmp/bootstrap-policy.hcl
+    mode: "0600"
+
+- name: Apply bootstrap policy
+  ansible.builtin.command: >
+    vault policy write vault-admin /tmp/bootstrap-policy.hcl
+  environment: "{{ vault_env }}"
+  no_log: true
+  register: policy_apply
+  changed_when: "'Success' in policy_apply.stdout or policy_apply.rc == 0"
+
+- name: Remove bootstrap policy file
+  ansible.builtin.file:
+    path: /tmp/bootstrap-policy.hcl
+    state: absent
+
+- name: Create AppRole role
+  ansible.builtin.command: >
+    vault write auth/approle/role/vault-admin
+      token_policies="vault-admin"
+      token_ttl=1h
+      token_max_ttl=4h
+      secret_id_ttl=720h
+  environment: "{{ vault_env }}"
+  when: not approle_file_stat.stat.exists
+  no_log: true
+
+- name: Fetch AppRole role-id
+  ansible.builtin.command: >
+    vault read -format=json auth/approle/role/vault-admin/role-id
+  register: approle_role_id_raw
+  environment: "{{ vault_env }}"
+  when: not approle_file_stat.stat.exists
+  no_log: true
+
+- name: Fetch AppRole secret-id
+  ansible.builtin.command: >
+    vault write -format=json -f auth/approle/role/vault-admin/secret-id
+  register: approle_secret_id_raw
+  environment: "{{ vault_env }}"
+  when: not approle_file_stat.stat.exists
+  no_log: true
+
+- name: Persist AppRole credentials
+  ansible.builtin.copy:
+    dest: "{{ vault_approle_file }}"        # e.g. /etc/vault/approle.json
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      {
+        "role_id":   "{{ (approle_role_id_raw.stdout  | from_json).data.role_id }}",
+        "secret_id": "{{ (approle_secret_id_raw.stdout | from_json).data.secret_id }}"
+      }
+  when: not approle_file_stat.stat.exists
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# REVOKE ROOT TOKEN AFTER BOOTSTRAP — no longer needed on disk or in Vault
+# ─────────────────────────────────────────────────────────────
+
+- name: Revoke root token after bootstrap
+  ansible.builtin.command: vault token revoke {{ vault_root_token_secret.secrets[0].secret_value }}
+  environment: "{{ vault_env }}"
+  when: not approle_file_stat.stat.exists
+  no_log: true
+
+- name: Delete root token from Secrets Manager
+  amazon.aws.secretsmanager_secret:
+    name: "{{ vault_secret_name_root_token }}"
+    state: absent
+    region: "{{ vault_aws_region }}"
+  when: not approle_file_stat.stat.exists
 
 # ─────────────────────────────────────────────────────────────
 # CHECK EXISTING SECRETS ENGINES
@@ -88,6 +161,59 @@
     secrets_json: "{{ secrets_list.stdout | from_json }}"
 
 # ─────────────────────────────────────────────────────────────
+# LOAD APPROLE CREDENTIALS
+# ─────────────────────────────────────────────────────────────
+
+- name: Fail if AppRole credentials file is missing
+  ansible.builtin.fail:
+    msg: "AppRole credentials file {{ vault_approle_file }} not found. Bootstrap must have failed."
+  when: not approle_file_stat.stat.exists and not (vault_approle_file is file)
+
+- name: Re-check AppRole credentials file after bootstrap
+  ansible.builtin.stat:
+    path: "{{ vault_approle_file }}"
+  register: approle_file_stat_post
+
+- name: Fail if AppRole credentials file still missing
+  ansible.builtin.fail:
+    msg: "AppRole credentials file {{ vault_approle_file }} not found after bootstrap attempt."
+  when: not approle_file_stat_post.stat.exists
+
+- name: Load AppRole credentials
+  ansible.builtin.slurp:
+    src: "{{ vault_approle_file }}"
+  register: approle_raw
+  no_log: true
+
+- name: Parse AppRole credentials
+  ansible.builtin.set_fact:
+    approle_creds: "{{ approle_raw.content | b64decode | from_json }}"
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# LOGIN WITH APPROLE — get a scoped, short-lived token
+# ─────────────────────────────────────────────────────────────
+
+- name: Login with AppRole
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8200/v1/auth/approle/login"
+    method: POST
+    body_format: json
+    body:
+      role_id: "{{ approle_creds.role_id }}"
+      secret_id: "{{ approle_creds.secret_id }}"
+    status_code: 200
+  register: approle_login
+  no_log: true
+
+- name: Set Vault environment using AppRole token
+  ansible.builtin.set_fact:
+    vault_env:
+      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_TOKEN: "{{ approle_login.json.auth.client_token }}"
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
 # ENABLE AWS SECRETS ENGINE
 # ─────────────────────────────────────────────────────────────
 
@@ -99,57 +225,24 @@
 # ─────────────────────────────────────────────────────────────
 # CONFIGURE AWS ROOT CREDS
 # ─────────────────────────────────────────────────────────────
-- name: Get AWS credentials from managed node environment
-  shell: echo $VAULT_AWS_ACCESS_KEY
-  register: aws_access_key
-  changed_when: false
-  no_log: true
-
-
-- name: Get AWS credentials from managed node environment
-  shell: echo $VAULT_AWS_SECRET_KEY
-  register: aws_secret_key
-  changed_when: false
-  no_log: true
-
-
-- name: Set credential facts
-  set_fact:
-    vault_aws_access_key: "{{ aws_access_key.stdout }}"
-    vault_aws_secret_key: "{{ aws_secret_key.stdout }}"
 
 - name: Configure AWS root credentials
   ansible.builtin.command: >
     vault write aws/config/root
-      access_key="{{ vault_aws_access_key }}"
-      secret_key="{{ vault_aws_secret_key }}"
       region="{{ vault_aws_region }}"
   environment: "{{ vault_env }}"
   no_log: true
-1:43
+
 # ─────────────────────────────────────────────────────────────
 # CREATE AWS ROLE
 # ─────────────────────────────────────────────────────────────
 
-- name: Create AWS policy document file
-  ansible.builtin.copy:
-    dest: /tmp/aws-policy.json
-    content: "{{ vault_aws_role_policy | to_nice_json }}"
-    mode: "0600"
-
-- name: Create AWS role for Terraform
+- name: Create or update AWS role for Terraform in Vault
   ansible.builtin.command: >
     vault write aws/roles/{{ vault_aws_role_name }}
-      credential_type=iam_user
-      policy_document=@/tmp/aws-policy.json
+    credential_type=iam_user
+    policy_arns={{ vault_aws_role_policy_arns | join(',') }}
   environment: "{{ vault_env }}"
-
-- name: Remove temp AWS policy file
-  ansible.builtin.file:
-    path: /tmp/aws-policy.json
-    state: absent
-
-
 
 # ─────────────────────────────────────────────────────────────
 # CREATE POLICY FILE
@@ -178,19 +271,7 @@
     path: /tmp/terraform-policy.hcl
     state: absent
 
-# ─────────────────────────────────────────────────────────────
-# CHECK AUTH METHODS
-# ─────────────────────────────────────────────────────────────
 
-- name: Check auth methods
-  ansible.builtin.command: vault auth list -format=json
-  environment: "{{ vault_env }}"
-  register: auth_list
-  changed_when: false
-
-- name: Parse auth methods
-  ansible.builtin.set_fact:
-    auth_json: "{{ auth_list.stdout | from_json }}"
 
 # ─────────────────────────────────────────────────────────────
 # ENABLE JWT AUTH

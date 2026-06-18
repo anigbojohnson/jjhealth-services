@@ -1,0 +1,101 @@
+name: Vault provisioning and configuration using terraform and ansible
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      terraform_changed: ${{ steps.filter.outputs.vault }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            vault:
+              - 'terraform/vault/**'
+
+  terraform:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.terraform_changed == 'true'
+    runs-on: ubuntu-latest
+
+    outputs:
+      vault_kms_key_id: ${{ steps.tf_output.outputs.vault_kms_key_id }}
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      - name: Get Terraform Output
+        id: tf_output
+        run: |
+          echo "vault_kms_key_id=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_OUTPUT
+
+  ansible:
+    needs:
+      - detect-changes
+      - terraform
+    if: always()
+    runs-on: ubuntu-latest
+    outputs:
+      vault_kms_key_id: ${{ steps.tf_output.outputs.vault_kms_key_id }}
+      vault_instance_id: ${{ steps.tf_output.outputs.vault_instance_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+      
+      - name: Install Python dependencies
+        run: |
+          pip install boto3 botocore
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install -r vault/requirements.yml
+
+
+      # If Terraform ran, use its output
+      - name: Set vault_kms_key_id from Terraform Job
+        if: needs.detect-changes.outputs.terraform_changed == 'true'
+        run: |
+          echo "VAULT_KMS_KEY_ID=${{ needs.terraform.outputs.vault_kms_key_id }}" >> $GITHUB_ENV
+
+      # If Terraform did not run, read from existing state
+      - name: Read Terraform Output
+        working-directory: terraform/vault
+        run: |
+          terraform init
+          echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_ENV
+          echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)" >> $GITHUB_ENV
+
+      - name: Generate Ansible Inventory
+        run: |
+          cat > inventory.ini <<EOF
+          [vault_servers]
+          vault-ec2 ansible_host=$VAULT_INSTANCE_ID ansible_connection=amazon.aws.aws_ssm ansible_user=ubuntu
+          EOF
+          
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i inventory.ini vault/site.yml \
+            -e vault_kms_key_id=$VAULT_KMS_KEY_ID
