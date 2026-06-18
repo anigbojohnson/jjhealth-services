@@ -14,6 +14,7 @@ vault_kms_key_id: "{{ vault_kms_key_id }}"
 vault_secret_name_root_token: "jjhealth-services/vault/root-token"
 vault_secret_name_recovery_keys: "jjhealth-services/vault/recovery-keys"
 
+
 # Vault listener
 vault_listen_address: "0.0.0.0:8200"
 vault_api_addr: "http://{{ ansible_host }}:8200"
