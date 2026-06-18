@@ -1,5 +1,7 @@
 name: Vault provisioning and configuration using terraform and ansible
-
+permissions:
+  id-token: write
+  contents: read
 on:
   push:
     branches:
