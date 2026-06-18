@@ -50,7 +50,7 @@ jobs:
         run: terraform init
 
       - name: Terraform Apply
-        run: terraform Apply -auto-approve
+        run: terraform apply -auto-approve
 
       
   ansible:

@@ -15,7 +15,6 @@ resource "aws_security_group" "ec2" {
 
 resource "aws_iam_role" "ec2" {
   name = "ec2-kms-role"
-  
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
