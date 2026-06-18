@@ -39,7 +39,7 @@ resource "aws_iam_role_policy" "ec2_kms" {
         "kms:Decrypt",
         "kms:DescribeKey"
       ]
-      Resource = aws_kms_key.this.arn
+      Resource = aws_kms_key.vault_unseal.arn
     }]
   })
 }
