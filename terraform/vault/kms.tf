@@ -14,7 +14,6 @@ resource "aws_kms_alias" "vault_unseal" {
   target_key_id = aws_kms_key.vault_unseal.key_id
 }
 
-
 resource "aws_iam_role_policy" "vault_kms_unseal" {
   name = "vault-kms-unseal"
   role = aws_iam_role.ec2.id
