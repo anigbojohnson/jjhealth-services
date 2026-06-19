@@ -28,7 +28,7 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Retrieve root token from Secrets Manager
-  amazon.aws.secretsmanager_secret_info:
+  community.aws.secretsmanager_secret_info:
     name: "{{ vault_secret_name_root_token }}"
     region: "{{ vault_aws_region }}"
   register: vault_root_token_secret
