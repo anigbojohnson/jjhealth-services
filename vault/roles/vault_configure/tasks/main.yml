@@ -27,10 +27,14 @@
 # RETRIEVE ROOT TOKEN FROM SECRETS MANAGER (bootstrap only)
 # ─────────────────────────────────────────────────────────────
 
+
+
 - name: Retrieve root token from Secrets Manager
-  community.aws.secretsmanager_secret_info:
-    name: "{{ vault_secret_name_root_token }}"
-    region: "{{ vault_aws_region }}"
+  command: >
+    aws secretsmanager get-secret-value
+    --secret-id "{{ vault_secret_name_root_token }}"
+    --query SecretString
+    --output text
   register: vault_root_token_secret
   when: not approle_file_stat.stat.exists
   no_log: true
