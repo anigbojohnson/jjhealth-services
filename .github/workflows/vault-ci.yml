@@ -48,18 +48,9 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-
-      - name: Import existing Secrets Manager secrets
-        run: |
-          terraform import 'aws_secretsmanager_secret.vault["root_token"]' \
-            arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/root-token-T99i4T || true
-
-          terraform import 'aws_secretsmanager_secret.vault["recovery_keys"]' \
-            arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/recovery-keys-68i51T || true
-
       
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
       
   ansible:
     needs:
