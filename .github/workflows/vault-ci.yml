@@ -53,56 +53,50 @@ jobs:
         run: terraform apply -auto-approve
       
   ansible:
-    needs:
-      - detect-changes
-      - terraform
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  needs:
+    - detect-changes
+    - terraform
+  if: always()
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::869868778582:role/GitHubTerraformRole
-          aws-region: eu-west-2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::869868778582:role/GitHubTerraformRole
+        aws-region: eu-west-2
 
-      - name: Install Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-      
-      - name: Ensure boto3 is available to Ansible controller
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install boto3 botocore
+    - name: Install Ansible
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y ansible
 
-      - name: Force Ansible to use system Python
-        run: |
-          echo -e "[defaults]\nansible_python_interpreter=/usr/bin/python3" > ansible.cfg
+    - name: Install boto3 for Ansible
+      run: |
+        pipx inject ansible-core boto3 botocore 2>/dev/null || \
+        python3 -m pip install boto3 botocore --break-system-packages
 
-      - name: Install Ansible collections
-        run: |
-          ansible-galaxy collection install -r vault/requirements.yml
-      
-      - uses: hashicorp/setup-terraform@v3
+    - name: Install Ansible collections
+      run: ansible-galaxy collection install -r vault/requirements.yml
 
-    # If Terraform did not run, read from existing state
-      - name: Read Terraform Output
-        working-directory: terraform/vault
-        run: |
-          terraform init
-          echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" 
-          echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)"
+    - uses: hashicorp/setup-terraform@v3
 
-      - name: Generate Ansible Inventory
-        run: |
-          cat > inventory.ini <<EOF
-          [vault_servers]
-          vault-ec2 ansible_host=$VAULT_INSTANCE_ID ansible_connection=amazon.aws.aws_ssm ansible_user=ubuntu
-          EOF
-          
-      - name: Run Ansible Playbook
-        run: |
-          ansible-playbook -i inventory.ini vault/site.yml \
-            -e vault_kms_key_id=$VAULT_KMS_KEY_ID
+    - name: Read Terraform Output
+      working-directory: terraform/vault
+      run: |
+        terraform init
+        echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_ENV
+        echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)" >> $GITHUB_ENV
+
+    - name: Generate Ansible Inventory
+      run: |
+        cat > inventory.ini <<EOF
+        [vault_servers]
+        vault-ec2 ansible_host=${{ env.VAULT_INSTANCE_ID }} ansible_connection=amazon.aws.aws_ssm ansible_user=ubuntu
+        EOF
+
+    - name: Run Ansible Playbook
+      run: |
+        ansible-playbook -i inventory.ini vault/site.yml \
+          -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
