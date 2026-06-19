@@ -65,7 +65,7 @@ jobs:
     needs:
       - detect-changes
       - terraform
-   # if: always()
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -110,4 +110,3 @@ jobs:
         run: |
           ansible-playbook -i inventory.ini vault/site.yml \
             -e vault_kms_key_id=$VAULT_KMS_KEY_ID
-            
