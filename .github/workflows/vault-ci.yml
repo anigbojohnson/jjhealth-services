@@ -81,9 +81,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible
       
-      - name: Install Python dependencies
+      - name: Ensure boto3 is available to Ansible controller
         run: |
-          pip install boto3 botocore
+          python3 -m pip install --upgrade pip
+          python3 -m pip install boto3 botocore
+
+      - name: Force Ansible to use system Python
+        run: |
+          echo -e "[defaults]\nansible_python_interpreter=/usr/bin/python3" > ansible.cfg
 
       - name: Install Ansible collections
         run: |
