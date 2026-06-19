@@ -37,7 +37,6 @@
     --output text
   register: vault_root_token_secret
   when: not approle_file_stat.stat.exists
-  no_log: true
 
 - name: Set Vault environment with root token
   ansible.builtin.set_fact:
@@ -144,7 +143,7 @@
   no_log: true
 
 - name: Delete root token from Secrets Manager
-  amazon.aws.secretsmanager_secret:
+  community.aws.secretsmanager_secret:
     name: "{{ vault_secret_name_root_token }}"
     state: absent
     region: "{{ vault_aws_region }}"
