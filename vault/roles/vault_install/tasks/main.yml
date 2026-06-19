@@ -184,7 +184,7 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Store root token in AWS Secrets Manager
-  amazon.aws.secretsmanager_secret:
+  community.aws.secretsmanager_secret:
     name: "{{ vault_secret_name_root_token }}"
     secret_type: string
     secret: "{{ vault_init_data.root_token }}"
@@ -199,7 +199,7 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Store recovery keys in AWS Secrets Manager
-  amazon.aws.secretsmanager_secret:
+  community.aws.secretsmanager_secret:
     name: "{{ vault_secret_name_recovery_keys }}"
     secret_type: string
     secret: "{{ vault_init_data.recovery_keys_b64 | to_json }}"
