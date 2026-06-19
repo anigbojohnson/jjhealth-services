@@ -51,7 +51,7 @@ jobs:
 
       
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
       
   ansible:
     needs:
