@@ -85,6 +85,8 @@ resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
       ]
       Resource = aws_iam_instance_profile.ec2.arn
 
+
+
     }]
   })
 } 
