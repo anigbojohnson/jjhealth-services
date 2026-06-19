@@ -110,3 +110,4 @@ jobs:
         run: |
           ansible-playbook -i inventory.ini vault/site.yml \
             -e vault_kms_key_id=$VAULT_KMS_KEY_ID
+            
