@@ -9,4 +9,8 @@ resource "aws_secretsmanager_secret" "vault" {
   for_each = local.vault_secrets
 
   name = each.value
+
+lifecycle {
+    prevent_destroy = true
+  }
 }
