@@ -148,7 +148,6 @@
     state: absent
     region: "{{ vault_aws_region }}"
   when: not approle_file_stat.stat.exists
-
 # ─────────────────────────────────────────────────────────────
 # CHECK EXISTING SECRETS ENGINES
 # ─────────────────────────────────────────────────────────────
