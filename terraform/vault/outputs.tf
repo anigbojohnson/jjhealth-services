@@ -33,11 +33,6 @@ output "vault_instance_id" {
   value = aws_instance.private.id
 }
 
-output "key_pair_name" {
-    value = aws_key_pair.client_key.name
-}
-
-
 output "ssm_transfer_bucket_name" {
   value       = aws_s3_bucket.ssm_transfer.id
   description = "Set this as ansible_aws_ssm_bucket_name in your inventory"
