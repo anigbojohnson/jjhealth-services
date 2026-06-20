@@ -32,3 +32,4 @@ output "vault_secret_arns" {
 output "vault_instance_id" {
   value = aws_instance.private.id
 }
+
