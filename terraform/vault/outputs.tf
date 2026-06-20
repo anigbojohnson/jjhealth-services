@@ -38,6 +38,7 @@ output "ssm_transfer_bucket_name" {
   description = "Set this as ansible_aws_ssm_bucket_name in your inventory"
 }
 
+
 output "ssm_transfer_access_policy_arn" {
   value       = aws_iam_policy.ssm_transfer_access.arn
   description = "Attach this to the IAM role/group used by your Vault terraform-role mapping"
