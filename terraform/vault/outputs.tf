@@ -32,3 +32,18 @@ output "vault_secret_arns" {
 output "vault_instance_id" {
   value = aws_instance.private.id
 }
+
+output "key_pair_name" {
+    value = aws_key_pair.client_key.name
+}
+
+
+output "ssm_transfer_bucket_name" {
+  value       = aws_s3_bucket.ssm_transfer.id
+  description = "Set this as ansible_aws_ssm_bucket_name in your inventory"
+}
+
+output "ssm_transfer_access_policy_arn" {
+  value       = aws_iam_policy.ssm_transfer_access.arn
+  description = "Attach this to the IAM role/group used by your Vault terraform-role mapping"
+}
