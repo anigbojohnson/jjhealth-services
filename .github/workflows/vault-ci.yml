@@ -26,6 +26,7 @@ jobs:
             vault:
               - 'terraform/vault/**'
 
+
   terraform:
     needs: detect-changes
     if: needs.detect-changes.outputs.terraform_changed == 'true'
@@ -106,4 +107,3 @@ jobs:
 
 
 
-            
