@@ -30,6 +30,10 @@ output "vault_instance_id" {
   value = aws_instance.private.id
 }
 
+output "vault_private_ip" {
+  value = aws_instance.vault.private_ip
+}
+
 output "ssm_transfer_bucket_name" {
   value       = aws_s3_bucket.ssm_transfer.id
   description = "Set this as ansible_aws_ssm_bucket_name in your inventory"
@@ -40,6 +44,6 @@ output "ssm_transfer_access_policy_arn" {
   description = "Attach this to the IAM role/group used by your Vault terraform-role mapping"
 }
 
-output "bastion_instance_id" {
-  value = aws_instance.public.id
+output "bastion_public_ip" {
+  value = aws_instance.public.public_ip
 }

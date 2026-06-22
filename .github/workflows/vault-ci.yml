@@ -89,12 +89,12 @@ jobs:
         run: |
           terraform init
           echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_ENV
-          echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)" >> $GITHUB_ENV
-          echo "BASTION_INSTANCE_ID=$(terraform output -raw bastion_instance_id)" >> $GITHUB_ENV
+          echo "VAULT_PRIVATE_IP=$(terraform output -raw vault_private_ip)" >> $GITHUB_ENV
+          echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
 
-
       - name: Generate Ansible Inventory
+        working-directory: vault
         run: |
           cat > inventory.ini <<EOF
           [vault_servers]
@@ -103,13 +103,21 @@ jobs:
             ansible_user=ubuntu \
             ansible_python_interpreter=/usr/bin/python3 \
             ansible_ssh_private_key_file=vault-key.pem \
-            ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=ubuntu@${{ env.BASTION_INSTANCE_ID }} -i vault-key.pem'
+            ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=ubuntu@${{ env.BASTION_PUBLIC_IP }} -i vault-key.pem'
           EOF
 
       - name: Run Ansible Playbook
+        working-directory: vault                          # added — inventory.ini lives here
         run: |
-          ansible-playbook -i inventory.ini vault/site.yml \
+          ansible-playbook -i inventory.ini site.yml \   # not vault/site.yml
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
 
-
+      - name: Destroy Bastion Host
+        if: always()
+        working-directory: terraform/vault
+        run: |
+          terraform destroy \
+            -target=aws_instance.public \                 # matches your actual resource name
+            -target=aws_security_group.bastion \
+            -auto-approve
 
