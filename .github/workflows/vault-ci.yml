@@ -96,6 +96,7 @@ jobs:
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
+          pwd
           cat > inventory.ini <<EOF
           [vault_servers]
           vault-ec2 \
