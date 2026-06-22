@@ -118,7 +118,7 @@ jobs:
         working-directory: terraform/vault
         run: |
           terraform destroy \
-            -target=aws_instance.public \                 
+            -target=aws_instance.public \
             -target=aws_security_group.bastion \
             -auto-approve
 
