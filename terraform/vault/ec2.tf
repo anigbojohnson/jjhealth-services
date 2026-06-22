@@ -109,7 +109,7 @@ resource "aws_instance" "private" {
   subnet_id              = aws_subnet.private.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
-  key_name = aws_key_pair.client_key.name 
+  key_name = aws_key_pair.client_key.key_name
   tags = { Name = "private-ec2" }
 }
 
@@ -119,7 +119,7 @@ resource "aws_instance" "public" {
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.bastion.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
-  key_name = aws_key_pair.client_key.name 
+  key_name = aws_key_pair.client_key.key_name
 
   tags = { Name = "public-ec2" }
 }
