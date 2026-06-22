@@ -114,6 +114,7 @@ resource "aws_instance" "private" {
 }
 
 
+
 resource "aws_instance" "public" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
