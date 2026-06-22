@@ -96,7 +96,7 @@ jobs:
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
-          pwd
+          chmod 600 vault/vault-key.pem
           cat > inventory.ini <<EOF
           [vault_servers]
           vault-ec2 \
@@ -113,30 +113,6 @@ jobs:
           ansible-playbook -i inventory.ini site.yml \
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
       
-
-      - name: Debug SSH connectivity
-        working-directory: vault
-        run: |
-          echo "=== Key file exists? ==="
-          ls -la vault-key.pem || echo "KEY NOT FOUND"
-
-          echo "=== Bastion IP ==="
-          echo "${{ env.BASTION_PUBLIC_IP }}"
-
-          echo "=== Vault private IP ==="
-          echo "${{ env.VAULT_PRIVATE_IP }}"
-
-          echo "=== Can reach bastion port 22? ==="
-          nc -zv ${{ env.BASTION_PUBLIC_IP }} 22 || echo "BASTION PORT 22 UNREACHABLE"
-
-          echo "=== SSH to bastion directly ==="
-          ssh -i vault-key.pem \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            ubuntu@${{ env.BASTION_PUBLIC_IP }} echo "bastion ok" || echo "BASTION SSH FAILED"
-
-          echo "=== Inventory contents ==="
-          cat inventory.ini
 
       - name: Destroy Bastion Host
         if: always()
