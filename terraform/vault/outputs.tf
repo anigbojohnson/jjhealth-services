@@ -10,7 +10,6 @@ output "private_subnet_id" {
   value = aws_subnet.private.id
 }
 
-
 output "vault_kms_key_arn" {
   value = aws_kms_key.vault_unseal.arn
 }
@@ -31,7 +30,7 @@ output "vault_instance_id" {
 }
 
 output "vault_private_ip" {
-  value = aws_instance.private.private_ip
+   value = aws_instance.private.private_ip
 }
 
 output "ssm_transfer_bucket_name" {
