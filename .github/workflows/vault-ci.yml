@@ -106,16 +106,12 @@ jobs:
             ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=ubuntu@${{ env.BASTION_PUBLIC_IP }} -i vault-key.pem'
           EOF
 
-      - name: Show current directory
-        working-directory: vault
-        run: |
-          pwd
-          ls -la
 
       - name: Run Ansible Playbook
         working-directory: vault
         run: |
-          ansible-playbook -i inventory.ini site.yml \   # not vault/site.yml
+          pwd
+          ansible-playbook -i inventory.ini site.yml \
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
 
       - name: Destroy Bastion Host
