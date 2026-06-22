@@ -31,7 +31,7 @@ output "vault_instance_id" {
 }
 
 output "vault_private_ip" {
-  value = aws_instance.ec2.private_ip
+  value = aws_instance.private.private_ip
 }
 
 output "ssm_transfer_bucket_name" {
