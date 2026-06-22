@@ -93,6 +93,23 @@ jobs:
           echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
 
+
+      - name: Get Runner IP
+        run: echo "RUNNER_IP=$(curl -s https://checkip.amazonaws.com)" >> $GITHUB_ENV
+
+      - name: Whitelist Runner IP on Bastion SG
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ secrets.BASTION_SG_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ env.RUNNER_IP }}/32
+
+      - name: Write SSH Key
+        run: |
+          echo "${{ secrets.VAULT_SSH_PRIVATE_KEY }}" > vault/vault-key.pem
+          chmod 600 vault/vault-key.pem
+          
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
