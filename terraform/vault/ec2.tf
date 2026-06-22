@@ -113,6 +113,7 @@ resource "aws_instance" "private" {
   tags = { Name = "private-ec2" }
 }
 
+
 resource "aws_instance" "public" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
