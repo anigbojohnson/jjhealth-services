@@ -113,12 +113,11 @@ resource "aws_instance" "private" {
   tags = { Name = "private-ec2" }
 }
 
-
-
 resource "aws_instance" "public" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
+  associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.bastion.id]
   key_name = var.key_name
 
