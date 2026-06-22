@@ -28,3 +28,8 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "key_name" {
+  description = "key pair for ec2 instances at both private and public"
+  type        = string
+  default     = "vault-key"
+}
