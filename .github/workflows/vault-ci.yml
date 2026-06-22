@@ -106,8 +106,9 @@ jobs:
             ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=ubuntu@${{ env.BASTION_PUBLIC_IP }} -i vault-key.pem'
           EOF
 
-
       - name: Show current directory
+        working-directory: vault
+
         run: |
           pwd
           ls -la
