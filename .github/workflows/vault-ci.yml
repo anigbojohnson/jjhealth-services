@@ -117,7 +117,6 @@ jobs:
         if: always()
         working-directory: terraform/vault
         run: |
-          terraform init
           terraform destroy \
             -target=aws_instance.public \                 
             -target=aws_security_group.bastion \
