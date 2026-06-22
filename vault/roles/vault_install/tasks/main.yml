@@ -3,6 +3,13 @@
 # INSTALL DEPENDENCIES
 # ─────────────────────────────────────────────────────────────
 
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  async: 300
+  poll: 15
+
 - name: Install dependencies
   ansible.builtin.apt:
     name:
@@ -10,7 +17,8 @@
       - wget
       - curl
     state: present
-    update_cache: true
+  async: 300
+  poll: 15
 # ─────────────────────────────────────────────────────────────
 # CHECK INSTALLED VERSION
 # ─────────────────────────────────────────────────────────────

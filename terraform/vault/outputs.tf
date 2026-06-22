@@ -42,3 +42,4 @@ output "ssm_transfer_access_policy_arn" {
   value       = aws_iam_policy.ssm_transfer_access.arn
   description = "Attach this to the IAM role/group used by your Vault terraform-role mapping"
 }
+
