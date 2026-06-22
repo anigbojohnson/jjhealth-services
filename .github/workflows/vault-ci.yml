@@ -107,7 +107,7 @@ jobs:
           EOF
 
       - name: Run Ansible Playbook
-        working-directory: vault                          # added — inventory.ini lives here
+        working-directory:                         # added — inventory.ini lives here
         run: |
           ansible-playbook -i inventory.ini site.yml \   # not vault/site.yml
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
@@ -117,7 +117,7 @@ jobs:
         working-directory: terraform/vault
         run: |
           terraform destroy \
-            -target=aws_instance.public \                 # matches your actual resource name
+            -target=aws_instance.public \                 
             -target=aws_security_group.bastion \
             -auto-approve
 
