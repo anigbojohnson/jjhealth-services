@@ -19,11 +19,43 @@ data "aws_ami" "ubuntu" {
 }
 
 
+# Bastion host SG — accepts SSH from the internet (or restrict to your IP)
+resource "aws_security_group" "bastion" {
+  name        = "bastion-sg"
+  description = "Security group for bastion host"
+  vpc_id      = aws_vpc.main.id
 
+  ingress {
+    description = "SSH from allowed IPs"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]   # tighten to your IP: ["x.x.x.x/32"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "bastion-sg" }
+}
+
+# Private EC2 SG — accepts SSH only from the bastion SG (not a CIDR)
 resource "aws_security_group" "ec2" {
   name        = "ec2-private-sg"
   description = "Security group for private EC2 instance"
   vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "SSH from bastion only"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]  # SG reference, not CIDR
+  }
 
   egress {
     from_port   = 0
@@ -77,8 +109,19 @@ resource "aws_instance" "private" {
   subnet_id              = aws_subnet.private.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
-
+  key_name = aws_key_pair.client_key.name 
   tags = { Name = "private-ec2" }
+}
+
+resource "aws_instance" "public" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.bastion.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+  key_name = aws_key_pair.client_key.name 
+
+  tags = { Name = "public-ec2" }
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_ssm" {

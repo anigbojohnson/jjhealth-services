@@ -90,19 +90,26 @@ jobs:
           terraform init
           echo "VAULT_KMS_KEY_ID=$(terraform output -raw vault_kms_key_id)" >> $GITHUB_ENV
           echo "VAULT_INSTANCE_ID=$(terraform output -raw vault_instance_id)" >> $GITHUB_ENV
+          echo "BASTION_INSTANCE_ID=$(terraform output -raw bastion_instance_id)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
+
 
       - name: Generate Ansible Inventory
         run: |
           cat > inventory.ini <<EOF
           [vault_servers]
-          vault-ec2 ansible_host=${{ env.VAULT_INSTANCE_ID }} ansible_connection=amazon.aws.aws_ssm ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_aws_ssm_region=eu-west-2 ansible_aws_ssm_bucket_name=${{ env.SSM_BUCKET_NAME }} ansible_remote_tmp=/tmp/.ansible-tmp ansible_aws_ssm_timeout=300
+          vault-ec2 \
+            ansible_host=${{ env.VAULT_PRIVATE_IP }} \
+            ansible_user=ubuntu \
+            ansible_python_interpreter=/usr/bin/python3 \
+            ansible_ssh_private_key_file=vault-key.pem \
+            ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=ubuntu@${{ env.BASTION_INSTANCE_ID }} -i vault-key.pem'
           EOF
 
       - name: Run Ansible Playbook
         run: |
           ansible-playbook -i inventory.ini vault/site.yml \
-            -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }} -vvv
+            -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
 
 
 

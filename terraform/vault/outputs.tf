@@ -10,9 +10,6 @@ output "private_subnet_id" {
   value = aws_subnet.private.id
 }
 
-output "private_instance_id" {
-  value = aws_instance.private.id
-}
 
 output "vault_kms_key_arn" {
   value = aws_kms_key.vault_unseal.arn
@@ -43,3 +40,6 @@ output "ssm_transfer_access_policy_arn" {
   description = "Attach this to the IAM role/group used by your Vault terraform-role mapping"
 }
 
+output "bastion_instance_id" {
+  value = aws_instance.public.id
+}
