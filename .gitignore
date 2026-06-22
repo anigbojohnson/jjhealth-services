@@ -65,7 +65,8 @@ terraform/root/terraform.tfstate
 terraform/root/tfplan
 terraform/root/terraform.tfstate.backup
 terraform/.crash.log
-
+**/*.pem
+**/*.pub
 
 # ----------------------------------
 # GitHub Actions artifacts
