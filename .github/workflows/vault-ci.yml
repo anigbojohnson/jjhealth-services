@@ -96,7 +96,7 @@ jobs:
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
-          chmod 600 vault/vault-key.pem
+          chmod 600 ${{ github.workspace }}/vault/vault-key.pem
           cat > inventory.ini <<EOF
           [vault_servers]
           vault-ec2 \
