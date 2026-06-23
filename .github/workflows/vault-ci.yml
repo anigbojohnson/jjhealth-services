@@ -93,39 +93,26 @@ jobs:
           echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
 
-      - name: Verify IPs before generating inventory
-        run: |
-          if [ -z "${BASTION_PUBLIC_IP}" ]; then
-            echo "ERROR: BASTION_PUBLIC_IP is empty"
-            exit 1
-          fi
-          if [ -z "${VAULT_PRIVATE_IP}" ]; then
-            echo "ERROR: VAULT_PRIVATE_IP is empty"
-            exit 1
-          fi
-          echo "Bastion IP: ${BASTION_PUBLIC_IP}"
-          echo "Vault IP:   ${VAULT_PRIVATE_IP}"
-
-      - name: Test SSH connectivity
-        run: |
           echo "=== Testing bastion reachability ==="
-          nc -zv 16.60.178.0 22 -w 5 || echo "FAILED: Cannot reach bastion on port 22"
+          nc -zv ${BASTION_PUBLIC_IP} 22 -w 5
 
           echo "=== Testing direct SSH to bastion ==="
           ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               -o ConnectTimeout=10 \
-              ubuntu@16.60.178.0 "echo 'Bastion SSH OK'" || echo "FAILED: SSH to bastion failed"
+              ubuntu@${BASTION_PUBLIC_IP} \
+              "echo 'Bastion SSH OK'"
 
           echo "=== Testing ProxyJump to vault ==="
           ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               -o ConnectTimeout=10 \
-              -o ProxyJump=ubuntu@16.60.178.0 \
-              ubuntu@10.0.2.196 "echo 'Vault SSH OK'" || echo "FAILED: ProxyJump to vault failed"
-
+              -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP} \
+              ubuntu@${VAULT_PRIVATE_IP} \
+              "echo 'Vault SSH OK'"
+              
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
