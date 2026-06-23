@@ -145,6 +145,7 @@ resource "aws_iam_role_policy_attachment" "private_ec2_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+
 resource "aws_iam_role_policy_attachment" "public_ec2_ssm" {
   role       = aws_iam_role.public.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
