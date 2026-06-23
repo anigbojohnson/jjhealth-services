@@ -22,6 +22,7 @@ variable "private_subnet_cidr" {
   default     = "10.0.2.0/24"
 }
 
+
 variable "instance_type" {
   description = "EC2 instance type for the private instance"
   type        = string
