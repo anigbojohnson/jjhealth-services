@@ -79,6 +79,7 @@ resource "aws_iam_role" "private" {
   })
 }
 
+
 resource "aws_iam_role" "public" {
   name = "public-ec2-kms-role"
   assume_role_policy = jsonencode({
