@@ -20,7 +20,7 @@ data "aws_ami" "ubuntu" {
 
 
 # Bastion host SG — accepts SSH from the internet (or restrict to your IP)
-resource "aws_security_group" "bastion" {
+resource "aws_security_group" "public" {
   name        = "bastion-sg"
   description = "Security group for bastion host"
   vpc_id      = aws_vpc.main.id
@@ -44,7 +44,7 @@ resource "aws_security_group" "bastion" {
 }
 
 # Private EC2 SG — accepts SSH only from the bastion SG (not a CIDR)
-resource "aws_security_group" "ec2" {
+resource "aws_security_group" "private" {
   name        = "ec2-private-sg"
   description = "Security group for private EC2 instance"
   vpc_id      = aws_vpc.main.id
@@ -67,8 +67,20 @@ resource "aws_security_group" "ec2" {
   tags = { Name = "ec2-private-sg" }
 }
 
-resource "aws_iam_role" "ec2" {
+resource "aws_iam_role" "private" {
   name = "ec2-kms-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role" "public" {
+  name = "bastion-ec2-kms-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -81,7 +93,7 @@ resource "aws_iam_role" "ec2" {
 
 resource "aws_iam_role_policy" "ec2_kms" {
   name = "ec2-kms-policy"
-  role = aws_iam_role.ec2.id
+  role = aws_iam_role.private.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -97,18 +109,21 @@ resource "aws_iam_role_policy" "ec2_kms" {
   })
 }
 
-resource "aws_iam_instance_profile" "ec2" {
+resource "aws_iam_instance_profile" "private" {
   name = "ec2-kms-instance-profile"
   role = aws_iam_role.ec2.name
 }
-
+resource "aws_iam_instance_profile" "public" {
+  name = "bastion-ec2-kms-instance-profile"
+  role = aws_iam_role.public.name
+}
 
 resource "aws_instance" "private" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.private.id
-  vpc_security_group_ids = [aws_security_group.ec2.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+  vpc_security_group_ids = [aws_security_group.private.id]
+  iam_instance_profile   = aws_iam_instance_profile.private.name
   key_name = var.key_name
   tags = { Name = "private-ec2" }
 }
@@ -118,20 +133,27 @@ resource "aws_instance" "public" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   associate_public_ip_address = true
-  vpc_security_group_ids = [aws_security_group.bastion.id]
+  vpc_security_group_ids = [aws_security_group.pubic.id]
+  iam_instance_profile   = aws_iam_instance_profile.public.name
+
   key_name = var.key_name
 
   tags = { Name = "public-ec2" }
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_ssm" {
-  role       = aws_iam_role.ec2.name
+  role       = aws_iam_role.private.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.public.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
   name = "vault-aws-secrets-engine"
-  role = aws_iam_role.ec2.id
+  role = aws_iam_role.private.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -148,8 +170,7 @@ resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
         "iam:DeleteUserPolicy",
         "sts:AssumeRole"
       ]
-      Resource = aws_iam_instance_profile.ec2.arn
-
+      Resource = "*"
     }]
   })
 } 
