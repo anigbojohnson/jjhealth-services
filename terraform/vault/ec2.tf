@@ -111,12 +111,12 @@ resource "aws_iam_role_policy" "ec2_kms" {
 }
 
 resource "aws_iam_instance_profile" "private" {
-  name = "ec2-kms-instance-profile"
+  name = "private-kms-instance-profile"
   role = aws_iam_role.private.name
 }
 
 resource "aws_iam_instance_profile" "public" {
-  name = "bastion-ec2-kms-instance-profile"
+  name = "public-ec2-kms-instance-profile"
   role = aws_iam_role.public.name
 }
 
