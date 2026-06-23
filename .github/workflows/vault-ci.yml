@@ -93,13 +93,34 @@ jobs:
           echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
 
+      - name: Verify IPs before generating inventory
+        run: |
+          if [ -z "${BASTION_PUBLIC_IP}" ]; then
+            echo "ERROR: BASTION_PUBLIC_IP is empty"
+            exit 1
+          fi
+          if [ -z "${VAULT_PRIVATE_IP}" ]; then
+            echo "ERROR: VAULT_PRIVATE_IP is empty"
+            exit 1
+          fi
+          echo "Bastion IP: ${BASTION_PUBLIC_IP}"
+          echo "Vault IP:   ${VAULT_PRIVATE_IP}"
+
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
+          # Strip any whitespace/newlines from the IPs just in case
+          BASTION_IP=$(echo "${BASTION_PUBLIC_IP}" | tr -d '[:space:]')
+          VAULT_IP=$(echo "${VAULT_PRIVATE_IP}" | tr -d '[:space:]')
+
           cat > inventory.ini <<EOF
-            [vault_servers]
-            vault-ec2 ansible_host=${VAULT_PRIVATE_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP}'
-            EOF
+          [vault_servers]
+          vault-ec2 ansible_host=${VAULT_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}'
+          EOF
+
+              echo "--- inventory.ini contents ---"
+              cat inventory.ini
+              echo "--- end ---"
 
       - name: Run Ansible Playbook
         working-directory: vault
