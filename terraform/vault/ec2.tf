@@ -140,7 +140,6 @@ resource "aws_instance" "public" {
   key_name = var.key_name
   tags = { Name = "public-ec2" }
 }
-
 resource "aws_iam_role_policy_attachment" "private_ec2_ssm" {
   role       = aws_iam_role.private.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
