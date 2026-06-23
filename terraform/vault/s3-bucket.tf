@@ -121,5 +121,3 @@ resource "aws_iam_policy" "ssm_transfer_access" {
 #   group      = aws_iam_group.vault_terraform_group.name
 #   policy_arn = aws_iam_policy.ssm_transfer_access.arn
 # }
-
-
