@@ -138,7 +138,6 @@ resource "aws_instance" "public" {
   vpc_security_group_ids = [aws_security_group.public.id]
   iam_instance_profile   = aws_iam_instance_profile.public.name
   key_name = var.key_name
-
   tags = { Name = "public-ec2" }
 }
 
