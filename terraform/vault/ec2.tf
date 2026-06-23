@@ -68,7 +68,7 @@ resource "aws_security_group" "private" {
 }
 
 resource "aws_iam_role" "private" {
-  name = "ec2-kms-role"
+  name = "private-ec2-kms-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -80,7 +80,7 @@ resource "aws_iam_role" "private" {
 }
 
 resource "aws_iam_role" "public" {
-  name = "bastion-ec2-kms-role"
+  name = "public-ec2-kms-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
