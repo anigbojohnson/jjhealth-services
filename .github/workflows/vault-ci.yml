@@ -106,6 +106,26 @@ jobs:
           echo "Bastion IP: ${BASTION_PUBLIC_IP}"
           echo "Vault IP:   ${VAULT_PRIVATE_IP}"
 
+      - name: Test SSH connectivity
+        run: |
+          echo "=== Testing bastion reachability ==="
+          nc -zv 16.60.178.0 22 -w 5 || echo "FAILED: Cannot reach bastion on port 22"
+
+          echo "=== Testing direct SSH to bastion ==="
+          ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=10 \
+              ubuntu@16.60.178.0 "echo 'Bastion SSH OK'" || echo "FAILED: SSH to bastion failed"
+
+          echo "=== Testing ProxyJump to vault ==="
+          ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=10 \
+              -o ProxyJump=ubuntu@16.60.178.0 \
+              ubuntu@10.0.2.196 "echo 'Vault SSH OK'" || echo "FAILED: ProxyJump to vault failed"
+
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
