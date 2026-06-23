@@ -17,7 +17,7 @@ resource "aws_kms_alias" "vault_unseal" {
 
 resource "aws_iam_role_policy" "vault_kms_unseal" {
   name = "vault-kms-unseal"
-  role = aws_iam_role.ec2.id
+  role = aws_iam_role.public.id
 
   policy = jsonencode({
     Version = "2012-10-17"

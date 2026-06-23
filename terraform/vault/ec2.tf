@@ -54,7 +54,7 @@ resource "aws_security_group" "private" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.bastion.id]  # SG reference, not CIDR
+    security_groups = [aws_security_group.pubic.id]  # SG reference, not CIDR
   }
 
   egress {
@@ -111,8 +111,9 @@ resource "aws_iam_role_policy" "ec2_kms" {
 
 resource "aws_iam_instance_profile" "private" {
   name = "ec2-kms-instance-profile"
-  role = aws_iam_role.ec2.name
+  role = aws_iam_role.private.name
 }
+
 resource "aws_iam_instance_profile" "public" {
   name = "bastion-ec2-kms-instance-profile"
   role = aws_iam_role.public.name
@@ -133,7 +134,7 @@ resource "aws_instance" "public" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   associate_public_ip_address = true
-  vpc_security_group_ids = [aws_security_group.pubic.id]
+  vpc_security_group_ids = [aws_security_group.public.id]
   iam_instance_profile   = aws_iam_instance_profile.public.name
 
   key_name = var.key_name
