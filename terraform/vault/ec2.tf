@@ -141,12 +141,12 @@ resource "aws_instance" "public" {
   tags = { Name = "public-ec2" }
 }
 
-resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+resource "aws_iam_role_policy_attachment" "private_ec2_ssm" {
   role       = aws_iam_role.private.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+resource "aws_iam_role_policy_attachment" "public_ec2_ssm" {
   role       = aws_iam_role.public.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
