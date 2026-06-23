@@ -93,47 +93,23 @@ jobs:
           echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
 
-          echo "=== Testing bastion reachability ==="
-          nc -zv ${BASTION_PUBLIC_IP} 22 -w 5
-
-          echo "=== Testing direct SSH to bastion ==="
-          ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              -o ConnectTimeout=10 \
-              ubuntu@${BASTION_PUBLIC_IP} \
-              "echo 'Bastion SSH OK'"
-
-          echo "=== Testing ProxyJump to vault ==="
-          ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              -o ConnectTimeout=10 \
-              -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP} \
-              ubuntu@${VAULT_PRIVATE_IP} \
-              "echo 'Vault SSH OK'"
-              
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
-          # Strip any whitespace/newlines from the IPs just in case
-          BASTION_IP=$(echo "${BASTION_PUBLIC_IP}" | tr -d '[:space:]')
-          VAULT_IP=$(echo "${VAULT_PRIVATE_IP}" | tr -d '[:space:]')
-
           cat > inventory.ini <<EOF
-          [vault_servers]
-          vault-ec2 ansible_host=${VAULT_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_IP}'
-          EOF
-
-              echo "--- inventory.ini contents ---"
-              cat inventory.ini
-              echo "--- end ---"
+            [vault_servers]
+            vault-ec2 ansible_host=${VAULT_PRIVATE_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP}'
+            EOF
 
       - name: Run Ansible Playbook
         working-directory: vault
         run: |
           ansible-playbook -i inventory.ini site.yml \
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
-      
+        
 
+      - name: Debug Outputs
+        run: |
+          echo "BASTION_PUBLIC_IP=${BASTION_PUBLIC_IP}"
+          echo "VAULT_PRIVATE_IP=${VAULT_PRIVATE_IP}"
 
