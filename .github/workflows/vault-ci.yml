@@ -96,11 +96,12 @@ jobs:
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
+          chmod 600 ${GITHUB_WORKSPACE}/vault/vault-key.pem
           cat > inventory.ini <<EOF
             [vault_servers]
             vault-ec2 ansible_host=${VAULT_PRIVATE_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP}'
             EOF
-            
+
       - name: Debug Outputs
         run: |
           echo "BASTION_PUBLIC_IP=${BASTION_PUBLIC_IP}"
