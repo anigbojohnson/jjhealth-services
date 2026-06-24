@@ -14,3 +14,10 @@ lifecycle {
     prevent_destroy = true
   }
 }
+
+resource "aws_secretsmanager_secret_version" "vault" {
+  for_each = local.vault_secrets
+
+  secret_id     = aws_secretsmanager_secret.vault[each.key].id
+  secret_string = "placeholder"
+}
