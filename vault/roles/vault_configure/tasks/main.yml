@@ -35,6 +35,7 @@
       'jjhealth-services/vault/root-token',
       region=vault_aws_region
   ) }}"
+  no_log: true
 
 
 - name: Set token
