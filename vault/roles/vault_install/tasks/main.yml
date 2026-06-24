@@ -141,6 +141,7 @@
   environment:
     VAULT_ADDR: "http://127.0.0.1:8200"
 
+
 - name: Set default Vault initialized state
   ansible.builtin.set_fact:
     vault_initialized: false

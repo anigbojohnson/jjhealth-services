@@ -1,0 +1,40 @@
+---
+# Vault version and install
+vault_version: "1.15.5"
+vault_arch: "linux_amd64"
+vault_install_dir: "/usr/local/bin"
+vault_config_dir: "/etc/vault.d"
+vault_data_dir: "/opt/vault/data"
+vault_log_dir: "/var/log/vault"
+vault_keys_file: /etc/vault/init-keys.json
+vault_approle_file: /etc/vault/approle.json  
+
+# Vault listener
+vault_listen_address: "0.0.0.0:8200"
+vault_api_addr: "http://{{ ansible_host }}:8200"
+
+# Dev mode — set to false and configure TLS for production
+vault_dev_mode: true
+vault_dev_root_token: "root"
+
+# AWS secrets engine
+vault_aws_region: "eu-west-2"
+vault_aws_access_key: "{{ lookup('env', 'VAULT_AWS_ACCESS_KEY') }}"
+vault_aws_secret_key: "{{ lookup('env', 'VAULT_AWS_SECRET_KEY') }}"
+
+# Vault role for Terraform / S3 access
+vault_aws_role_name: "terraform-role"
+aws_account_id: "869868778582"
+
+vault_aws_policy_arns:
+  - "arn:aws:iam::{{ aws_account_id }}:policy/jjhealth-services-rds-s3-logs-kms-cache-iam-secretManager-vault-policy.json"
+  - "arn:aws:iam::{{ aws_account_id }}:policy/jjhealth-services-ec2-eks-vault-policy.json"
+  
+# GitHub OIDC
+github_oidc_discovery_url: "https://token.actions.githubusercontent.com"
+github_org: "anigbojohnson"
+github_repo: "jjhealth-services"
+# Vault policy name
+vault_policy_name: "terraform-policy"
+vault_jwt_role_name: "gh-actions-role"
+vault_token_ttl: "1h"
