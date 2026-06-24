@@ -114,7 +114,15 @@ jobs:
         run: |
           ansible-playbook -i inventory.ini site.yml \
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
-        
+
+      - name: Destroy Bastion Host
+        if: always()
+        working-directory: terraform
+        run: |
+          terraform destroy \
+            -target=aws_instance.bastion \
+            -target=aws_security_group.bastion \
+            -auto-approve 
 
 
 
