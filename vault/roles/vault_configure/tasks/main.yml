@@ -23,6 +23,7 @@
     path: "{{ vault_approle_file }}"
   register: approle_file_stat
 
+
 # ─────────────────────────────────────────────────────────────
 # RETRIEVE ROOT TOKEN FROM SECRETS MANAGER (bootstrap only)
 # ─────────────────────────────────────────────────────────────
