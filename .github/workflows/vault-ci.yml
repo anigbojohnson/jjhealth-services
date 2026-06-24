@@ -102,13 +102,14 @@ jobs:
 
       - name: Test ProxyJump to Vault
         run: |
+          chmod 600 ${GITHUB_WORKSPACE}/vault/vault-key.pem
           ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               -o ConnectTimeout=15 \
               -o ProxyCommand="ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ubuntu@${BASTION_PUBLIC_IP}" \
               ubuntu@${VAULT_PRIVATE_IP} "echo 'Vault SSH OK'"
-              
+
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
