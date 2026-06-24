@@ -29,9 +29,8 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Retrieve root token from Secrets Manager
-  community.aws.aws_secret:
+  community.aws.secretsmanager_secret_info:
     name: "jjhealth-services/vault/root-token"
-    state: present
     region: "{{ vault_aws_region }}"
   register: vault_root_token_secret
 
