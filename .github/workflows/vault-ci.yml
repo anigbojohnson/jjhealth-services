@@ -93,11 +93,10 @@ jobs:
           echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
 
-      
         echo "Testing bastion SSH..."
         nc -vz ${BASTION_PUBLIC_IP} 22 || echo "Bastion port 22 blocked"
 
-        
+
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
