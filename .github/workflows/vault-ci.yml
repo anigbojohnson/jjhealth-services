@@ -80,7 +80,10 @@ jobs:
           python3 -m pip install boto3 botocore --break-system-packages
 
       - name: Install Ansible collections
-        run: ansible-galaxy collection install -r vault/requirements.yml
+        run: | 
+           ansible-galaxy collection install -r vault/requirements.yml
+           ansible-galaxy collection list | grep aws
+           ansible-doc -l | grep secretsmanager
 
       - uses: hashicorp/setup-terraform@v3
 
