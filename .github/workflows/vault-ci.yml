@@ -102,27 +102,22 @@ jobs:
 
       - name: Test ProxyJump to Vault
         run: |
-          echo "Bastion: ${BASTION_PUBLIC_IP}"
-          echo "Vault:   ${VAULT_PRIVATE_IP}"
-
           ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               -o ConnectTimeout=15 \
-              -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP} \
+              -o ProxyCommand="ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ubuntu@${BASTION_PUBLIC_IP}" \
               ubuntu@${VAULT_PRIVATE_IP} "echo 'Vault SSH OK'"
-
+              
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
           chmod 600 ${GITHUB_WORKSPACE}/vault/vault-key.pem
-
           cat > inventory.ini <<EOF
           [vault_servers]
-          vault-ec2 ansible_host=${VAULT_PRIVATE_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP}'
+          vault-ec2 ansible_host=${VAULT_PRIVATE_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand="ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ubuntu@${BASTION_PUBLIC_IP}"'
           EOF
-
-          cat inventory.ini
+              cat inventory.ini
 
       - name: Debug Outputs
         run: |
