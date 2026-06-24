@@ -29,10 +29,17 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Retrieve root token from Secrets Manager
-  amazon.aws.secretsmanager_secret_info:
-    name: "jjhealth-services/vault/root-token"
-    region: "{{ vault_aws_region }}"
-  register: vault_root_token_secret
+  set_fact:
+    vault_root_token: "{{ lookup(
+      'amazon.aws.secretsmanager_secret',
+      'jjhealth-services/vault/root-token',
+      region=vault_aws_region
+  ) }}"
+
+
+- name: Set token
+  set_fact:
+    vault_root_token: "{{ vault_secret.token }}"
 
 - name: Set Vault environment with root token
   ansible.builtin.set_fact:
