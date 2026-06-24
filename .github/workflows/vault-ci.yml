@@ -99,6 +99,19 @@ jobs:
           nc -vz ${BASTION_PUBLIC_IP} 22 || echo "Bastion port 22 blocked"
         
 
+
+      - name: Test ProxyJump to Vault
+        run: |
+          echo "Bastion: ${BASTION_PUBLIC_IP}"
+          echo "Vault:   ${VAULT_PRIVATE_IP}"
+
+          ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=15 \
+              -o ProxyJump=ubuntu@${BASTION_PUBLIC_IP} \
+              ubuntu@${VAULT_PRIVATE_IP} "echo 'Vault SSH OK'"
+
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
