@@ -153,7 +153,29 @@ resource "aws_iam_role_policy_attachment" "public_ec2_ssm" {
 }
 
 
+resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
+  name = "vault-aws-root-recovery-token-secrets-engine"
+  role = aws_iam_role.private.id
 
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{       
+      "Sid": "VaultRootAndRecoveryTokenSecretsManager",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:CreateSecret",
+        "secretsmanager:UpdateSecret",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:TagResource" 
+      ],
+      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/root-token*",
+                  "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/recovery-keys*"
+      ]
+    }]
+  })
+} 
 resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
   name = "vault-aws-secrets-engine"
   role = aws_iam_role.private.id
