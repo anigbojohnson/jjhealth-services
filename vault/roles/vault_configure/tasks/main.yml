@@ -161,6 +161,15 @@
 # CHECK EXISTING SECRETS ENGINES
 # ─────────────────────────────────────────────────────────────
 
+- name: Check token lookup
+  ansible.builtin.command: vault token lookup
+  environment: "{{ vault_env }}"
+  register: token_lookup
+  changed_when: false
+
+- debug:
+    var: token_lookup.stdout
+    
 - name: Check secrets engines
   ansible.builtin.command: vault secrets list -format=json
   environment: "{{ vault_env }}"
