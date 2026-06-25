@@ -169,7 +169,8 @@ resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
         "secretsmanager:UpdateSecret",
         "secretsmanager:PutSecretValue",
         "secretsmanager:TagResource",
-        "secretsmanager:GetResourcePolicy"
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:DeleteSecret"
       ],
 
       "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/root-token*",
