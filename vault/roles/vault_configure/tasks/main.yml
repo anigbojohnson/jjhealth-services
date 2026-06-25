@@ -40,21 +40,18 @@
 
 - name: Retrieve root token
   set_fact:
-    vault_secret: "{{ lookup(
+    vault_root_token: "{{ lookup(
       'amazon.aws.secretsmanager_secret',
       'jjhealth-services/vault/root-token',
       region=vault_aws_region
-    ) | from_json }}"
-    
-- name: Set token
-  set_fact:
-    vault_root_token: "{{ vault_secret.token }}"
+    ) }}"
+
 
 - name: Set Vault environment with root token
   ansible.builtin.set_fact:
     vault_env:
       VAULT_ADDR: "http://127.0.0.1:8200"
-      VAULT_TOKEN: "{{ vault_root_token_secret.secrets[0].secret_value }}"
+      VAULT_TOKEN: "{{ vault_root_token }}"
   when: not approle_file_stat.stat.exists
   no_log: true
 
@@ -149,7 +146,7 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Revoke root token after bootstrap
-  ansible.builtin.command: vault token revoke {{ vault_root_token_secret.secrets[0].secret_value }}
+  ansible.builtin.command: vault token revoke {{ vault_root_token }}
   environment: "{{ vault_env }}"
   when: not approle_file_stat.stat.exists
   no_log: true
