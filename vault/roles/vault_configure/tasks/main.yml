@@ -38,6 +38,14 @@
   no_log: true
 
 
+- name: Retrieve root token
+  set_fact:
+    vault_secret: "{{ lookup(
+      'amazon.aws.secretsmanager_secret',
+      'jjhealth-services/vault/root-token',
+      region=vault_aws_region
+    ) | from_json }}"
+    
 - name: Set token
   set_fact:
     vault_root_token: "{{ vault_secret.token }}"
