@@ -180,6 +180,7 @@ resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
     }]
   })
 } 
+
 resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
   name = "vault-aws-secrets-engine"
   role = aws_iam_role.private.id
