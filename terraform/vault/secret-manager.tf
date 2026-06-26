@@ -1,7 +1,7 @@
 locals {
   vault_secrets = {
-    root_token    = "jjhealth-services/vault/root-token"
-    recovery_keys = "jjhealth-services/vault/recovery-keys"
+    root_token    = "jjhealth-services/vault/root-token-1"
+    recovery_keys = "jjhealth-services/vault/recovery-keys-1"
   }
 }
 
@@ -10,9 +10,6 @@ resource "aws_secretsmanager_secret" "vault" {
 
   name = each.value
 
-lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_secretsmanager_secret_version" "vault" {
