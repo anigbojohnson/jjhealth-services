@@ -42,7 +42,7 @@
   set_fact:
     vault_root_token: "{{ lookup(
       'amazon.aws.secretsmanager_secret',
-      '{{ vault_secret_name_root_token }}',
+      vault_secret_name_root_token,
       region=vault_aws_region
     ) }}"
 
