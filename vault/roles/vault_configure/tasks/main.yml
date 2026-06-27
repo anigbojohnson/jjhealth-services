@@ -32,7 +32,7 @@
   set_fact:
     vault_root_token: "{{ lookup(
       'amazon.aws.secretsmanager_secret',
-      'jjhealth-services/vault/root-token',
+       '{{ vault_secret_name_root_token }}',
       region=vault_aws_region
   ) }}"
   no_log: true
@@ -42,7 +42,7 @@
   set_fact:
     vault_root_token: "{{ lookup(
       'amazon.aws.secretsmanager_secret',
-      'jjhealth-services/vault/root-token',
+      '{{ vault_secret_name_root_token }}',
       region=vault_aws_region
     ) }}"
 
@@ -169,7 +169,7 @@
 
 - debug:
     var: token_lookup.stdout
-    
+
 - name: Check secrets engines
   ansible.builtin.command: vault secrets list -format=json
   environment: "{{ vault_env }}"
