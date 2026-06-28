@@ -40,7 +40,7 @@
   debug:
     var: vault_root_token
 
-    
+
 - name: Retrieve root token
   set_fact:
     vault_root_token: "{{ lookup(
@@ -147,11 +147,7 @@
 # REVOKE ROOT TOKEN AFTER BOOTSTRAP — no longer needed on disk or in Vault
 # ─────────────────────────────────────────────────────────────
 
-- name: Revoke root token after bootstrap
-  ansible.builtin.command: vault token revoke {{ vault_root_token }}
-  environment: "{{ vault_env }}"
-  when: not approle_file_stat.stat.exists
-  no_log: true
+
 
 - name: Delete root token from Secrets Manager
   community.aws.secretsmanager_secret:
