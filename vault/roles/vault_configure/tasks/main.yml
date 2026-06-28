@@ -36,7 +36,11 @@
     ) }}"
   no_log: true
 
+- name: Display root token
+  debug:
+    var: vault_root_token
 
+    
 - name: Retrieve root token
   set_fact:
     vault_root_token: "{{ lookup(
