@@ -10,7 +10,6 @@ resource "aws_secretsmanager_secret" "vault" {
   for_each = local.vault_secrets
 
   name = each.value
-
 }
 
 resource "aws_secretsmanager_secret_version" "vault" {

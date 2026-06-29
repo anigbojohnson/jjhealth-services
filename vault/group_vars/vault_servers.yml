@@ -22,6 +22,7 @@ vault_api_addr: "http://{{ ansible_host }}:8200"
 vault_dev_mode: true
 vault_dev_root_token: "root"
 
+
 # AWS secrets engine
 vault_aws_region: "eu-west-2"
 
