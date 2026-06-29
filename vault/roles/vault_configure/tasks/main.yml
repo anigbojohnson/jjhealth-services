@@ -139,18 +139,7 @@
   when: not approle_file_stat.stat.exists
   no_log: true
 
-# ─────────────────────────────────────────────────────────────
-# REVOKE ROOT TOKEN AFTER BOOTSTRAP — no longer needed on disk or in Vault
-# ─────────────────────────────────────────────────────────────
 
-
-
-- name: Delete root token from Secrets Manager
-  community.aws.secretsmanager_secret:
-    name: "{{ vault_secret_name_root_token }}"
-    state: absent
-    region: "{{ vault_aws_region }}"
-  when: not approle_file_stat.stat.exists
 # ─────────────────────────────────────────────────────────────
 # CHECK EXISTING SECRETS ENGINES
 # ─────────────────────────────────────────────────────────────
