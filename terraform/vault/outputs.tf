@@ -46,3 +46,5 @@ output "ssm_transfer_access_policy_arn" {
 output "bastion_public_ip" {
   value = aws_instance.public.public_ip
 }
+
+
