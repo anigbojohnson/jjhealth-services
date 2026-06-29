@@ -1,7 +1,7 @@
 locals {
   vault_secrets = {
-    root_token    = "jjhealth-services/vault/root-token-13"
-    recovery_keys = "jjhealth-services/vault/recovery-keys-13"
+    root_token    = "jjhealth-services/vault/root-token-14"
+    recovery_keys = "jjhealth-services/vault/recovery-keys-14"
   }
 }
 
