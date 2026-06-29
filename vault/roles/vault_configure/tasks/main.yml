@@ -170,7 +170,7 @@
 - name: Fail if AppRole credentials file is missing
   ansible.builtin.fail:
     msg: "AppRole credentials file {{ vault_approle_file }} not found. Bootstrap must have failed."
-  when: not approle_file_stat.stat.exists and not (vault_approle_file is file)
+  when: not approle_file_stat.stat.exists 
 
 - name: Re-check AppRole credentials file after bootstrap
   ansible.builtin.stat:
@@ -362,3 +362,5 @@
   ansible.builtin.command: vault read auth/jwt/role/{{ vault_jwt_role_name }}
   environment: "{{ vault_env }}"
   changed_when: false
+
+  
