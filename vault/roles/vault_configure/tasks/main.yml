@@ -97,10 +97,6 @@
   register: policy_apply
   changed_when: "'Success' in policy_apply.stdout or policy_apply.rc == 0"
 
-- name: Remove bootstrap policy file
-  ansible.builtin.file:
-    path: /tmp/bootstrap-policy.hcl
-    state: absent
 
 - name: Create AppRole role
   ansible.builtin.command: >
@@ -207,6 +203,11 @@
   ansible.builtin.set_fact:
     approle_creds: "{{ approle_raw.content | b64decode | from_json }}"
   no_log: true
+
+- name: Remove bootstrap policy file
+  ansible.builtin.file:
+    path: /tmp/bootstrap-policy.hcl
+    state: absent
 
 # ─────────────────────────────────────────────────────────────
 # LOGIN WITH APPROLE — get a scoped, short-lived token
