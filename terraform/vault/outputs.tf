@@ -43,6 +43,7 @@ output "ssm_transfer_access_policy_arn" {
   description = "Attach this to the IAM role/group used by your Vault terraform-role mapping"
 }
 
+
 output "bastion_public_ip" {
   value = aws_instance.public.public_ip
 }
