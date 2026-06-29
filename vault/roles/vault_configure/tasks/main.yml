@@ -254,7 +254,7 @@
   ansible.builtin.command: >
     vault write aws/roles/{{ vault_aws_role_name }}
     credential_type=iam_user
-    policy_arns={{ vault_aws_role_policy_arns | join(',') }}
+    policy_arns={{ vault_aws_policy_arns | join(',') }}
   environment: "{{ vault_env }}"
 
 # ─────────────────────────────────────────────────────────────
