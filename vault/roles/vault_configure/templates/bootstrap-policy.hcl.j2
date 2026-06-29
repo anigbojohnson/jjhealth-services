@@ -16,3 +16,7 @@ path "sys/policies/acl/*" {
 path "sys/mounts/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
+
+path "sys/auth/*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
