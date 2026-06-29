@@ -136,7 +136,6 @@
         "role_id":   "{{ (approle_role_id_raw.stdout  | from_json).data.role_id }}",
         "secret_id": "{{ (approle_secret_id_raw.stdout | from_json).data.secret_id }}"
       }
-  when: not approle_file_stat.stat.exists
   no_log: true
 
 
