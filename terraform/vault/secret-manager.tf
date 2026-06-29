@@ -5,6 +5,7 @@ locals {
   }
 }
 
+
 resource "aws_secretsmanager_secret" "vault" {
   for_each = local.vault_secrets
 
