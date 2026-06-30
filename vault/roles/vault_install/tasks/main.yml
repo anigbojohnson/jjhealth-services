@@ -208,4 +208,3 @@
     overwrite: true
   when: not vault_initialized
   no_log: true
-
