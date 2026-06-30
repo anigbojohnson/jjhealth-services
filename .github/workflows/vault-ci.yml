@@ -52,7 +52,7 @@ jobs:
         run: terraform init
       
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
       
   ansible:
     needs:
@@ -116,3 +116,4 @@ jobs:
         run: |
           ansible-playbook -i inventory.ini site.yml \
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
+

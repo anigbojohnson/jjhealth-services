@@ -2,14 +2,12 @@
 # ─────────────────────────────────────────────────────────────
 # INSTALL DEPENDENCIES
 # ─────────────────────────────────────────────────────────────
-- name: Install dependencies
+- name: Install required dependency
   ansible.builtin.apt:
-    name:
-      - unzip
-      - wget
-      - curl
+    name: unzip
     state: present
     update_cache: true
+
 # ─────────────────────────────────────────────────────────────
 # CHECK INSTALLED VERSION
 # ─────────────────────────────────────────────────────────────
