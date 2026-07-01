@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'terraform/app/**'
+      - '.github/workflows/terraform-ci.yml'
+
   pull_request:
     branches: [main]
     paths:
@@ -54,8 +56,8 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
 
-      - name: Terraform destroy
+      - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform destroy -auto-approve
+        run: terraform apply -auto-approve
 
 
