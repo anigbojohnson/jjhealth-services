@@ -35,20 +35,7 @@
       region=vault_aws_region
     ) }}"
   no_log: true
-
-- name: Display root token
-  debug:
-    var: vault_root_token
-
-
-- name: Retrieve root token
-  set_fact:
-    vault_root_token: "{{ lookup(
-      'amazon.aws.secretsmanager_secret',
-      vault_secret_name_root_token,
-      region=vault_aws_region
-    ) }}"
-
+  
 
 - name: Set Vault environment with root token
   ansible.builtin.set_fact:
@@ -177,15 +164,6 @@
     msg: "AppRole credentials file {{ vault_approle_file }} not found. Bootstrap must have failed."
   when: not approle_file_stat.stat.exists 
 
-- name: Re-check AppRole credentials file after bootstrap
-  ansible.builtin.stat:
-    path: "{{ vault_approle_file }}"
-  register: approle_file_stat_post
-
-- name: Fail if AppRole credentials file still missing
-  ansible.builtin.fail:
-    msg: "AppRole credentials file {{ vault_approle_file }} not found after bootstrap attempt."
-  when: not approle_file_stat_post.stat.exists
 
 - name: Load AppRole credentials
   ansible.builtin.slurp:
@@ -369,3 +347,7 @@
   changed_when: false
 
   
+
+
+  # Issues
+  # 1.  what about the instance that approle did not login. 
