@@ -36,6 +36,23 @@ tar xzf actions-runner-linux-x64-2.335.1.tar.gz
 chown -R runner:runner /home/runner/actions-runner
 
 
+# Download the AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+# Extract it
+unzip awscliv2.zip
+
+# Install it
+sudo ./aws/install
+aws secretsmanager create-secret \
+  --name github-runner-pat \
+  --secret-string "YOUR_NEW_GITHUB_PAT"
+  
+GITHUB_PAT=$(aws secretsmanager get-secret-value \
+    --secret-id github-runner-pat \
+    --query SecretString \
+    --output text)
+
 RUNNER_TOKEN=$(curl -s -X POST \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer $GITHUB_PAT" \

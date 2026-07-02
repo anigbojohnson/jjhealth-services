@@ -187,6 +187,33 @@ resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
   })
 } 
 
+
+
+resource "aws_iam_role_policy" "github-runner-pat" {
+  name = "github-runner-pat"
+  role = aws_iam_role.public.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{       
+      "Sid": "github-runner-pat",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:CreateSecret",
+        "secretsmanager:UpdateSecret",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:TagResource",
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:DeleteSecret",
+        "secretsmanager:RestoreSecret"
+      ],
+      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat",
+      ]
+    }]
+  })
+} 
 resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
   name = "vault-aws-secrets-engine"
   role = aws_iam_role.private.id
