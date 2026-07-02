@@ -14,9 +14,9 @@ apt-get install -y \
 # Install Terraform
 TERRAFORM_VERSION="1.13.2"
 
-curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+curl -LO https://releases.hashicorp.com/terraform/$${TERRAFORM_VERSION}/terraform_$${TERRAFORM_VERSION}_linux_amd64.zip
 
-unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+unzip terraform_$${TERRAFORM_VERSION}_linux_amd64.zip
 
 mv terraform /usr/local/bin/
 
