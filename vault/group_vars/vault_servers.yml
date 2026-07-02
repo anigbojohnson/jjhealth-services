@@ -11,8 +11,8 @@ vault_keys_file: /etc/vault/init-keys.json
 vault_approle_file: /etc/vault/approle.json  
 
 vault_kms_key_id: "{{ vault_kms_key_id }}"  
-vault_secret_name_root_token: "jjhealth-services/vault/root-token-22"
-vault_secret_name_recovery_keys: "jjhealth-services/vault/recovery-keys-22"
+vault_secret_name_root_token: "jjhealth-services/vault/root-token-23"
+vault_secret_name_recovery_keys: "jjhealth-services/vault/recovery-keys-23"
 
 # Vault listener
 vault_listen_address: "0.0.0.0:8200"
