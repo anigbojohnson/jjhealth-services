@@ -33,3 +33,17 @@ variable "key_name" {
   type        = string
   default     = "vault-key"
 }
+
+
+variable "github_repo" {
+  description = "GitHub repository URL"
+  type        = string
+  default     = "https://github.com/anigbojohnson/jjhealth-services"
+}
+
+variable "github_runner_name" {
+  description = "GitHub Actions runner name"
+  type        = string
+  default     = "jjhealth-services-runner"
+}
+

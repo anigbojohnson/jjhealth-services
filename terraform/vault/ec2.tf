@@ -11,7 +11,7 @@ data "aws_ami" "ubuntu" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-  
+
 
   filter {
     name   = "root-device-type"
@@ -140,6 +140,12 @@ resource "aws_instance" "public" {
   vpc_security_group_ids = [aws_security_group.public.id]
   iam_instance_profile   = aws_iam_instance_profile.public.name
   key_name = var.key_name
+
+  user_data = templatefile("${path.module}/github-runner.sh", {
+    github_repo  = var.github_repo
+    runner_name  = var.github_runner_name
+  })
+
   tags = { Name = "public-ec2" }
 }
 

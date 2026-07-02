@@ -19,7 +19,10 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: 
+      - self-hosted
+      - linux
+      - x64
     defaults:
       run:
         working-directory: ./terraform/app/root
@@ -44,8 +47,6 @@ jobs:
       - name: Wait for AWS credentials to propagate
         run: sleep 10
 
-      - name: Verify AWS credentials
-        run: aws sts get-caller-identity
 
       - name: Clean Terraform Directory
         run: rm -rf .terraform
