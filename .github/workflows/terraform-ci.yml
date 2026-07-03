@@ -25,13 +25,11 @@ jobs:
       - x64
     defaults:
       run:
-        working-directory: ./terraform/app/root
+        working-directory: ./terraform/app
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
 
       - name: Fetch Keys from Vault
         uses: hashicorp/vault-action@v3
@@ -46,7 +44,6 @@ jobs:
 
       - name: Wait for AWS credentials to propagate
         run: sleep 10
-
 
       - name: Clean Terraform Directory
         run: rm -rf .terraform
