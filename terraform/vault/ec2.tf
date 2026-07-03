@@ -139,6 +139,8 @@ resource "aws_instance" "public" {
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.public.id]
   iam_instance_profile   = aws_iam_instance_profile.public.name
+  user_data_replace_on_change = true
+
   key_name = var.key_name
 
   user_data = templatefile("${path.module}/github-runner.sh", {
@@ -196,20 +198,13 @@ resource "aws_iam_role_policy" "github-runner-pat" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{       
-      "Sid": "github-runner-pat",
+      "Sid": "GitHubRunnerPAT",
       "Effect": "Allow",
       "Action": [
         "secretsmanager:DescribeSecret",
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:CreateSecret",
-        "secretsmanager:UpdateSecret",
-        "secretsmanager:PutSecretValue",
-        "secretsmanager:TagResource",
-        "secretsmanager:GetResourcePolicy",
-        "secretsmanager:DeleteSecret",
-        "secretsmanager:RestoreSecret"
+        "secretsmanager:GetSecretValue"
       ],
-      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat",
+      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat*",
       ]
     }]
   })
