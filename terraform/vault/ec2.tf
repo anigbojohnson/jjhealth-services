@@ -204,7 +204,7 @@ resource "aws_iam_role_policy" "github-runner-pat" {
         "secretsmanager:DescribeSecret",
         "secretsmanager:GetSecretValue"
       ],
-      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat*",
+      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat*"
       ]
     }]
   })

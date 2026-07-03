@@ -122,6 +122,3 @@ resource "aws_iam_policy" "ssm_transfer_access" {
 #   policy_arn = aws_iam_policy.ssm_transfer_access.arn
 # }
 
-
-
-
