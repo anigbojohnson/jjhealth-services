@@ -58,6 +58,14 @@ resource "aws_security_group" "private" {
     security_groups = [aws_security_group.public.id]  # SG reference, not CIDR
   }
 
+    ingress {
+    description     = "SSH from bastion only"
+    from_port       = 8200
+    to_port         = 8200
+    protocol        = "tcp"
+    security_groups = [aws_security_group.public.id]  # SG reference, not CIDR
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
