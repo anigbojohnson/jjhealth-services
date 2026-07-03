@@ -209,6 +209,7 @@ resource "aws_iam_role_policy" "github-runner-pat" {
     }]
   })
 } 
+
 resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
   name = "vault-aws-secrets-engine"
   role = aws_iam_role.private.id
