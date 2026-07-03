@@ -44,10 +44,8 @@ unzip awscliv2.zip
 
 # Install it
 sudo ./aws/install
-aws secretsmanager create-secret \
-  --name github-runner-pat \
-  --secret-string "YOUR_NEW_GITHUB_PAT"
-  
+
+
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
     --query SecretString \
