@@ -10,7 +10,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'terraform/app/**'
+      - 'terraform/app/'
 
 permissions:
   id-token: write
@@ -25,7 +25,7 @@ jobs:
       - x64
     defaults:
       run:
-        working-directory: ./terraform/app
+        working-directory: terraform/app/
 
     steps:
       - uses: actions/checkout@v4
