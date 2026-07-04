@@ -26,6 +26,7 @@
   ansible.builtin.get_url:
     url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_{{ vault_arch }}.zip"
     dest: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
+    checksum: "sha256:https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_SHA256SUMS"
     mode: "0644"
   when: vault_version not in (vault_installed_version.stdout | default(''))
 
@@ -37,6 +38,10 @@
     mode: "0755"
   when: vault_version not in (vault_installed_version.stdout | default(''))
 
+- name: Remove downloaded archive
+  file:
+    path: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
+    state: absent
 # ─────────────────────────────────────────────────────────────
 # CREATE VAULT USER/GROUP
 # ─────────────────────────────────────────────────────────────
