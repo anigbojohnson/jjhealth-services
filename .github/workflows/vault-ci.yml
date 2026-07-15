@@ -82,8 +82,12 @@ jobs:
       - name: Install Ansible collections
         run: | 
            ansible-galaxy collection install -r vault/requirements.yml
-     
-
+      
+      - name: Show installed Hashi Vault modules
+        run: |
+          ansible-galaxy collection list
+          ansible-doc -l | grep hashi_vault
+          
       - uses: hashicorp/setup-terraform@v3
 
       - name: Read Terraform Output
