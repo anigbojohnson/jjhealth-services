@@ -126,7 +126,7 @@
 # WAIT FOR VAULT API
 # ─────────────────────────────────────────────────────────────
 - name: Check Vault service state
-  ansible.builtin.command: journalctl -u vault -n 100 --no-pager
+  ansible.builtin.command: journalctl -xeu vault --no-pager
   register: vault_service
   changed_when: false
   failed_when: false
