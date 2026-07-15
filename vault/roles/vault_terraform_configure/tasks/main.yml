@@ -15,7 +15,7 @@
   ansible.builtin.import_tasks: jwt.yml
 
 - name: Configure Vault PKI
-  ansible.builtin.import_tasks: pki.yml
+  ansible.builtin.import_tasks: pki_role_policy.yml
 
 - name: Verify Vault configuration
   ansible.builtin.import_tasks: verify.yml
