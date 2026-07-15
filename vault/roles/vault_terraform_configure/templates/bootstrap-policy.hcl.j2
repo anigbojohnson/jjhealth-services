@@ -1,0 +1,22 @@
+# Allow AppRole to manage AWS secrets engine
+path "aws/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+# Allow AppRole to manage auth methods and policies
+path "auth/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+
+path "sys/policies/acl/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "sys/mounts/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "sys/auth/*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}

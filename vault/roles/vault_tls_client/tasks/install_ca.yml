@@ -1,0 +1,11 @@
+---
+- name: Install trusted CA
+  ansible.builtin.copy:
+    src: "{{ vault_tls_ca_certificate }}"
+    dest: "{{ vault_tls_ca_trust_directory }}/vault-root-ca.crt"
+    remote_src: true
+    mode: "0644"
+
+- name: Update CA trust
+  ansible.builtin.command: update-ca-certificates
+  changed_when: true 

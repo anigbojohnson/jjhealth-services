@@ -5,14 +5,14 @@
 
 - name: Wait for Vault to be unsealed
   ansible.builtin.uri:
-    url: "http://127.0.0.1:8200/v1/sys/health"
+    url: "https://127.0.0.1:8200/v1/sys/health"
     status_code: [200]
   register: vault_health
   retries: 15
   delay: 3
   until: vault_health.status == 200
   environment:
-    VAULT_ADDR: "http://127.0.0.1:8200"
+    VAULT_ADDR: "https://127.0.0.1:8200"
 
 # ─────────────────────────────────────────────────────────────
 # CHECK IF APPROLE ALREADY BOOTSTRAPPED
@@ -40,7 +40,7 @@
 - name: Set Vault environment with root token
   ansible.builtin.set_fact:
     vault_env:
-      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_ADDR: "https://127.0.0.1:8200"
       VAULT_TOKEN: "{{ vault_root_token }}"
   no_log: true
 
@@ -187,7 +187,7 @@
 
 - name: Login with AppRole
   ansible.builtin.uri:
-    url: "http://127.0.0.1:8200/v1/auth/approle/login"
+    url: "https://127.0.0.1:8200/v1/auth/approle/login"
     method: POST
     body_format: json
     body:
@@ -200,7 +200,7 @@
 - name: Set Vault environment using AppRole token
   ansible.builtin.set_fact:
     vault_env:
-      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_ADDR: "https://127.0.0.1:8200"
       VAULT_TOKEN: "{{ approle_login.json.auth.client_token }}"
   no_log: true
 

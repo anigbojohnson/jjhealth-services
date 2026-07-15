@@ -1,0 +1,14 @@
+---
+- import_tasks: auth.yml
+
+- import_tasks: private_key.yml
+
+- import_tasks: csr.yml
+
+- import_tasks: certificate.yml
+
+- import_tasks: install_ca.yml
+
+- import_tasks: verify.yml
+
+

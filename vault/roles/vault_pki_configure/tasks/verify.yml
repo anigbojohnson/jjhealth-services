@@ -1,0 +1,103 @@
+---
+# ─────────────────────────────────────────────────────────────
+# VERIFY PKI SECRETS ENGINE
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI secrets engine
+  ansible.builtin.command: vault secrets list -format=json
+  environment: "{{ vault_env }}"
+  register: pki_secrets
+  changed_when: false
+
+- name: Assert PKI secrets engine exists
+  ansible.builtin.assert:
+    that:
+      - "'pki/' in (pki_secrets.stdout | from_json)"
+    fail_msg: "PKI secrets engine is not enabled."
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY ROOT CA
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify Root CA
+  ansible.builtin.command: vault read pki/cert/ca
+  environment: "{{ vault_env }}"
+  register: root_ca
+  changed_when: false
+
+- name: Assert Root CA exists
+  ansible.builtin.assert:
+    that:
+      - root_ca.rc == 0
+    fail_msg: "Vault Root CA was not created."
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY PKI ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI role
+  ansible.builtin.command: >
+    vault read pki/roles/{{ vault_pki_role_name }}
+  environment: "{{ vault_env }}"
+  register: pki_role
+  changed_when: false
+
+- name: Assert PKI role exists
+  ansible.builtin.assert:
+    that:
+      - pki_role.rc == 0
+    fail_msg: "PKI role {{ vault_pki_role_name }} does not exist."
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY PKI POLICY
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI policy
+  ansible.builtin.command: >
+    vault policy read {{ vault_pki_policy_name }}
+  environment: "{{ vault_env }}"
+  register: pki_policy
+  changed_when: false
+
+- name: Assert PKI policy exists
+  ansible.builtin.assert:
+    that:
+      - pki_policy.rc == 0
+    fail_msg: "PKI policy {{ vault_pki_policy_name }} does not exist."
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY PKI APPROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI AppRole
+  ansible.builtin.command: >
+    vault read auth/approle/role/{{ vault_pki_approle_name }}
+  environment: "{{ vault_env }}"
+  register: pki_approle
+  changed_when: false
+
+- name: Assert PKI AppRole exists
+  ansible.builtin.assert:
+    that:
+      - pki_approle.rc == 0
+    fail_msg: "PKI AppRole {{ vault_pki_approle_name }} does not exist."
+
+# ─────────────────────────────────────────────────────────────
+# SMOKE TEST - ISSUE A CERTIFICATE
+# ─────────────────────────────────────────────────────────────
+
+- name: Issue test certificate
+  ansible.builtin.command: >
+    vault write
+      pki/issue/{{ vault_pki_role_name }}
+      common_name=test.internal
+      ttl=1h
+  environment: "{{ vault_env }}"
+  register: test_cert
+  changed_when: false
+
+- name: Assert certificate issuance succeeded
+  ansible.builtin.assert:
+    that:
+      - test_cert.rc == 0
+    fail_msg: "Failed to issue a test certificate."

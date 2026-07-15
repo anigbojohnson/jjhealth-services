@@ -1,0 +1,15 @@
+---
+# ─────────────────────────────────────────────────────────────
+# WAIT FOR VAULT TO BE UNSEALED (auto-unseal via KMS)
+# ─────────────────────────────────────────────────────────────
+
+- name: Wait for Vault to be unsealed
+  ansible.builtin.uri:
+    url: "https://127.0.0.1:8200/v1/sys/health"
+    status_code: [200]
+  register: vault_health
+  retries: 15
+  delay: 3
+  until: vault_health.status == 200
+  environment:
+    VAULT_ADDR: "https://127.0.0.1:8200"

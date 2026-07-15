@@ -1,12 +1,11 @@
 ---
-- name: Configure HashiCorp Vault on EC2
+- name: Configure HashiCorp Vault
   hosts: vault_servers
   become: true
   gather_facts: false
-
   roles:
     - vault_install
-    - vault_configure
-
-
+    - vault_terraform_configure
+    - vault_pki_configure
+    - vault_tls_client
     

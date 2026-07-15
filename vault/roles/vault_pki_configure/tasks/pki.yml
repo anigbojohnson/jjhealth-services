@@ -1,0 +1,101 @@
+---
+# ─────────────────────────────────────────────────────────────
+# CHECK EXISTING SECRETS ENGINES
+# ─────────────────────────────────────────────────────────────
+
+- name: Check secrets engines
+  ansible.builtin.command: vault secrets list -format=json
+  environment: "{{ vault_env }}"
+  register: secrets_list
+  changed_when: false
+
+- name: Parse secrets engines
+  ansible.builtin.set_fact:
+    secrets_json: "{{ secrets_list.stdout | from_json }}"
+
+# ─────────────────────────────────────────────────────────────
+# ENABLE PKI SECRETS ENGINE
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable PKI secrets engine
+  ansible.builtin.command: vault secrets enable pki
+  environment: "{{ vault_env }}"
+  when: secrets_json['pki/'] is not defined
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE PKI MAXIMUM TTL
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure PKI maximum TTL
+  ansible.builtin.command: >
+    vault secrets tune
+      -max-lease-ttl={{ vault_pki_max_ttl }}
+      pki
+  environment: "{{ vault_env }}"
+
+# ─────────────────────────────────────────────────────────────
+# CHECK IF ROOT CA EXISTS
+# ─────────────────────────────────────────────────────────────
+
+- name: Check PKI Root CA
+  ansible.builtin.command: vault read pki/cert/ca
+  environment: "{{ vault_env }}"
+  register: pki_ca
+  changed_when: false
+  failed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# GENERATE ROOT CA
+# ─────────────────────────────────────────────────────────────
+
+- name: Generate PKI Root CA
+  ansible.builtin.command: >
+    vault write
+      pki/root/generate/internal
+      common_name="{{ vault_pki_root_common_name }}"
+      ttl={{ vault_pki_root_ttl }}
+  environment: "{{ vault_env }}"
+  when: pki_ca.rc != 0
+
+- name: Read Root CA certificate
+  ansible.builtin.command: >
+    vault read
+      -field=certificate
+      pki/cert/ca
+  environment: "{{ vault_env }}"
+  register: vault_root_ca
+  changed_when: false
+
+- name: Store Vault Root CA certificate in Secrets Manager
+  community.aws.secretsmanager_secret:
+    name: "{{ vault_root_ca_secret_name }}"
+    secret_type: string
+    secret: "{{ vault_root_ca.stdout }}"
+    state: present
+    region: "{{ vault_aws_region }}"
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE PKI URLS
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure PKI URLs
+  ansible.builtin.command: >
+    vault write
+      pki/config/urls
+      issuing_certificates="{{ vault_env.VAULT_ADDR }}/v1/pki/ca"
+      crl_distribution_points="{{ vault_env.VAULT_ADDR }}/v1/pki/crl"
+  environment: "{{ vault_env }}"
+
+# ─────────────────────────────────────────────────────────────
+# CREATE PKI ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create PKI role
+  ansible.builtin.command: >
+    vault write
+      pki/roles/{{ vault_pki_role_name }}
+      allowed_domains="{{ vault_pki_allowed_domains | join(',') }}"
+      allow_subdomains="{{ vault_pki_allow_subdomains | lower }}"
+      allow_bare_domains=true
+      allow_ip_sans=true
+      max_ttl={{ vault_pki_role_max_ttl }}
+  environment: "{{ vault_env }}"

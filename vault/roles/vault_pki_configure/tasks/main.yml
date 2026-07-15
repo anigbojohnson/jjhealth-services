@@ -1,0 +1,28 @@
+---
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE PKI
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure Vault PKI
+  ansible.builtin.import_tasks: pki.yml
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE PKI POLICY
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure PKI policy
+  ansible.builtin.import_tasks: policy.yml
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE PKI APPROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure PKI AppRole
+  ansible.builtin.import_tasks: approle.yml
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY PKI CONFIGURATION
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI configuration
+  ansible.builtin.import_tasks: verify.yml

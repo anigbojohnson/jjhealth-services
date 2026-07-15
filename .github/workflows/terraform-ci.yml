@@ -2,7 +2,7 @@ name: Terraform deployment for jjhealth infrastructure
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
     paths:
       - 'terraform/app/**'
       - '.github/workflows/terraform-ci.yml'

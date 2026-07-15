@@ -1,0 +1,7 @@
+---
+- name: Generate CSR
+  community.crypto.openssl_csr:
+    path: "{{ vault_tls_csr }}"
+    privatekey_path: "{{ vault_tls_private_key }}"
+    common_name: "{{ vault_tls_common_name }}"
+    subject_alt_name: "{{ vault_tls_san }}"

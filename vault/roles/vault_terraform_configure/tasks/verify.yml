@@ -1,0 +1,52 @@
+---
+# ─────────────────────────────────────────────────────────────
+# VERIFY AWS ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify AWS role
+  ansible.builtin.command: >
+    vault read aws/roles/{{ vault_aws_role_name }}
+  environment: "{{ vault_env }}"
+  changed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY JWT ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify JWT role
+  ansible.builtin.command: >
+    vault read auth/jwt/role/{{ vault_jwt_role_name }}
+  environment: "{{ vault_env }}"
+  changed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY PKI ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI role
+  ansible.builtin.command: >
+    vault read pki/roles/internal
+  environment: "{{ vault_env }}"
+  changed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# VERIFY ROOT CA
+# ─────────────────────────────────────────────────────────────
+
+- name: Verify PKI Root CA
+  ansible.builtin.command: >
+    vault read pki/cert/ca
+  environment: "{{ vault_env }}"
+  changed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# ISSUE TEST CERTIFICATE
+# ─────────────────────────────────────────────────────────────
+
+- name: Issue test certificate
+  ansible.builtin.command: >
+    vault write
+      pki/issue/internal
+      common_name=test.internal
+  environment: "{{ vault_env }}"
+  changed_when: false

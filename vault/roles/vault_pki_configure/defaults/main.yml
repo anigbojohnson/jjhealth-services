@@ -1,0 +1,23 @@
+---
+
+# PKI
+
+vault_pki_mount: "pki"
+vault_pki_role_name: "internal"
+vault_pki_policy_name: "pki-client"
+
+# AWS Auth
+
+vault_aws_role_name: "pki-client"
+
+backend_instance_role_arn: "arn:aws:iam::869868778582:role/BackendInstanceRole"
+
+# Certificates
+vault_pki_allowed_domains:
+  - internal
+
+vault_pki_role_max_ttl: "720h"
+
+vault_pki_allow_subdomains: true
+
+vault_root_ca_secret_name: jjhealth-services/vault/root-ca

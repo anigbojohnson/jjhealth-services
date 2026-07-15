@@ -1,0 +1,42 @@
+---
+# Vault
+
+vault_addr: "https://{{ vault_dns_name }}:8200"
+
+vault_pki_role_name: internal
+
+vault_aws_auth_role: backend
+
+
+vault_role_id_file: /etc/vault/role_id
+
+vault_secret_id_file: /etc/vault/secret_id
+
+# Certificate
+
+vault_tls_common_name: "{{ vault_dns_name }}"
+
+vault_tls_san:
+  - "DNS:{{ vault_dns_name }}"
+
+vault_tls_ttl: "720h"
+
+# Paths
+
+vault_tls_directory: /etc/ssl/private
+
+vault_tls_private_key: "{{ vault_tls_directory }}/server.key"
+
+vault_tls_csr: "{{ vault_tls_directory }}/server.csr"
+
+vault_tls_certificate: "{{ vault_tls_directory }}/server.crt"
+
+vault_tls_ca_certificate: "{{ vault_tls_directory }}/ca.crt"
+
+# Trust Store
+
+vault_tls_ca_trust_directory: /usr/local/share/ca-certificates
+
+# Restart
+
+vault_tls_restart_service: ""

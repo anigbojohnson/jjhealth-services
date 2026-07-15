@@ -1,0 +1,30 @@
+---
+- name: Read CSR
+  ansible.builtin.slurp:
+    src: "{{ vault_tls_csr }}"
+  register: csr
+
+- name: Request certificate from Vault
+  community.hashi_vault.vault_write:
+    url: "{{ vault_addr }}"
+    token: "{{ vault_token }}"
+    path: "pki/sign/{{ vault_pki_role_name }}"
+    data:
+      csr: "{{ csr.content | b64decode }}"
+      ttl: "{{ vault_tls_ttl }}"
+  register: certificate
+
+- name: Install server certificate
+  ansible.builtin.copy:
+    dest: "{{ vault_tls_certificate }}"
+    content: "{{ certificate.data.certificate }}"
+    mode: "0644"
+  notify: Restart TLS Service
+
+- name: Install CA certificate
+  ansible.builtin.copy:
+    dest: "{{ vault_tls_ca_certificate }}"
+    content: "{{ certificate.data.issuing_ca }}"
+    mode: "0644"
+
+    

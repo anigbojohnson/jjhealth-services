@@ -2,9 +2,12 @@
 # ─────────────────────────────────────────────────────────────
 # INSTALL DEPENDENCIES
 # ─────────────────────────────────────────────────────────────
-- name: Install required dependency
+- name: Install required dependencies
   ansible.builtin.apt:
-    name: unzip
+    name:
+      - unzip
+      - certbot
+      - ca-certificates
     state: present
     update_cache: true
 

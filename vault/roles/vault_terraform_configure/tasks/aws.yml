@@ -1,0 +1,58 @@
+---
+# ─────────────────────────────────────────────────────────────
+# ENABLE AWS SECRETS ENGINE
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable AWS secrets engine
+  ansible.builtin.command: vault secrets enable aws
+  environment: "{{ vault_env }}"
+  when: secrets_json['aws/'] is not defined
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE AWS ROOT CREDS
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure AWS root credentials
+  ansible.builtin.command: >
+    vault write aws/config/root
+      region="{{ vault_aws_region }}"
+  environment: "{{ vault_env }}"
+  no_log: true
+
+# ─────────────────────────────────────────────────────────────
+# CREATE AWS ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create or update AWS role for Terraform in Vault
+  ansible.builtin.command: >
+    vault write aws/roles/{{ vault_aws_role_name }}
+      credential_type=iam_user
+      policy_arns={{ vault_aws_policy_arns | join(',') }}
+  environment: "{{ vault_env }}"
+
+# ─────────────────────────────────────────────────────────────
+# CREATE POLICY FILE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create Terraform policy file
+  ansible.builtin.copy:
+    dest: /tmp/terraform-policy.hcl
+    content: |
+      path "aws/creds/{{ vault_aws_role_name }}" {
+        capabilities = ["read"]
+      }
+    mode: "0600"
+
+# ─────────────────────────────────────────────────────────────
+# APPLY POLICY
+# ─────────────────────────────────────────────────────────────
+
+- name: Apply Vault policy
+  ansible.builtin.command: >
+    vault policy write {{ vault_policy_name }} /tmp/terraform-policy.hcl
+  environment: "{{ vault_env }}"
+
+- name: Remove temporary policy file
+  ansible.builtin.file:
+    path: /tmp/terraform-policy.hcl
+    state: absent

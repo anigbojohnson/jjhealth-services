@@ -49,3 +49,17 @@ output "bastion_public_ip" {
 }
 
 
+output "vault_dns_name" {
+  description = "Vault DNS name"
+  value       = aws_route53_record.vault.fqdn
+}
+
+output "private_zone_name" {
+  value = aws_route53_zone.private.name
+}
+
+output "backend_instance_role_arn" {
+  description = "Backend EC2 IAM Role ARN"
+
+  value = aws_iam_role.private.arn
+}

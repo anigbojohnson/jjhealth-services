@@ -1,0 +1,6 @@
+---
+- name: Restart TLS Service
+  ansible.builtin.service:
+    name: "{{ vault_tls_restart_service }}"
+    state: restarted
+  when: vault_tls_restart_service | length > 0

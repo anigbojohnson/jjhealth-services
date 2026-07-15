@@ -1,0 +1,68 @@
+---
+# ─────────────────────────────────────────────────────────────
+# ENABLE JWT AUTH
+# ─────────────────────────────────────────────────────────────
+
+- name: Enable JWT auth
+  ansible.builtin.command: vault auth enable jwt
+  environment: "{{ vault_env }}"
+  when: auth_json['jwt/'] is not defined
+
+# ─────────────────────────────────────────────────────────────
+# CHECK JWT CONFIG
+# ─────────────────────────────────────────────────────────────
+
+- name: Check JWT config
+  ansible.builtin.command: vault read auth/jwt/config
+  environment: "{{ vault_env }}"
+  register: jwt_config
+  changed_when: false
+  failed_when: false
+
+# ─────────────────────────────────────────────────────────────
+# CONFIGURE JWT
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure JWT auth
+  ansible.builtin.command: >
+    vault write auth/jwt/config
+      oidc_discovery_url="{{ github_oidc_discovery_url }}"
+      bound_issuer="{{ github_oidc_discovery_url }}"
+  environment: "{{ vault_env }}"
+  when: jwt_config.rc != 0
+
+# ─────────────────────────────────────────────────────────────
+# CREATE JWT ROLE
+# ─────────────────────────────────────────────────────────────
+
+- name: Create JWT role payload
+  ansible.builtin.copy:
+    dest: /tmp/jwt-role.json
+    mode: "0600"
+    content: |
+      {
+        "role_type": "jwt",
+        "bound_audiences": [
+          "https://github.com/{{ github_org }}"
+        ],
+        "user_claim": "sub",
+        "bound_claims_type": "glob",
+        "bound_claims": {
+          "sub": "repo:{{ github_org }}/{{ github_repo }}:*"
+        },
+        "token_policies": [
+          "{{ vault_policy_name }}"
+        ],
+        "token_ttl": "1h"
+      }
+
+- name: Create JWT role
+  ansible.builtin.shell: >
+    vault write auth/jwt/role/{{ vault_jwt_role_name }}
+    @/tmp/jwt-role.json
+  environment: "{{ vault_env }}"
+
+- name: Remove JWT role payload
+  ansible.builtin.file:
+    path: /tmp/jwt-role.json
+    state: absent

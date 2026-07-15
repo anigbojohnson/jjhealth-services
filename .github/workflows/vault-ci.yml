@@ -94,26 +94,42 @@ jobs:
           echo "VAULT_PRIVATE_IP=$(terraform output -raw vault_private_ip)" >> $GITHUB_ENV
           echo "BASTION_PUBLIC_IP=$(terraform output -raw bastion_public_ip)" >> $GITHUB_ENV
           echo "SSM_BUCKET_NAME=$(terraform output -raw ssm_transfer_bucket_name)" >> $GITHUB_ENV
-
-     
+          echo "VAULT_DNS_NAME=$(terraform output -raw vault_dns_name)" >> $GITHUB_ENV
+          echo "BACKEND_INSTANCE_ROLE_ARN=$(terraform output -raw backend_instance_role_arn)" >> $GITHUB_ENV
+    
       - name: Generate Ansible Inventory
         working-directory: vault
         run: |
           chmod 600 ${GITHUB_WORKSPACE}/vault/vault-key.pem
+
           cat > inventory.ini <<EOF
           [vault_servers]
-          vault-ec2 ansible_host=${VAULT_PRIVATE_IP} ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3 ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand="ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ubuntu@${BASTION_PUBLIC_IP}"'
-          EOF
-              cat inventory.ini
+          vault-ec2 \
+            ansible_host=${VAULT_PRIVATE_IP} \
+            ansible_user=ubuntu \
+            ansible_python_interpreter=/usr/bin/python3 \
+            ansible_ssh_private_key_file=${GITHUB_WORKSPACE}/vault/vault-key.pem \
+            ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand="ssh -i ${GITHUB_WORKSPACE}/vault/vault-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ubuntu@${BASTION_PUBLIC_IP}"'
+          cat inventory.ini
 
-      - name: Debug Outputs
-        run: |
-          echo "BASTION_PUBLIC_IP=${BASTION_PUBLIC_IP}"
-          echo "VAULT_PRIVATE_IP=${VAULT_PRIVATE_IP}"
 
       - name: Run Ansible Playbook
         working-directory: vault
         run: |
           ansible-playbook -i inventory.ini site.yml \
             -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
+            -e vault_dns_name=${{ env.VAULT_DNS_NAME }}
+            -e backend_instance_role_arn="${{ env.BACKEND_INSTANCE_ROLE_ARN }}"
 
+
+      - name: Retrieve Vault CA certificate
+        run: |
+          aws secretsmanager get-secret-value \
+            --secret-id jjhealth-services/vault/bootstrap-ca \
+            --query SecretString \
+            --output text > vault-ca.crt
+
+      - name: Install Vault CA certificate
+        run: |
+          sudo cp vault-ca.crt /usr/local/share/ca-certificates/vault-ca.crt
+          sudo update-ca-certificates

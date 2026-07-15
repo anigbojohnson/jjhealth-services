@@ -1,0 +1,20 @@
+---
+- name: Verify certificate exists
+  ansible.builtin.stat:
+    path: "{{ vault_tls_certificate }}"
+  register: cert
+
+- name: Assert certificate exists
+  ansible.builtin.assert:
+    that:
+      - cert.stat.exists
+
+- name: Verify private key exists
+  ansible.builtin.stat:
+    path: "{{ vault_tls_private_key }}"
+  register: key
+
+- name: Assert private key exists
+  ansible.builtin.assert:
+    that:
+      - key.stat.exists

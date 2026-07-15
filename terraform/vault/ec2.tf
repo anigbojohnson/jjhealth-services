@@ -19,6 +19,16 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+locals {
+  bootstrap_tls_script = templatefile(
+    "${path.module}/scripts/bootstrap-vault-tls.sh.tftpl",
+    {
+      tls_secret = var.vault_key_certificate_secret
+      ca_secret  = var.ca_certificate_secret
+      aws_region = var.aws_region
+    }
+  )
+}
 
 # Bastion host SG — accepts SSH from the internet (or restrict to your IP)
 resource "aws_security_group" "public" {
@@ -77,7 +87,7 @@ resource "aws_security_group" "private" {
 }
 
 resource "aws_iam_role" "private" {
-  name = "private-ec2-kms-role"
+  name = "backend-instance-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -120,7 +130,7 @@ resource "aws_iam_role_policy" "ec2_kms" {
 }
 
 resource "aws_iam_instance_profile" "private" {
-  name = "private-ec2-kms-instance-profile"
+  name = "backend-instance-profile"
   role = aws_iam_role.private.name
 }
 
@@ -137,6 +147,20 @@ resource "aws_instance" "private" {
   vpc_security_group_ids = [aws_security_group.private.id]
   iam_instance_profile   = aws_iam_instance_profile.private.name
   key_name = var.key_name
+
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+
+    cat >/usr/local/bin/bootstrap-vault-tls.sh <<'SCRIPT'
+    ${local.bootstrap_tls_script}
+    SCRIPT
+
+    chmod +x /usr/local/bin/bootstrap-vault-tls.sh
+
+    /usr/local/bin/bootstrap-vault-tls.sh
+    EOF
+
   tags = { Name = "private-ec2" }
 }
 
@@ -164,11 +188,30 @@ resource "aws_iam_role_policy_attachment" "private_ec2_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+
 resource "aws_iam_role_policy_attachment" "public_ec2_ssm" {
   role       = aws_iam_role.public.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+
+resource "aws_iam_role_policy" "vault-bootstrap-tls" {
+  name = "vault-bootstrap-tls"
+  role = aws_iam_role.private.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{       
+      "Sid": "VaultBootstrapTLS",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+      ],
+      "Resource":["arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/bootstrap-tls*"]
+    }]
+  })
+} 
 
 resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
   name = "vault-aws-root-recovery-token-secrets-engine"
@@ -212,7 +255,9 @@ resource "aws_iam_role_policy" "github-runner-pat" {
         "secretsmanager:DescribeSecret",
         "secretsmanager:GetSecretValue"
       ],
-      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat*"
+      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:github-runner-pat*",
+              "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/bootstrap-ca*",
+              "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/root-ca*"
       ]
     }]
   })

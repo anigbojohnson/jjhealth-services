@@ -11,6 +11,11 @@ sudo apt-get install -y \
     ca-certificates
 
 
+CA_SECRET="${ca_secret}"
+AWS_REGION="${aws_region}"
+TLS_DIR="/etc/vault/tls"
+CA_CERT="${TLS_DIR}/ca.crt"
+
 # Install Terraform
 TERRAFORM_VERSION="1.13.2"
 
@@ -46,8 +51,21 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 
+log "Downloading CA certificate..."
+
+mkdir -p "${TLS_DIR}"
+
+aws secretsmanager get-secret-value \
+    --secret-id "${CA_SECRET}" \
+    --region "${AWS_REGION}" \
+    --query SecretString \
+    --output text \
+> "${CA_CERT}"
+
+
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
+    --region "${AWS_REGION}" \
     --query SecretString \
     --output text)
 
@@ -56,6 +74,13 @@ RUNNER_TOKEN=$(curl -s -X POST \
   -H "Authorization: Bearer $GITHUB_PAT" \
   https://api.github.com/repos/anigbojohnson/jjhealth-services/actions/runners/registration-token \
   | jq -r '.token')
+
+
+chmod 644 "${CA_CERT}"
+
+test -f "${CA_CERT}"
+
+grep -q "BEGIN CERTIFICATE" "${CA_CERT}"
 
 # Create the runner and start the configuration experience
 sudo -u runner ./config.sh \

@@ -1,0 +1,15 @@
+---
+- name: Login to Vault using AWS IAM
+  ansible.builtin.command: >
+    vault login
+    -method=aws
+    role={{ vault_aws_auth_role }}
+    -format=json
+  register: vault_login
+  changed_when: false
+  no_log: true
+
+- name: Save Vault token
+  ansible.builtin.set_fact:
+    vault_token: "{{ (vault_login.stdout | from_json).auth.client_token }}"
+  no_log: true
