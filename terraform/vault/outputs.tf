@@ -54,6 +54,7 @@ output "vault_dns_name" {
   value       = aws_route53_record.vault.fqdn
 }
 
+
 output "private_zone_name" {
   value = aws_route53_zone.private.name
 }

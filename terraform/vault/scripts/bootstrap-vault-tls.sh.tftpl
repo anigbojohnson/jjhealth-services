@@ -12,8 +12,8 @@ AWS_REGION="${aws_region}"
 
 TLS_DIR="/etc/vault/tls"
 
-SERVER_KEY="${TLS_DIR}/server.key"
-SERVER_CERT="${TLS_DIR}/server.crt"
+SERVER_KEY="$${TLS_DIR}/server.key"
+SERVER_CERT="$${TLS_DIR}/server.crt"
 
 # ============================================================================
 # Logging
@@ -40,7 +40,7 @@ apt-get install -y jq
 
 log "Creating TLS directory..."
 
-mkdir -p "${TLS_DIR}"
+mkdir -p "$${TLS_DIR}"
 
 
 
@@ -98,7 +98,7 @@ echo "${BOOTSTRAP_TLS}" \
 
 log "Setting permissions..."
 
-chmod 700 "${TLS_DIR}"
+chmod 700 "$${TLS_DIR}"
 
 chmod 600 "${SERVER_KEY}"
 
@@ -107,7 +107,7 @@ chmod 644 "${SERVER_CERT}"
 
 # If Vault user exists, give ownership
 if id vault >/dev/null 2>&1; then
-    chown -R vault:vault "${TLS_DIR}"
+    chown -R vault:vault "$${TLS_DIR}"
 fi
 
 # ============================================================================
