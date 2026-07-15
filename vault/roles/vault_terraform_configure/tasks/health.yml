@@ -13,3 +13,8 @@
   until: vault_health.status == 200
   environment:
     VAULT_ADDR: "https://127.0.0.1:8200"
+
+
+
+
+    
