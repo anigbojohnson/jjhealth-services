@@ -4,19 +4,26 @@
 # ─────────────────────────────────────────────────────────────
 
 - name: Create PKI policy
-  community.hashi_vault.vault_policy:
-    url: "{{ vault_env.VAULT_ADDR }}"
-    token: "{{ vault_env.VAULT_TOKEN }}"
-    name: "{{ vault_pki_policy_name }}"
-    rules: |
-      path "pki/sign/internal" {
-        capabilities = ["update"]
-      }
+  community.hashi_vault.vault_write:
+    path: sys/policies/acl/{{ vault_pki_policy_name }}
+    data:
+      policy: |
+        path "pki/sign/{{ vault_pki_role_name }}" {
+          capabilities = ["update"]
+        }
 
-      path "pki/cert/ca" {
-        capabilities = ["read"]
-      }
-  no_log: true
+        path "pki/cert/ca" {
+          capabilities = ["read"]
+        }
+
+        path "pki/cert/ca_chain" {
+          capabilities = ["read"]
+        }
+
+        path "pki/crl" {
+          capabilities = ["read"]
+        }
+  environment: "{{ vault_env }}"
 
 # ─────────────────────────────────────────────────────────────
 # CREATE PKI APPROLE
