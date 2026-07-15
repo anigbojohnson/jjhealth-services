@@ -115,6 +115,11 @@ jobs:
           cat inventory.ini
 
 
+
+      - name: Debug GitHub expression
+        run: |
+          echo "${{ env.VAULT_DNS_NAME }}"
+
       - name: Run Ansible Playbook
         working-directory: vault
         run: |
