@@ -128,7 +128,7 @@
 
 - name: Wait for Vault to be reachable
   ansible.builtin.uri:
-    url: "http://127.0.0.1:8200/v1/sys/health"
+    url: "https://{{ vault_dns_name }}:8200/v1/sys/health"
     status_code: [200, 429, 472, 473, 501, 503]
   register: vault_health
   retries: 10
