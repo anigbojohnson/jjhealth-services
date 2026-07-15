@@ -25,7 +25,7 @@ locals {
     {
       tls_secret = var.vault_key_certificate_secret
       ca_secret  = var.ca_certificate_secret
-      aws_region = var.aws_region
+      aws_region = var.region
     }
   )
 }
