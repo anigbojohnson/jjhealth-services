@@ -11,10 +11,10 @@ sudo apt-get install -y \
     ca-certificates
 
 
-CA_SECRET="${ca_secret}"
+CA_SECRET="$${ca_secret}"
 AWS_REGION="${aws_region}"
 TLS_DIR="/etc/vault/tls"
-CA_CERT="${TLS_DIR}/ca.crt"
+CA_CERT="$${TLS_DIR}/ca.crt"
 
 # Install Terraform
 TERRAFORM_VERSION="1.13.2"
@@ -53,19 +53,19 @@ sudo ./aws/install
 
 log "Downloading CA certificate..."
 
-mkdir -p "${TLS_DIR}"
+mkdir -p "$${TLS_DIR}"
 
 aws secretsmanager get-secret-value \
-    --secret-id "${CA_SECRET}" \
-    --region "${AWS_REGION}" \
+    --secret-id "$${CA_SECRET}" \
+    --region "$${AWS_REGION}" \
     --query SecretString \
     --output text \
-> "${CA_CERT}"
+> "$${CA_CERT}"
 
 
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
-    --region "${AWS_REGION}" \
+    --region "$${AWS_REGION}" \
     --query SecretString \
     --output text)
 
@@ -76,17 +76,17 @@ RUNNER_TOKEN=$(curl -s -X POST \
   | jq -r '.token')
 
 
-chmod 644 "${CA_CERT}"
+chmod 644 "$${CA_CERT}"
 
-test -f "${CA_CERT}"
+test -f "$${CA_CERT}"
 
-grep -q "BEGIN CERTIFICATE" "${CA_CERT}"
+grep -q "BEGIN CERTIFICATE" "$${CA_CERT}"
 
 # Create the runner and start the configuration experience
 sudo -u runner ./config.sh \
-    --url "${github_repo}" \
+    --url "$${github_repo}" \
     --token "$RUNNER_TOKEN" \
-    --name "${runner_name}" \
+    --name "$${runner_name}" \
     --labels self-hosted,linux,x64 \
     --unattended \
     --replace
