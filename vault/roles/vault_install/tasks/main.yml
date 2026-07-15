@@ -125,7 +125,15 @@
 # ─────────────────────────────────────────────────────────────
 # WAIT FOR VAULT API
 # ─────────────────────────────────────────────────────────────
+- name: Check Vault service state
+  ansible.builtin.command: systemctl is-active vault
+  register: vault_service
+  changed_when: false
+  failed_when: false
 
+- debug:
+    var: vault_service.stdout
+    
 - name: Wait for Vault to be reachable
   ansible.builtin.uri:
     url: "https://127.0.0.1:8200/v1/sys/health"
