@@ -64,8 +64,8 @@ log "Downloading Vault TLS secret..."
 
 BOOTSTRAP_TLS=$(
 aws secretsmanager get-secret-value \
-    --secret-id "${TLS_SECRET}" \
-    --region "${AWS_REGION}" \
+    --secret-id "$${TLS_SECRET}" \
+    --region "$${AWS_REGION}" \
     --query SecretString \
     --output text
 )
@@ -76,9 +76,9 @@ aws secretsmanager get-secret-value \
 
 log "Writing server.key..."
 
-echo "${BOOTSTRAP_TLS}" \
+echo "$${BOOTSTRAP_TLS}" \
 | jq -r '.server_key' \
-> "${SERVER_KEY}"
+> "$${SERVER_KEY}"
 
 # ============================================================================
 # Write server.crt
@@ -86,9 +86,9 @@ echo "${BOOTSTRAP_TLS}" \
 
 log "Writing server.crt..."
 
-echo "${BOOTSTRAP_TLS}" \
+echo "$${BOOTSTRAP_TLS}" \
 | jq -r '.server_cert' \
-> "${SERVER_CERT}"
+> "$${SERVER_CERT}"
 
 
 
@@ -100,9 +100,9 @@ log "Setting permissions..."
 
 chmod 700 "$${TLS_DIR}"
 
-chmod 600 "${SERVER_KEY}"
+chmod 600 "$${SERVER_KEY}"
 
-chmod 644 "${SERVER_CERT}"
+chmod 644 "$${SERVER_CERT}"
 
 
 # If Vault user exists, give ownership
@@ -116,12 +116,12 @@ fi
 
 log "Verifying downloaded files..."
 
-test -f "${SERVER_KEY}"
-test -f "${SERVER_CERT}"
+test -f "$${SERVER_KEY}"
+test -f "$${SERVER_CERT}"
 
 # Verify PEM headers
 
-grep -q "BEGIN PRIVATE KEY" "${SERVER_KEY}"
-grep -q "BEGIN CERTIFICATE" "${SERVER_CERT}"
+grep -q "BEGIN PRIVATE KEY" "$${SERVER_KEY}"
+grep -q "BEGIN CERTIFICATE" "$${SERVER_CERT}"
 
 log "Bootstrap TLS completed successfully."
