@@ -175,7 +175,7 @@ resource "aws_instance" "public" {
 
   key_name = var.key_name
 
-  user_data = templatefile("${path.module}/github-runner.sh", {
+  user_data = templatefile("${path.module}/scripts/github-runner.sh", {
     github_repo  = var.github_repo
     runner_name  = var.github_runner_name
   })
