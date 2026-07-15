@@ -178,6 +178,8 @@ resource "aws_instance" "public" {
   user_data = templatefile("${path.module}/scripts/github-runner.sh", {
     github_repo  = var.github_repo
     runner_name  = var.github_runner_name
+    ca_secret   = var.ca_certificate_secret
+    aws_region  = var.region
   })
 
   tags = { Name = "public-ec2" }
