@@ -31,21 +31,23 @@ log() {
 log "Installing jq..."
 
 export DEBIAN_FRONTEND=noninteractive
-
 apt-get update -y
 
-sudo apt-get install -y \
+apt-get install -y \
     curl \
     unzip \
     jq \
     git \
-    ca-certificates \
+    ca-certificates
 
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+    -o awscliv2.zip
 
-    unzip awscliv2.zip
+unzip awscliv2.zip
 
-    sudo ./aws/install
+./aws/install
+
+aws --version
 # ============================================================================
 # Create TLS directory
 # ============================================================================
@@ -74,23 +76,15 @@ log "Downloading CA certificate..."
 
 
 
-echo "$${TLS_FILE}" \
+cat "$${TLS_FILE}" \
 | jq -r '.server_key' \
 > "$${SERVER_KEY}"
 
-echo "$${TLS_FILE}" \
+cat "$${TLS_FILE}" \
 | jq -r '.server_cert' \
 > "$${SERVER_CERT}"
 
-# ============================================================================
-# Write server.crt
-# ============================================================================
 
-log "Writing server.crt..."
-
-echo "$${BOOTSTRAP_TLS}" \
-| jq -r '.server_cert' \
-> "$${SERVER_CERT}"
 
 
 
