@@ -55,19 +55,7 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 
-# ============================================================================
-# Download bootstrap TLS secret
-# ============================================================================
 
-log "Downloading Vault TLS secret..."
-
-BOOTSTRAP_TLS=$(
-aws secretsmanager get-secret-value \
-    --secret-id "$${TLS_SECRET}" \
-    --region "$${AWS_REGION}" \
-    --query SecretString \
-    --output text
-)
 
 # ============================================================================
 # Write server.key
