@@ -15,6 +15,8 @@ TLS_DIR="/etc/vault/tls"
 SERVER_KEY="$${TLS_DIR}/server.key"
 SERVER_CERT="$${TLS_DIR}/server.crt"
 
+TLS_FILE="${TLS_DIR}/tls-secret.json"
+
 # ============================================================================
 # Logging
 # ============================================================================
@@ -32,7 +34,8 @@ log "Installing jq..."
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update -y
-apt-get install -y jq unzip curl
+apt-get install -y jq unzip curl ca-certificates
+
 # ============================================================================
 # Create TLS directory
 # ============================================================================
@@ -42,19 +45,12 @@ log "Creating TLS directory..."
 mkdir -p "$${TLS_DIR}"
 
 
-
-# ============================================================================
-# Download the AWS CLI
-# ============================================================================
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-
-# Extract it
-unzip awscliv2.zip
-
-# Install it
-sudo ./aws/install
-
-
+aws secretsmanager get-secret-value \
+    --secret-id "$${TLS_SECRET}" \
+    --region "$${AWS_REGION}" \
+    --query SecretString \
+    --output text \
+> "$${TLS_FILE}"
 
 
 # ============================================================================
@@ -63,9 +59,18 @@ sudo ./aws/install
 
 log "Writing server.key..."
 
-echo "$${BOOTSTRAP_TLS}" \
+
+log "Downloading CA certificate..."
+
+
+
+echo "$${TLS_FILE}" \
 | jq -r '.server_key' \
 > "$${SERVER_KEY}"
+
+echo "$${TLS_FILE}" \
+| jq -r '.server_cert' \
+> "$${SERVER_CERT}"
 
 # ============================================================================
 # Write server.crt
