@@ -14,7 +14,7 @@ sudo apt-get install -y \
 CA_SECRET="$${ca_secret}"
 AWS_REGION="${aws_region}"
 TLS_DIR="/etc/vault/tls"
-CA_CERT="$${TLS_DIR}/ca.crt"
+CA_CERT="${TLS_DIR}/ca.crt"
 
 # Install Terraform
 TERRAFORM_VERSION="1.13.2"
