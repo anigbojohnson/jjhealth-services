@@ -20,15 +20,19 @@ data "aws_ami" "ubuntu" {
 }
 
 locals {
-  bootstrap_tls_script = templatefile(
-    "${path.module}/scripts/bootstrap-vault-tls.sh.tftpl",
-    {
-      tls_secret = var.vault_key_certificate_secret
-      ca_secret  = var.ca_certificate_secret
-      aws_region = var.region
-      tls_dir    = "/etc/vault.d/tls" 
-    }
-  )
+  bootstrap_tls_script = templatefile("${path.module}/scripts/bootstrap-vault-tls.sh.tftpl", {
+    tls_secret = var.vault_key_certificate_secret
+    ca_secret  = var.ca_certificate_secret
+    aws_region = var.region
+    tls_dir    = "/etc/vault.d/tls"
+  })
+
+  github_runner_script = templatefile("${path.module}/scripts/github-runner.sh", {
+    tls_secret = var.vault_key_certificate_secret
+    ca_secret  = var.ca_certificate_secret
+    aws_region = var.region
+    tls_dir    = "/etc/vault.d/tls"
+  })
 }
 
 # Bastion host SG — accepts SSH from the internet (or restrict to your IP)
@@ -177,12 +181,18 @@ resource "aws_instance" "public" {
 
   key_name = var.key_name
 
-  user_data = templatefile("${path.module}/scripts/github-runner.sh", {
-    github_repo  = var.github_repo
-    runner_name  = var.github_runner_name
-    ca_secret   = var.ca_certificate_secret
-    aws_region  = var.region
-  })
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+
+    cat >/usr/local/bin/github-runner.sh <<'SCRIPT'
+    ${local.github_runner_script}
+    SCRIPT
+
+    chmod +x /usr/local/bin/github-runner.sh
+
+    /usr/local/bin/github-runner.sh
+    EOF
 
   tags = { Name = "public-ec2" }
 }
