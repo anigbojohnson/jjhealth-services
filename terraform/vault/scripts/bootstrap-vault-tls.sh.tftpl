@@ -10,10 +10,9 @@ CA_SECRET="${ca_secret}"
 AWS_REGION="${aws_region}"
 
 
-TLS_DIR="/etc/vault/tls"
-
-SERVER_KEY="$${TLS_DIR}/server.key"
-SERVER_CERT="$${TLS_DIR}/server.crt"
+TLS_DIR="${tls_dir}"
+SERVER_KEY="${TLS_DIR}/server.key"
+SERVER_CERT="${TLS_DIR}/server.crt"
 
 TLS_FILE="${TLS_DIR}/tls-secret.json"
 
