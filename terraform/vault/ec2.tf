@@ -145,6 +145,7 @@ resource "aws_iam_instance_profile" "public" {
 }
 
 
+
 resource "aws_instance" "private" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type

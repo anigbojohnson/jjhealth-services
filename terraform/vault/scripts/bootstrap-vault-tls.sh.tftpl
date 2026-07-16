@@ -33,7 +33,12 @@ log "Installing jq..."
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update -y
-apt-get install -y jq unzip curl ca-certificates
+sudo apt-get install -y \
+    curl \
+    unzip \
+    jq \
+    git \
+    ca-certificates
 
 # ============================================================================
 # Create TLS directory
