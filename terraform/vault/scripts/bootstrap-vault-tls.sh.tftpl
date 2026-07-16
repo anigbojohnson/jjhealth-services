@@ -22,7 +22,7 @@ TLS_FILE="$${TLS_DIR}/tls-secret.json"
 # Install Dependencies
 # ============================================================================
 
-log "Installing jq..."
+log "Installing ...."
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
@@ -32,16 +32,10 @@ apt-get install -y \
     unzip \
     jq \
     git \
+    awscli \
     ca-certificates
 
-curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
-    -o awscliv2.zip
 
-unzip awscliv2.zip
-
-./aws/install
-
-aws --version
 # ============================================================================
 # Create TLS directory
 # ============================================================================
