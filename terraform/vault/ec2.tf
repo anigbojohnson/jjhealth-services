@@ -152,7 +152,6 @@ resource "aws_instance" "private" {
   iam_instance_profile   = aws_iam_instance_profile.private.name
   key_name = var.key_name
 
-
   user_data = <<-EOF
     #!/bin/bash
     set -e
