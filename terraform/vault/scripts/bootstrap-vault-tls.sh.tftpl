@@ -25,9 +25,9 @@ TLS_FILE="$${TLS_DIR}/tls-secret.json"
 log "Installing ...."
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -y
+sudo apt-get update -y
 
-apt-get install -y \
+sudo apt-get install -y \
     curl \
     unzip \
     jq \
@@ -42,7 +42,7 @@ apt-get install -y \
 
 log "Creating TLS directory..."
 
-mkdir -p "$${TLS_DIR}"
+sudo mkdir -p "$${TLS_DIR}"
 
 
 aws secretsmanager get-secret-value \
