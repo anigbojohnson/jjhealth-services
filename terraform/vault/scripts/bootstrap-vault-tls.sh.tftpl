@@ -21,6 +21,10 @@ TLS_FILE="$${TLS_DIR}/tls-secret.json"
 # ============================================================================
 # Install Dependencies
 # ============================================================================
+log() {
+    echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
+}
+
 
 log "Installing ...."
 
@@ -58,9 +62,6 @@ aws secretsmanager get-secret-value \
 # ============================================================================
 
 log "Writing server.key..."
-
-
-log "Downloading CA certificate..."
 
 
 

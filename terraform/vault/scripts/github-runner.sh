@@ -51,8 +51,6 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 
-log "Downloading CA certificate..."
-
 mkdir -p "$${TLS_DIR}"
 
 aws secretsmanager get-secret-value \
