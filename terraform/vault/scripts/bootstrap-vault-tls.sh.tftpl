@@ -40,7 +40,26 @@ unzip -q /tmp/awscliv2.zip -d /tmp
 sudo /tmp/aws/install --update
 rm -rf /tmp/awscliv2.zip /tmp/aws
 
-aws --version
+if command -v aws >/dev/null 2>&1; then
+    log "AWS CLI already installed: $(aws --version 2>&1). Skipping install."
+else
+    log "AWS CLI not found on this system."
+    log "Reason: the 'awscli' apt package is often unavailable or missing on minimal AMIs"
+    log "(it lives in the universe repo, and Ubuntu ships an outdated v1 build anyway)."
+    log "Installing AWS CLI v2 directly from the official AWS installer instead..."
+
+    curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+    unzip -q /tmp/awscliv2.zip -d /tmp
+    sudo /tmp/aws/install
+    rm -rf /tmp/awscliv2.zip /tmp/aws
+
+    if command -v aws >/dev/null 2>&1; then
+        log "AWS CLI installed successfully: $(aws --version 2>&1)"
+    else
+        log "ERROR: AWS CLI installation failed — 'aws' still not found on PATH."
+        exit 1
+    fi
+fi
 
 
 # ============================================================================
