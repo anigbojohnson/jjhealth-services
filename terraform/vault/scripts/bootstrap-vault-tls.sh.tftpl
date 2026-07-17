@@ -9,11 +9,13 @@ TLS_SECRET="${tls_secret}"
 CA_SECRET="${ca_secret}"
 AWS_REGION="${aws_region}"
 
-
+CA_SECRET="${ca_secret}"
 TLS_DIR="${tls_dir}"
 SERVER_KEY="$${TLS_DIR}/server.key"
 SERVER_CERT="$${TLS_DIR}/server.crt"
 TLS_FILE="$${TLS_DIR}/tls-secret.json"
+CA_CERT="$${TLS_DIR}/ca.crt"
+
 log() {
     echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
 }
@@ -95,7 +97,12 @@ cat "$${TLS_FILE}" \
 
 
 
-
+aws secretsmanager get-secret-value \
+    --secret-id "$${CA_SECRET}" \
+    --region "$${AWS_REGION}" \
+    --query SecretString \
+    --output text \
+> "$${CA_CERT}"
 
 # ============================================================================
 # Secure permissions
@@ -109,6 +116,7 @@ chmod 600 "$${SERVER_KEY}"
 
 chmod 644 "$${SERVER_CERT}"
 
+chmod 644 "$${CA_CERT}"
 
 # If Vault user exists, give ownership
 if id vault >/dev/null 2>&1; then
@@ -123,6 +131,7 @@ log "Verifying downloaded files..."
 
 test -f "$${SERVER_KEY}"
 test -f "$${SERVER_CERT}"
+test -f "$${CA_CERT}"
 
 # Verify PEM headers
 

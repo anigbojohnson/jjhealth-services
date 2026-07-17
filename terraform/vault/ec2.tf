@@ -28,7 +28,6 @@ locals {
     tls_dir    = "/etc/vault.d/tls"
   })
 
-
   github_runner_script = templatefile("${path.module}/scripts/github-runner.sh", {
     tls_secret = var.vault_key_certificate_secret
     ca_secret  = var.ca_certificate_secret
@@ -158,7 +157,7 @@ resource "aws_instance" "private" {
     aws_route_table_association.private,
     aws_nat_gateway.this
   ]
-  
+
   user_data = <<-EOF
     #!/bin/bash
     set -e
