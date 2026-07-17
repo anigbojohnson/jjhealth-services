@@ -19,9 +19,9 @@ listener "tcp" {
 
   tls_disable        = false
 
-  tls_cert_file      = "/etc/vault/tls/server.crt"
+  tls_cert_file      = "/etc/vault.d/tls/server.crt"
 
-  tls_key_file       = "/etc/vault/tls/server.key"
+  tls_key_file       = "/etc/vault.d/tls/server.key"
 
-  tls_client_ca_file = "/etc/vault/tls/ca.crt"
+  tls_client_ca_file = "/etc/vault.d/tls/ca.crt"
 }
