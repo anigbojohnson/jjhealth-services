@@ -13,9 +13,7 @@ AWS_REGION="${aws_region}"
 TLS_DIR="${tls_dir}"
 SERVER_KEY="$${TLS_DIR}/server.key"
 SERVER_CERT="$${TLS_DIR}/server.crt"
-
 TLS_FILE="$${TLS_DIR}/tls-secret.json"
-
 log() {
     echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
 }
