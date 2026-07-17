@@ -45,7 +45,6 @@ resource "aws_subnet" "private" {
 
   tags = { Name = "private-subnet" }
 }
-
 resource "aws_eip" "nat" {
   domain = "vpc"
   tags   = { Name = "nat-eip" }
