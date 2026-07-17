@@ -16,28 +16,31 @@ SERVER_CERT="$${TLS_DIR}/server.crt"
 
 TLS_FILE="$${TLS_DIR}/tls-secret.json"
 
-
-
-# ============================================================================
-# Install Dependencies
-# ============================================================================
 log() {
     echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
 }
 
+# ============================================================================
+# Install Dependencies
+# ============================================================================
 
-log "Installing ...."
 
-export DEBIAN_FRONTEND=noninteractive
-sudo apt-get update -y
 
 sudo apt-get install -y \
     curl \
     unzip \
     jq \
     git \
-    awscli \
     ca-certificates
+
+log "Installing AWS CLI v2..."
+
+curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+unzip -q /tmp/awscliv2.zip -d /tmp
+sudo /tmp/aws/install --update
+rm -rf /tmp/awscliv2.zip /tmp/aws
+
+aws --version
 
 
 # ============================================================================

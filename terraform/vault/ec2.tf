@@ -19,6 +19,7 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+
 locals {
   bootstrap_tls_script = templatefile("${path.module}/scripts/bootstrap-vault-tls.sh.tftpl", {
     tls_secret = var.vault_key_certificate_secret
@@ -27,7 +28,7 @@ locals {
     tls_dir    = "/etc/vault.d/tls"
   })
 
-  
+
   github_runner_script = templatefile("${path.module}/scripts/github-runner.sh", {
     tls_secret = var.vault_key_certificate_secret
     ca_secret  = var.ca_certificate_secret
