@@ -154,6 +154,11 @@ resource "aws_instance" "private" {
   iam_instance_profile   = aws_iam_instance_profile.private.name
   key_name = var.key_name
 
+   depends_on = [
+    aws_route_table_association.private,
+    aws_nat_gateway.this
+  ]
+  
   user_data = <<-EOF
     #!/bin/bash
     set -e
