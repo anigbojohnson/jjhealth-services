@@ -57,6 +57,7 @@ output "private_zone_name" {
   value = aws_route53_zone.private.name
 }
 
+
 output "backend_instance_role_arn" {
   description = "Backend EC2 IAM Role ARN"
 
