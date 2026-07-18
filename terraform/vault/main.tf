@@ -50,6 +50,7 @@ resource "aws_eip" "nat" {
   tags   = { Name = "nat-eip" }
 }
 
+
 resource "aws_nat_gateway" "this" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public.id
