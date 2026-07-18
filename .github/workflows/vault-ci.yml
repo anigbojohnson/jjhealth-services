@@ -120,13 +120,15 @@ jobs:
         run: |
           echo "${{ env.VAULT_DNS_NAME }}"
 
+
+
       - name: Run Ansible Playbook
         working-directory: vault
         run: |
           ansible-playbook -i inventory.ini site.yml \
-            -e vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}
-            -e vault_dns_name=${{ env.VAULT_DNS_NAME }}
-            -e backend_instance_role_arn="${{ env.BACKEND_INSTANCE_ROLE_ARN }}"
+            -e "vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}" \
+            -e "vault_dns_name=${{ env.VAULT_DNS_NAME }}" \
+            -e "backend_instance_role_arn=${{ env.BACKEND_INSTANCE_ROLE_ARN }}"
 
 
       - name: Retrieve Vault CA certificate
