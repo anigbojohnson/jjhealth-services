@@ -48,7 +48,6 @@ output "bastion_public_ip" {
   value = aws_instance.public.public_ip
 }
 
-
 output "vault_dns_name" {
   description = "Vault DNS name"
   value       = aws_route53_record.vault.fqdn
