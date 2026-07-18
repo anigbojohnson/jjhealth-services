@@ -75,7 +75,7 @@ aws secretsmanager get-secret-value \
     --secret-id "$${TLS_SECRET}" \
     --region "$${AWS_REGION}" \
     --query SecretString \
-    --output text \
+    --output text 
 > "$${TLS_FILE}"
 
 
