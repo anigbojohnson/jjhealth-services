@@ -19,7 +19,6 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-
 locals {
   bootstrap_tls_script = templatefile("${path.module}/scripts/bootstrap-vault-tls.sh.tftpl", {
     tls_secret = var.vault_key_certificate_secret
