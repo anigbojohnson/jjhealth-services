@@ -91,6 +91,7 @@ resource "aws_security_group" "private" {
   tags = { Name = "ec2-private-sg" }
 }
 
+
 resource "aws_iam_role" "private" {
   name = "backend-instance-role"
   assume_role_policy = jsonencode({
