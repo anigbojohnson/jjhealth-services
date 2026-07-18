@@ -226,7 +226,8 @@ resource "aws_iam_role_policy" "vault-bootstrap-tls" {
         "secretsmanager:DescribeSecret",
         "secretsmanager:GetSecretValue"
       ],
-      "Resource":["arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/bootstrap-tls*"]
+      "Resource":["arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/bootstrap-tls*",
+                  "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/bootstrap-ca*"]
     }]
   })
 } 
