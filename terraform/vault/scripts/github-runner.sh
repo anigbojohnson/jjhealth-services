@@ -15,6 +15,7 @@ CA_SECRET="${ca_secret}"
 AWS_REGION="${aws_region}"
 TLS_DIR="${tls_dir}"
 CA_CERT="$${TLS_DIR}/ca.crt"
+CA_FILE="$${TLS_DIR}/ca-secret.json"
 
 # Install Terraform
 TERRAFORM_VERSION="1.13.2"
@@ -58,8 +59,12 @@ aws secretsmanager get-secret-value \
     --region "$${AWS_REGION}" \
     --query SecretString \
     --output text \
-> "$${CA_CERT}"
+> "$${CA_FILE}"
 
+
+cat "$${CA_CERT}" \
+| jq -r '.ca_crt' \
+> "$${SERVER_KEY}"
 
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
