@@ -66,6 +66,9 @@ cat "$${CA_FILE}" \
 | jq -r '.ca_crt' \
 > "$${CA_CERT}"
 
+cp "$${CA_CERT}" /usr/local/share/ca-certificates/vault-bootstrap-ca.crt
+update-ca-certificates
+
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
     --region "$${AWS_REGION}" \

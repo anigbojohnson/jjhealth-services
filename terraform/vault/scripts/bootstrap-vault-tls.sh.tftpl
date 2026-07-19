@@ -8,7 +8,6 @@ set -Eeuo pipefail
 TLS_SECRET="${tls_secret}"
 CA_SECRET="${ca_secret}"
 AWS_REGION="${aws_region}"
-CA_SECRET="${ca_secret}"
 TLS_DIR="${tls_dir}"
 SERVER_KEY="$${TLS_DIR}/server.key"
 SERVER_CERT="$${TLS_DIR}/server.crt"
@@ -108,7 +107,10 @@ aws secretsmanager get-secret-value \
 cat "$${CA_FILE}" \
 | jq -r '.ca_crt' \
 > "$${CA_CERT}"
+log "Installing CA certificate into system trust store..."
 
+cp "$${CA_CERT}" /usr/local/share/ca-certificates/vault-bootstrap-ca.crt
+update-ca-certificates
 # ============================================================================
 # Secure permissions
 # ============================================================================
