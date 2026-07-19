@@ -63,4 +63,3 @@ output "backend_instance_role_arn" {
 
   value = aws_iam_role.private.arn
 }
-
