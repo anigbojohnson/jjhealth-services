@@ -8,13 +8,13 @@ set -Eeuo pipefail
 TLS_SECRET="${tls_secret}"
 CA_SECRET="${ca_secret}"
 AWS_REGION="${aws_region}"
-
 CA_SECRET="${ca_secret}"
 TLS_DIR="${tls_dir}"
 SERVER_KEY="$${TLS_DIR}/server.key"
 SERVER_CERT="$${TLS_DIR}/server.crt"
 TLS_FILE="$${TLS_DIR}/tls-secret.json"
 CA_CERT="$${TLS_DIR}/ca.crt"
+CA_FILE="$${TLS_DIR}/ca-secret.json"
 
 log() {
     echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
@@ -102,6 +102,11 @@ aws secretsmanager get-secret-value \
     --region "$${AWS_REGION}" \
     --query SecretString \
     --output text \
+> "$${CA_FILE}"
+
+
+cat "$${CA_FILE}" \
+| jq -r '.ca_crt' \
 > "$${CA_CERT}"
 
 # ============================================================================

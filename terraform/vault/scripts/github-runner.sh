@@ -62,9 +62,9 @@ aws secretsmanager get-secret-value \
 > "$${CA_FILE}"
 
 
-cat "$${CA_CERT}" \
+cat "$${CA_FILE}" \
 | jq -r '.ca_crt' \
-> "$${SERVER_KEY}"
+> "$${CA_CERT}"
 
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
