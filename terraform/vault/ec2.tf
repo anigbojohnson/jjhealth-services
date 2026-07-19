@@ -31,7 +31,7 @@ locals {
     tls_secret = var.vault_key_certificate_secret
     ca_secret  = var.ca_certificate_secret
     aws_region = var.region
-    tls_dir    = "/etc/vault.d/tls"
+    tls_dir    = "/etc/tls/bootstrap"
   })
 }
 
