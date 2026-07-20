@@ -57,12 +57,32 @@ aws secretsmanager get-secret-value \
     --query SecretString \
     --output text \
 > "$${CA_CERT}"
-
-
-
-
 cp "$${CA_CERT}" /usr/local/share/ca-certificates/vault-bootstrap-ca.crt
 update-ca-certificates
+
+
+chmod 700 "$${TLS_DIR}"
+chmod 644 "$${CA_CERT}"
+
+
+# ============================================================================
+# Create vault user if it doesn't exist
+# ============================================================================
+
+if ! id vault >/dev/null 2>&1; then
+    log "Creating vault user..."
+
+    sudo useradd \
+        --system \
+        --home /etc/vault.d \
+        --shell /usr/sbin/nologin \
+        --comment "HashiCorp Vault" \
+        vault
+fi
+
+sudo chown -R vault:vault "${TLS_DIR}"
+
+test -f "$${CA_CERT}"
 
 GITHUB_PAT=$(aws secretsmanager get-secret-value \
     --secret-id github-runner-pat \
@@ -77,9 +97,7 @@ RUNNER_TOKEN=$(curl -s -X POST \
   | jq -r '.token')
 
 
-chmod 644 "$${CA_CERT}"
 
-test -f "$${CA_CERT}"
 
 grep -q "BEGIN CERTIFICATE" "$${CA_CERT}"
 

@@ -29,7 +29,6 @@ resource "aws_internet_gateway" "this" {
   tags   = { Name = "main-igw" }
 }
 
-
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidr

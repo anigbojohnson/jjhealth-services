@@ -121,11 +121,24 @@ chmod 644 "$${SERVER_CERT}"
 
 chmod 644 "$${CA_CERT}"
 
-# If Vault user exists, give ownership
-if id vault >/dev/null 2>&1; then
-    chown -R vault:vault "$${TLS_DIR}"
-    
+# ============================================================================
+# Create vault user if it doesn't exist
+# ============================================================================
+
+if ! id vault >/dev/null 2>&1; then
+    log "Creating vault user..."
+
+    sudo useradd \
+        --system \
+        --home /etc/vault.d \
+        --shell /usr/sbin/nologin \
+        --comment "HashiCorp Vault" \
+        vault
 fi
+
+sudo chown -R vault:vault "${TLS_DIR}"  
+
+
 
 # ============================================================================
 # Verify files
