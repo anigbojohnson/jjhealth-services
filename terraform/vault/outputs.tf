@@ -18,12 +18,6 @@ output "vault_kms_key_id" {
   value = aws_kms_key.vault_unseal.key_id
 }
 
-output "vault_secret_arns" {
-  value = {
-    for k, v in aws_secretsmanager_secret.vault :
-    k => v.arn
-  }
-}
 
 output "vault_instance_id" {
   value = aws_instance.private.id
