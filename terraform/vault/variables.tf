@@ -53,7 +53,6 @@ variable "ca_certificate_secret" {
   default     = "jjhealth-services/vault/bootstrap-ca"
 }
 
-
 variable "vault_key_certificate_secret" {
   description = "key and certificate secret bootstrap for vault server"
   type        = string
