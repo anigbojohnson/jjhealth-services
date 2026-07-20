@@ -13,7 +13,6 @@ SERVER_KEY="$${TLS_DIR}/server.key"
 SERVER_CERT="$${TLS_DIR}/server.crt"
 TLS_FILE="$${TLS_DIR}/tls-secret.json"
 CA_CERT="$${TLS_DIR}/ca.crt"
-CA_FILE="$${TLS_DIR}/ca-secret.json"
 
 log() {
     echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*"
@@ -101,12 +100,9 @@ aws secretsmanager get-secret-value \
     --region "$${AWS_REGION}" \
     --query SecretString \
     --output text \
-> "$${CA_FILE}"
-
-
-cat "$${CA_FILE}" \
-| jq -r '.ca_crt' \
 > "$${CA_CERT}"
+
+
 log "Installing CA certificate into system trust store..."
 
 cp "$${CA_CERT}" /usr/local/share/ca-certificates/vault-bootstrap-ca.crt

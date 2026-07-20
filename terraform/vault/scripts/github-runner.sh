@@ -15,7 +15,6 @@ CA_SECRET="${ca_secret}"
 AWS_REGION="${aws_region}"
 TLS_DIR="${tls_dir}"
 CA_CERT="$${TLS_DIR}/ca.crt"
-CA_FILE="$${TLS_DIR}/ca-secret.json"
 
 # Install Terraform
 TERRAFORM_VERSION="1.13.2"
@@ -57,12 +56,10 @@ aws secretsmanager get-secret-value \
     --region "$${AWS_REGION}" \
     --query SecretString \
     --output text \
-> "$${CA_FILE}"
-
-
-cat "$${CA_FILE}" \
-| jq -r '.ca_crt' \
 > "$${CA_CERT}"
+
+
+
 
 cp "$${CA_CERT}" /usr/local/share/ca-certificates/vault-bootstrap-ca.crt
 update-ca-certificates
