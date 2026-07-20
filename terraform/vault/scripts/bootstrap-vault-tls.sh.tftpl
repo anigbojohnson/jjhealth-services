@@ -124,6 +124,7 @@ chmod 644 "$${CA_CERT}"
 # If Vault user exists, give ownership
 if id vault >/dev/null 2>&1; then
     chown -R vault:vault "$${TLS_DIR}"
+    
 fi
 
 # ============================================================================
