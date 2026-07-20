@@ -80,7 +80,7 @@ if ! id vault >/dev/null 2>&1; then
         vault
 fi
 
-sudo chown -R vault:vault "${TLS_DIR}"
+sudo chown -R vault:vault "$${TLS_DIR}"
 
 test -f "$${CA_CERT}"
 
