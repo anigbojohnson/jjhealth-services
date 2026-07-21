@@ -23,6 +23,10 @@
         path "pki/crl" {
           capabilities = ["read"]
         }
+
+        path "sys/mounts" {
+            capabilities = ["read"]
+        }
   environment: "{{ vault_env }}"
 
 # ─────────────────────────────────────────────────────────────
