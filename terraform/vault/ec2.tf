@@ -12,7 +12,6 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-
   filter {
     name   = "root-device-type"
     values = ["ebs"]
