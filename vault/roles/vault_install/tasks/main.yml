@@ -8,8 +8,16 @@
       - unzip
       - certbot
       - ca-certificates
+      - python3-pip
     state: present
     update_cache: true
+
+- name: Install Python dependencies
+  ansible.builtin.pip:
+    name:
+      - hvac
+    executable: pip3
+    extra_args: --break-system-packages
 
 # ─────────────────────────────────────────────────────────────
 # CHECK INSTALLED VERSION
