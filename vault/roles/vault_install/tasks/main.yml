@@ -212,7 +212,6 @@
 # ─────────────────────────────────────────────────────────────
 # STORE RECOVERY KEYS IN SECRETS MANAGER
 # ─────────────────────────────────────────────────────────────
-
 - name: Store recovery keys in AWS Secrets Manager
   community.aws.secretsmanager_secret:
     name: "{{ vault_secret_name_recovery_keys }}"
