@@ -100,7 +100,7 @@
 
 - name: Login with AppRole
   ansible.builtin.uri:
-    url: "https://127.0.0.1:8200/v1/auth/approle/login"
+    url: "https://{{ vault_dns_name }}:8200/v1/auth/approle/login"
     method: POST
     body_format: json
     body:
@@ -113,6 +113,6 @@
 - name: Set Vault environment using AppRole token
   ansible.builtin.set_fact:
     vault_env:
-      VAULT_ADDR: "https://127.0.0.1:8200"
+      VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
       VAULT_TOKEN: "{{ approle_login.json.auth.client_token }}"
   no_log: true
