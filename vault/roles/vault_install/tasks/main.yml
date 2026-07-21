@@ -208,6 +208,7 @@
   when: not vault_initialized
   no_log: true
 
+
 # ─────────────────────────────────────────────────────────────
 # STORE RECOVERY KEYS IN SECRETS MANAGER
 # ─────────────────────────────────────────────────────────────
