@@ -1,4 +1,9 @@
 name: Vault provisioning and configuration using terraform and ansible
+
+env:
+  TF_VAR_vault_secret_name_root_token: "jjhealth-services/vault/vault-root-token"
+  TF_VAR_vault_secret_name_recovery_keys: "jjhealth-services/vault/recovery-keys"
+
 permissions:
   id-token: write
   contents: read
@@ -129,7 +134,8 @@ jobs:
             -e "vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}" \
             -e "vault_dns_name=${{ env.VAULT_DNS_NAME }}" \
             -e "backend_instance_role_arn=${{ env.BACKEND_INSTANCE_ROLE_ARN }}"
-
+            -e vault_secret_name_root_token="$VAULT_SECRET_NAME_ROOT_TOKEN" \
+            -e vault_secret_name_recovery_keys="$VAULT_SECRET_NAME_RECOVERY_KEYS"
 
       - name: Retrieve Vault CA certificate
         run: |

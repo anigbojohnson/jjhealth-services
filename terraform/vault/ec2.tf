@@ -254,8 +254,10 @@ resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
         "secretsmanager:DeleteSecret",
         "secretsmanager:RestoreSecret"
       ],
-      "Resource":[ "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/root-token*",
-                  "arn:aws:secretsmanager:eu-west-2:869868778582:secret:jjhealth-services/vault/recovery-keys*"
+      "Resource":[ 
+        "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.vault_secret_name_root_token}*",
+          "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.vault_secret_name_recovery_keys}*"
+
       ]
     }]
   })

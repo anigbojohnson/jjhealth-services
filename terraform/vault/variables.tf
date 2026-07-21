@@ -59,4 +59,10 @@ variable "vault_key_certificate_secret" {
   default     = "jjhealth-services/vault/bootstrap-tls"
 }
 
+variable "vault_secret_name_root_token" {
+  type = string
+}
 
+variable "vault_secret_name_recovery_keys" {
+  type = string
+}
