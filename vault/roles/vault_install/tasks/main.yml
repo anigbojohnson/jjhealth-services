@@ -154,7 +154,7 @@
   changed_when: false
   failed_when: false
   environment:
-    VAULT_ADDR: "http://127.0.0.1:8200"
+    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
 
 
 - name: Set default Vault initialized state
@@ -180,7 +180,7 @@
   register: vault_init
   when: not vault_initialized
   environment:
-    VAULT_ADDR: "http://127.0.0.1:8200"
+    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
   no_log: true
 
 # ─────────────────────────────────────────────────────────────
