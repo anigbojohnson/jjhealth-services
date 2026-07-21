@@ -57,7 +57,7 @@ jobs:
         run: terraform init
       
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
       
   ansible:
     needs:
@@ -128,9 +128,9 @@ jobs:
           ansible-playbook -i inventory.ini site.yml \
             -e "vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}" \
             -e "vault_dns_name=${{ env.VAULT_DNS_NAME }}" \
-            -e "backend_instance_role_arn=${{ env.BACKEND_INSTANCE_ROLE_ARN }}"
-            -e "vault_secret_name_root_token=$TF_VAR_vault_secret_name_root_token" \
-            -e "vault_secret_name_recovery_keys=$TF_VAR_vault_secret_name_recovery_keys"
+            -e "backend_instance_role_arn=${{ env.BACKEND_INSTANCE_ROLE_ARN }}" \
+            -e "vault_secret_name_root_token=${TF_VAR_vault_secret_name_root_token}" \
+            -e "vault_secret_name_recovery_keys=${TF_VAR_vault_secret_name_recovery_keys}"
 
       - name: Retrieve Vault CA certificate
         run: |
