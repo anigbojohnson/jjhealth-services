@@ -263,8 +263,6 @@ resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
   })
 } 
 
-
-
 resource "aws_iam_role_policy" "github-runner-pat" {
   name = "github-runner-pat"
   role = aws_iam_role.public.id
@@ -309,3 +307,4 @@ resource "aws_iam_role_policy" "vault_aws_secrets_engine" {
     }]
   })
 } 
+
