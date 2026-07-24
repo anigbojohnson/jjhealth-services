@@ -1,0 +1,68 @@
+---
+- name: Check Vault status
+  ansible.builtin.command: vault status -format=json
+  register: vault_status
+  changed_when: false
+  failed_when: false
+  environment:
+    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
+
+- name: Set default Vault initialized state
+  ansible.builtin.set_fact:
+    vault_initialized: false
+
+- name: Parse Vault initialized status
+  ansible.builtin.set_fact:
+    vault_initialized: "{{ (vault_status.stdout | from_json).initialized }}"
+  when:
+    - vault_status.stdout is defined
+    - vault_status.stdout | trim | length > 0
+    - vault_status.stdout | trim is match('^\{')
+
+- name: Initialize Vault with awskms auto-unseal
+  ansible.builtin.command: >
+    vault operator init
+    -format=json
+    -recovery-shares=5
+    -recovery-threshold=3
+  register: vault_init
+  when: not vault_initialized
+  environment:
+    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
+  no_log: true
+
+- name: Parse Vault init output
+  ansible.builtin.set_fact:
+    vault_init_data: "{{ vault_init.stdout | from_json }}"
+  when: not vault_initialized
+  no_log: true
+
+- name: Store root token in AWS Secrets Manager
+  community.aws.secretsmanager_secret:
+    name: "{{ vault_secret_name_root_token }}"
+    secret_type: string
+    secret: "{{ vault_init_data.root_token }}"
+    region: "{{ vault_aws_region }}"
+    state: present
+    overwrite: true
+  when: not vault_initialized
+  no_log: true
+
+- name: Store recovery keys in AWS Secrets Manager
+  community.aws.secretsmanager_secret:
+    name: "{{ vault_secret_name_recovery_keys }}"
+    secret_type: string
+    secret: "{{ vault_init_data.recovery_keys_b64 | to_json }}"
+    region: "{{ vault_aws_region }}"
+    state: present
+    overwrite: true
+  when: not vault_initialized
+  no_log: true
+
+  
+- name: Set Vault environment with root token
+  ansible.builtin.set_fact:
+    vault_login_credentials:
+      VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
+      VAULT_TOKEN: "{{ vault_init_data.root_token }}"
+  no_log: true

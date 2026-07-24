@@ -1,0 +1,41 @@
+---
+# ─────────────────────────────────────────────────────────────
+# BOOTSTRAP APPROLE (using root token — one time only)
+# ─────────────────────────────────────────────────────────────
+
+- name: Write vault admin policy
+  ansible.builtin.template:
+    src: vault-admin-policy.hcl.j2
+    dest: "{{ vault_aws_admin_policy_destination_file }}"
+    mode: "0600"
+
+- name: Apply  policy
+  ansible.builtin.command: >
+    vault policy write vault_admin_role_name vault_aws_admin_policy_destination_file
+  environment: "{{ vault_login_credentials }}"
+  no_log: true
+  register: policy_apply
+  changed_when: "'Success' in policy_apply.stdout or policy_apply.rc == 0"
+
+- name: Create Vault AWS role
+  community.hashi_vault.vault_write:
+    url: "{{ vault_login_credentials.VAULT_ADDR }}"
+    token: "{{  vault_login_credentials.VAULT_TOKEN }}"
+    path: auth/aws/role/{{ vault_admin_role_name }}
+    data:
+      auth_type: iam
+      bound_iam_principal_arn:
+        - "{{ vault_instance_role_arn }}"
+      token_policies:
+        - "{{ vault_admin_policy_name }}"
+      token_ttl: 1h
+
+- name: Remove bootstrap policy file
+  ansible.builtin.file:
+    path: "{{ vault_aws_admin_policy_destination_file }}"
+    state: absent
+
+
+
+
+

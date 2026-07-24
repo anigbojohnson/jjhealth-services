@@ -1,27 +1,14 @@
 ---
----
 # ─────────────────────────────────────────────────────────────
-# WAIT FOR VAULT TO BE UNSEALED (auto-unseal via KMS)
+# CHECK EXISTING SECRETS ENGINES
 # ─────────────────────────────────────────────────────────────
-
-- name: Wait for Vault to be unsealed
-  ansible.builtin.uri:
-    url: "https://{{ vault_dns_name }}:8200/v1/sys/health"
-    status_code: [200]
-  register: vault_health
-  retries: 15
-  delay: 3
-  until: vault_health.status == 200
-  environment:
-    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
-
 
 - name: Login using AWS auth
   ansible.builtin.command: >
     vault login
     -method=aws
     -format=json
-    role={{ vault_aws_role_name }}
+    role={{ vault_aws_auth_role }}
   environment:
     VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
   register: aws_login
@@ -56,3 +43,13 @@
       VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
       VAULT_TOKEN: "{{ vault_token }}"
   no_log: true
+
+- name: Check secrets engines
+  ansible.builtin.command: vault secrets list -format=json
+  environment: "{{ vault_login_credentials }}"
+  register: secrets_list
+  changed_when: false
+
+- name: Parse secrets engines
+  ansible.builtin.set_fact:
+    secrets_json: "{{ secrets_list.stdout | from_json }}"

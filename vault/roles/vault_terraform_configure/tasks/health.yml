@@ -14,6 +14,3 @@
   environment:
     VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
 
-
-
-

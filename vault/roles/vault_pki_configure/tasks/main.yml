@@ -1,28 +1,15 @@
 ---
-# ─────────────────────────────────────────────────────────────
-# CONFIGURE PKI
-# ─────────────────────────────────────────────────────────────
+- name: Login role
+  ansible.builtin.import_tasks: auth.yml
 
 - name: Configure Vault PKI
-  ansible.builtin.import_tasks: pki.yml
-
-# ─────────────────────────────────────────────────────────────
-# CONFIGURE PKI POLICY
-# ─────────────────────────────────────────────────────────────
-
-- name: Configure PKI policy
-  ansible.builtin.import_tasks: policy.yml
-
-# ─────────────────────────────────────────────────────────────
-# CONFIGURE PKI APPROLE
-# ─────────────────────────────────────────────────────────────
+  ansible.builtin.import_tasks: secret_engine.yml
 
 - name: Configure PKI AppRole
-  ansible.builtin.import_tasks: approle.yml
+  ansible.builtin.import_tasks: pki.yml
 
-# ─────────────────────────────────────────────────────────────
-# VERIFY PKI CONFIGURATION
-# ─────────────────────────────────────────────────────────────
+- name: Configure PKI policy and assign to aws role
+  ansible.builtin.import_tasks: aws.yml
 
 - name: Verify PKI configuration
   ansible.builtin.import_tasks: verify.yml

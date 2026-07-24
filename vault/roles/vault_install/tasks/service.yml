@@ -1,0 +1,26 @@
+---
+- name: Enable and start Vault service
+  ansible.builtin.systemd:
+    name: vault
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Check Vault service state
+  ansible.builtin.command: journalctl -xeu vault --no-pager
+  register: vault_service
+  changed_when: false
+  failed_when: false
+
+- name: Show Vault service logs
+  ansible.builtin.debug:
+    var: vault_service.stdout
+
+- name: Wait for Vault to be reachable
+  ansible.builtin.uri:
+    url: "https://{{ vault_dns_name }}:8200/v1/sys/health"
+    status_code: [200, 429, 472, 473, 501, 503]
+  register: vault_health
+  retries: 10
+  delay: 3
+  until: vault_health.status in [200, 429, 472, 473, 501, 503]

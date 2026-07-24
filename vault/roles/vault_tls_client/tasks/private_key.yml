@@ -1,23 +1,13 @@
 ---
-- name: Ensure TLS directory exists
+- name: Create TLS directory
   ansible.builtin.file:
     path: "{{ vault_tls_directory }}"
     state: directory
-    owner: root
-    group: root
     mode: "0700"
-
-- name: Check if private key exists
-  ansible.builtin.stat:
-    path: "{{ vault_tls_private_key }}"
-  register: tls_private_key
 
 - name: Generate private key
   community.crypto.openssl_privatekey:
     path: "{{ vault_tls_private_key }}"
-    type: RSA
     size: 4096
-    owner: root
-    group: root
+    type: RSA
     mode: "0600"
-  when: not tls_private_key.stat.exists

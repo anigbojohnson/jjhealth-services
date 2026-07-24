@@ -6,7 +6,7 @@
 - name: Verify AWS role
   ansible.builtin.command: >
     vault read aws/roles/{{ vault_aws_role_name }}
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_approle_token }}"
   changed_when: false
 
 # ─────────────────────────────────────────────────────────────
@@ -16,5 +16,5 @@
 - name: Verify JWT role
   ansible.builtin.command: >
     vault read auth/jwt/role/{{ vault_jwt_role_name }}
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_approle_token }}"
   changed_when: false

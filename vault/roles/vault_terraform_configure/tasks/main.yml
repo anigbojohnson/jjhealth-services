@@ -2,20 +2,14 @@
 - name: Wait for Vault to become healthy
   ansible.builtin.import_tasks: health.yml
 
-- name: Bootstrap Vault
-  ansible.builtin.import_tasks: bootstrap.yml
-
-- name: Configure AppRole authentication
-  ansible.builtin.import_tasks: approle.yml
+- name: Auth Vault
+  ansible.builtin.import_tasks: auth.yml
 
 - name: Configure AWS secrets engine
   ansible.builtin.import_tasks: aws.yml
 
 - name: Configure JWT authentication
   ansible.builtin.import_tasks: jwt.yml
-
-- name: Configure Vault PKI
-  ansible.builtin.import_tasks: pki_role_policy.yml
 
 - name: Verify Vault configuration
   ansible.builtin.import_tasks: verify.yml

@@ -1,7 +1,6 @@
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = "eu-west-2"
 }
 
 variable "vpc_cidr" {
@@ -64,5 +63,8 @@ variable "vault_secret_name_root_token" {
 }
 
 variable "vault_secret_name_recovery_keys" {
+  type = string
+}
+variable "tls_dir" {
   type = string
 }

@@ -5,7 +5,7 @@
 
 - name: Verify PKI secrets engine
   ansible.builtin.command: vault secrets list -format=json
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_approle_token }}"
   register: pki_secrets
   changed_when: false
 
@@ -21,7 +21,7 @@
 
 - name: Verify Root CA
   ansible.builtin.command: vault read pki/cert/ca
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_approle_token }}"
   register: root_ca
   changed_when: false
 
@@ -38,7 +38,7 @@
 - name: Verify PKI role
   ansible.builtin.command: >
     vault read pki/roles/{{ vault_pki_role_name }}
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_root_token }}"
   register: pki_role
   changed_when: false
 
@@ -55,7 +55,7 @@
 - name: Verify PKI policy
   ansible.builtin.command: >
     vault policy read {{ vault_pki_policy_name }}
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_root_token }}"
   register: pki_policy
   changed_when: false
 
@@ -72,7 +72,7 @@
 - name: Verify PKI AppRole
   ansible.builtin.command: >
     vault read auth/approle/role/{{ vault_pki_approle_name }}
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_root_token }}"
   register: pki_approle
   changed_when: false
 
@@ -92,7 +92,7 @@
       pki/issue/{{ vault_pki_role_name }}
       common_name=test.internal
       ttl=1h
-  environment: "{{ vault_env }}"
+  environment: "{{ vault_env_approle_token }}"
   register: test_cert
   changed_when: false
 

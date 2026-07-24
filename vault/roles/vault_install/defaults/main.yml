@@ -1,0 +1,14 @@
+vault_version: "1.15.5"
+vault_arch: "linux_amd64"
+vault_install_dir: "/usr/local/bin"
+vault_data_dir: "/opt/vault/data"
+vault_main_dir: "/etc/vault"
+vault_config_dir: "/etc/vault.d"
+vault_log_dir: "/var/log/vault"
+
+#File
+vault_admin_policy_destination_file: /tmp/vault-admin-policy.hcl
+
+#Policy 
+vault_admin_policy_name: "{{ project_name }}_admin_policy"
+

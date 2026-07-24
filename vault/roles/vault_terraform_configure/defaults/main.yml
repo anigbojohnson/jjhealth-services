@@ -1,0 +1,30 @@
+---
+vault_tls_ca_private_key: /etc/vault.d/tls/ca.key
+
+vault_tls_ca_certificate: /etc/vault.d/tls/ca.crt
+
+
+#Files
+vault_role_id_file: /etc/vault/role_id
+vault_secret_id_file: /etc/vault/secret_id
+vault_aws_terraform_policy_destination_file: /tmp/terraform-policy.hcl
+vault_aws_terraform_jwt_role_destination_file: /tmp/jwt-role.json
+
+# Certificate
+vault_tls_common_name: "{{ vault_dns_name }}"
+vault_tls_san:
+  - "DNS:{{ vault_dns_name }}"  
+
+#Role
+vault_aws_terraform_role_name: "{{ project_name }}_terraform_role"
+vault_aws_auth_role: "{{ project_name }}_backend_role"
+vault_jwt_role_name: "{{ project_name }}_github-actions-role"
+
+
+#Policy
+vault_aws_terraform_policy_name: "{{ project_name }}_terraform_policy"
+
+# GitHub OIDC
+github_oidc_discovery_url: "https://token.actions.githubusercontent.com"
+github_org: "anigbojohnson"
+github_repo: "jjhealth-services"

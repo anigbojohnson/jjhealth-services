@@ -1,0 +1,12 @@
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: vault
+    group: vault
+    mode: "0750"
+  loop:
+    -  "{{ vault_main_dir }}"
+    - "{{ vault_config_dir }}"
+    - "{{ vault_data_dir }}"
+    - "{{ vault_log_dir }}"

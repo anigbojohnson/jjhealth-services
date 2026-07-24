@@ -2,231 +2,50 @@
 # ─────────────────────────────────────────────────────────────
 # INSTALL DEPENDENCIES
 # ─────────────────────────────────────────────────────────────
-- name: Install required dependencies
-  ansible.builtin.apt:
-    name:
-      - unzip
-      - certbot
-      - ca-certificates
-      - python3-pip
-    state: present
-    update_cache: true
-
-- name: Install Python dependencies
-  ansible.builtin.pip:
-    name:
-      - hvac
-    executable: pip3
-    extra_args: --break-system-packages
-
-# ─────────────────────────────────────────────────────────────
-# CHECK INSTALLED VERSION
-# ─────────────────────────────────────────────────────────────
-
-- name: Check if Vault is already installed
-  ansible.builtin.command: vault version
-  register: vault_installed_version
-  failed_when: false
-  changed_when: false
+- name: Install operating system and Python dependencies
+  ansible.builtin.import_tasks: dependencies.yml
 
 # ─────────────────────────────────────────────────────────────
 # DOWNLOAD + INSTALL VAULT
 # ─────────────────────────────────────────────────────────────
+- name: Download and install the HashiCorp Vault binary
+  ansible.builtin.import_tasks: install.yml
 
-- name: Download Vault binary
-  ansible.builtin.get_url:
-    url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_{{ vault_arch }}.zip"
-    dest: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
-    checksum: "sha256:https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_SHA256SUMS"
-    mode: "0644"
-  when: vault_version not in (vault_installed_version.stdout | default(''))
-
-- name: Unzip Vault binary
-  ansible.builtin.unarchive:
-    src: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
-    dest: "{{ vault_install_dir }}"
-    remote_src: true
-    mode: "0755"
-  when: vault_version not in (vault_installed_version.stdout | default(''))
-
-- name: Remove downloaded archive
-  file:
-    path: "/tmp/vault_{{ vault_version }}_{{ vault_arch }}.zip"
-    state: absent
 # ─────────────────────────────────────────────────────────────
 # CREATE VAULT USER/GROUP
 # ─────────────────────────────────────────────────────────────
-
-- name: Create vault system group
-  ansible.builtin.group:
-    name: vault
-    system: true
-    state: present
-
-- name: Create vault system user
-  ansible.builtin.user:
-    name: vault
-    group: vault
-    system: true
-    shell: /bin/false
-    home: "{{ vault_data_dir }}"
-    create_home: false
-    state: present
+- name: Create the Vault system user and group
+  ansible.builtin.import_tasks: user.yml
 
 # ─────────────────────────────────────────────────────────────
 # CREATE REQUIRED DIRECTORIES
 # ─────────────────────────────────────────────────────────────
 
-- name: Create required directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: vault
-    group: vault
-    mode: "0750"
-  loop:
-    - "/etc/vault"
-    - "{{ vault_config_dir }}"
-    - "{{ vault_data_dir }}"
-    - "{{ vault_log_dir }}"
+- name: Create Vault configuration, data, and log directories
+  ansible.builtin.import_tasks: directories.yml
 
 # ─────────────────────────────────────────────────────────────
 # VAULT CONFIGURATION
 # ─────────────────────────────────────────────────────────────
 
-- name: Write Vault config file
-  ansible.builtin.template:
-    src: vault.hcl.j2
-    dest: "{{ vault_config_dir }}/vault.hcl"
-    owner: vault
-    group: vault
-    mode: "0640"
-  notify: restart vault
-
-- name: Install Vault systemd service
-  ansible.builtin.template:
-    src: vault.service.j2
-    dest: /etc/systemd/system/vault.service
-    mode: "0644"
-  notify:
-    - reload systemd
-    - restart vault
-
-# ─────────────────────────────────────────────────────────────
-# APPLY HANDLERS IMMEDIATELY
-# ─────────────────────────────────────────────────────────────
-
-- name: Flush handlers
-  ansible.builtin.meta: flush_handlers
-
-# ─────────────────────────────────────────────────────────────
-# START VAULT
-# ─────────────────────────────────────────────────────────────
-
-- name: Enable and start Vault service
-  ansible.builtin.systemd:
-    name: vault
-    enabled: true
-    state: started
-    daemon_reload: true
+- name: Configure Vault and install the systemd service
+  ansible.builtin.import_tasks: configure.yml
 
 # ─────────────────────────────────────────────────────────────
 # WAIT FOR VAULT API
 # ─────────────────────────────────────────────────────────────
-- name: Check Vault service state
-  ansible.builtin.command: journalctl -xeu vault --no-pager
-  register: vault_service
-  changed_when: false
-  failed_when: false
-
-- debug:
-    var: vault_service.stdout
-
-- name: Wait for Vault to be reachable
-  ansible.builtin.uri:
-    url: "https://{{ vault_dns_name }}:8200/v1/sys/health"
-    status_code: [200, 429, 472, 473, 501, 503]
-  register: vault_health
-  retries: 10
-  delay: 3
-  until: vault_health.status in [200, 429, 472, 473, 501, 503]
-
-
-# ─────────────────────────────────────────────────────────────
-# CHECK VAULT STATUS
-# ─────────────────────────────────────────────────────────────
-
-- name: Check Vault status
-  ansible.builtin.command: vault status -format=json
-  register: vault_status
-  changed_when: false
-  failed_when: false
-  environment:
-    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
-
-
-- name: Set default Vault initialized state
-  ansible.builtin.set_fact:
-    vault_initialized: false
-
-- name: Parse Vault initialized status
-  ansible.builtin.set_fact:
-    vault_initialized: "{{ (vault_status.stdout | from_json).initialized }}"
-  when:
-    - vault_status.stdout is defined
-    - vault_status.stdout | trim | length > 0
-    - vault_status.stdout | trim is match('^\{')
-
-
-
-# ─────────────────────────────────────────────────────────────
-# INITIALIZE VAULT (ONLY ONCE)
-# ─────────────────────────────────────────────────────────────
-
-- name: Initialize Vault with awskms auto-unseal
-  ansible.builtin.command: vault operator init -format=json -recovery-shares=5 -recovery-threshold=3
-  register: vault_init
-  when: not vault_initialized
-  environment:
-    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
-  no_log: true
-
-# ─────────────────────────────────────────────────────────────
-# PARSE INIT OUTPUT
-# ─────────────────────────────────────────────────────────────
-
-- name: Parse Vault init output
-  ansible.builtin.set_fact:
-    vault_init_data: "{{ vault_init.stdout | from_json }}"
-  when: not vault_initialized
-  no_log: true
-
-# ─────────────────────────────────────────────────────────────
-# STORE ROOT TOKEN IN SECRETS MANAGER
-# ─────────────────────────────────────────────────────────────
-
-- name: Store root token in AWS Secrets Manager
-  community.aws.secretsmanager_secret:
-    name: "{{ vault_secret_name_root_token }}"
-    secret_type: string
-    secret: "{{ vault_init_data.root_token }}"
-    region: "{{ vault_aws_region }}"
-    state: present
-    overwrite: true
-  when: not vault_initialized
-  no_log: true
-
+- name: Enable, start, and verify the Vault service
+  ansible.builtin.import_tasks: service.yml
 
 # ─────────────────────────────────────────────────────────────
 # STORE RECOVERY KEYS IN SECRETS MANAGER
 # ─────────────────────────────────────────────────────────────
-- name: Store recovery keys in AWS Secrets Manager
-  community.aws.secretsmanager_secret:
-    name: "{{ vault_secret_name_recovery_keys }}"
-    secret_type: string
-    secret: "{{ vault_init_data.recovery_keys_b64 | to_json }}"
-    region: "{{ vault_aws_region }}"
-    state: present
-    overwrite: true
-  when: not vault_initialized
-  no_log: true
+- name: Initialize Vault and store bootstrap secrets
+  ansible.builtin.import_tasks: initialize.yml
+
+# ─────────────────────────────────────────────────────────────
+# ADMINISTRATIVE POLICIES AND AUTHENTICATION 
+# ─────────────────────────────────────────────────────────────
+
+- name: Configure Vault administrator policies and authentication
+  ansible.builtin.import_tasks: admin-role.yml

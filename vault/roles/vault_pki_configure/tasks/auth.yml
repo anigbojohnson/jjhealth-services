@@ -1,0 +1,38 @@
+---
+- name: Login using AWS auth
+  ansible.builtin.command: >
+    vault login
+    -method=aws
+    -format=json
+    role="{{ vault_admin_role_name }}"
+  environment:
+    VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
+  register: aws_login
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Extract client token
+  ansible.builtin.set_fact:
+    vault_token: "{{ (aws_login.stdout | from_json).auth.client_token }}"
+  when: aws_login.rc == 0
+  no_log: true
+
+- name: Retrieve root token from Secrets Manager
+  ansible.builtin.set_fact:
+    vault_token: "{{ lookup(
+      'amazon.aws.secretsmanager_secret',
+      vault_secret_name_root_token,
+      region=vault_aws_region
+    ) }}"
+  when: aws_login.rc != 0
+  no_log: true
+
+- name: Set Vault environment with root token
+  ansible.builtin.set_fact:
+    vault_login_credentials:
+      VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
+      VAULT_TOKEN: "{{ vault_token }}"
+  no_log: true
+
+  

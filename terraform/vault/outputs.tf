@@ -53,8 +53,8 @@ output "private_zone_name" {
 }
 
 
-output "backend_instance_role_arn" {
-  description = "Backend EC2 IAM Role ARN"
-
+output "vault_instance_role_arn" {
+  description = "Vault EC2 IAM Role ARN"
   value = aws_iam_role.private.arn
 }
+
