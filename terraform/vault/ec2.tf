@@ -34,8 +34,6 @@ locals {
   })
 }
 
-
-
 # Bastion host SG — accepts SSH from the internet (or restrict to your IP)
 resource "aws_security_group" "public" {
   name        = "bastion-sg"
