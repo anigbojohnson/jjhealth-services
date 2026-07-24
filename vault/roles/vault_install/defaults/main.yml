@@ -12,3 +12,4 @@ vault_admin_policy_destination_file: /tmp/vault-admin-policy.hcl
 #Policy 
 vault_admin_policy_name: "{{ project_name }}_admin_policy"
 
+vault_api_addr: "https://{{ vault_dns_name }}:8200"
