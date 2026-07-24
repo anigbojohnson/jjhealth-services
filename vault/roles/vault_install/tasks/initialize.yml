@@ -59,6 +59,17 @@
   when: not vault_initialized
   no_log: true
 
+
+- name: Retrieve root token from Secrets Manager
+  ansible.builtin.set_fact:
+    vault_init_data: "{{ lookup(
+      'amazon.aws.secretsmanager_secret',
+      vault_secret_name_root_token,
+      region=vault_aws_region
+    ) }}"
+  no_log: true
+  when: vault_initialized
+
   
 - name: Set Vault environment with root token
   ansible.builtin.set_fact:
