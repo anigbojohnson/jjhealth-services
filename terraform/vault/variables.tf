@@ -1,8 +1,7 @@
 variable "project_name" {
     type        = string
-    default     = "jjhealth_services"
   }
-  
+
 variable "region" {
   description = "AWS region"
   type        = string
