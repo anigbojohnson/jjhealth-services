@@ -133,10 +133,10 @@ jobs:
             -e "vault_kms_key_id=${{ env.VAULT_KMS_KEY_ID }}" \
             -e "vault_dns_name=${{ env.VAULT_DNS_NAME }}" \
             -e "vault_instance_role_arn=${{ env.VAULT_INSTANCE_ROLE_ARN }}" \
-            -e "vault_secret_name_root_token=${TF_VAR_vault_secret_name_root_token}" \
-            -e "vault_secret_name_recovery_keys=${TF_VAR_vault_secret_name_recovery_keys}" \
-            -e "vault_aws_region"=${TF_VAR_region}
-            -e "tls_dir"=${TF_VAR_tls_dir}
+            -e "vault_secret_name_root_token=$TF_VAR_vault_secret_name_root_token" \
+            -e "vault_secret_name_recovery_keys=$TF_VAR_vault_secret_name_recovery_keys" \
+            -e "vault_aws_region=$TF_VAR_region" \
+            -e "tls_dir=$TF_VAR_tls_dir" 
       
       - name: Retrieve Vault CA certificate
         run: |
