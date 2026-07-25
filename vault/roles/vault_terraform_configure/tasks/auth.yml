@@ -13,8 +13,7 @@
     VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
   register: aws_login
   changed_when: false
-  failed_when: false
-  no_log: true
+
 
 - name: Extract client token
   ansible.builtin.set_fact:
@@ -34,7 +33,7 @@
 
 - name: Save Vault token
   ansible.builtin.set_fact:
-    vault_token: "{{ (vault_login.stdout | from_json).auth.client_token }}"
+    vault_token: "{{ (aws_login.stdout | from_json).auth.client_token }}"
   no_log: true
 
 - name: Set Vault environment with root token
