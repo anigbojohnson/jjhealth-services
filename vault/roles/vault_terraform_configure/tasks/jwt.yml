@@ -45,11 +45,9 @@
       }
 
 - name: Create JWT role
-  community.hashi_vault.vault_write:
-    url: "{{ vault_login_credentials.VAULT_ADDR }}"
-    token: "{{ vault_login_credentials.VAULT_TOKEN }}"
-    path: "auth/jwt/role/{{ vault_jwt_role_name }}"
-    data: "{{ lookup('file', vault_aws_terraform_jwt_role_destination_file) | from_json }}"
+  ansible.builtin.shell: >
+    vault write auth/jwt/role/{{ vault_jwt_role_name }} {{ vault_aws_terraform_jwt_role_destination_file }}
+  environment: "{{ vault_login_credentials }}"
 
 - name: Remove JWT role payload
   ansible.builtin.file:
