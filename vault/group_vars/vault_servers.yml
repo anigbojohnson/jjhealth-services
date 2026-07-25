@@ -21,7 +21,7 @@ vault_tls_ttl: 720h
 
 
 #aws role 
-vault_admin_role_name:  "{{ project_name }}_vault_admin_role_name" 
+vault_admin_role_name:  "{{ project_name }}_vault_admin_role" 
 vault_aws_role_name: "{{ project_name }}_pki_client"
 
 vault_pki_gen_role_name: "{{ project_name }}_pki_general"
