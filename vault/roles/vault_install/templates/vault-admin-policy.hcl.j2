@@ -27,3 +27,7 @@ path "sys/auth/*" {
 path "sys/auth" {
   capabilities = ["read"]
 }
+
+path "pki/config/ca" {
+  capabilities = ["create", "update"]
+}
