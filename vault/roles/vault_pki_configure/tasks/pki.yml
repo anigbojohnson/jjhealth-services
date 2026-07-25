@@ -5,7 +5,7 @@
 
 - name: Create CA PEM bundle
   ansible.builtin.shell: |
-    cat "{{ vault_tls_ca_private_key }}" "{{ vault_tls_ca_certificate }}" > /tmp/vault-ca-bundle.pem
+    cat "{{ vault_tls_ca_private_key }}" "{{ vault_tls_ca_certificate }}" > "{{ ca_pem_bundle}}"
   args:
     creates: "{{ ca_pem_bundle}}"
 
