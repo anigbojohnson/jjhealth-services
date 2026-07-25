@@ -27,7 +27,7 @@
 
 - name: Apply policy
   ansible.builtin.command: >
-    vault policy write {{ vault_admin_role_name }} {{ vault_aws_admin_policy_destination_file }}
+    vault policy write {{ vault_admin_policy_name }} {{ vault_aws_admin_policy_destination_file }}
   environment: "{{ vault_login_credentials }}"
   no_log: true
   register: policy_apply
