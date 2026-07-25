@@ -46,10 +46,10 @@
 
 - name: Create JWT role
   ansible.builtin.shell: >
-    vault write auth/jwt/role/{{ vault_jwt_role_name }} vault_aws_terraform_jwt_role_destination_file
+    vault write auth/jwt/role/{{ vault_jwt_role_name }} {{ vault_aws_terraform_jwt_role_destination_file }}
   environment: "{{ vault_login_credentials }}"
 
 - name: Remove JWT role payload
   ansible.builtin.file:
-    path: vault_aws_terraform_jwt_role_destination_file
+    path: "{{ vault_aws_terraform_jwt_role_destination_file }}"
     state: absent
