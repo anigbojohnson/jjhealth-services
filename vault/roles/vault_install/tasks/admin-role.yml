@@ -3,6 +3,21 @@
 # BOOTSTRAP APPROLE (using root token — one time only)
 # ─────────────────────────────────────────────────────────────
 
+- name: Check secrets engines
+  ansible.builtin.command: vault secrets list -format=json
+  environment: "{{ vault_login_credentials }}"
+  register: secrets_list
+  changed_when: false
+
+- name: Parse secrets engines
+  ansible.builtin.set_fact:
+    secrets_json: "{{ secrets_list.stdout | from_json }}"
+
+- name: Enable JWT auth
+  ansible.builtin.command: vault auth enable jwt
+  environment: "{{ vault_login_credentials }}"
+  when: auth_json['jwt/'] is not defined
+  
 - name: Write vault admin policy
   ansible.builtin.template:
     src: vault-admin-policy.hcl.j2
