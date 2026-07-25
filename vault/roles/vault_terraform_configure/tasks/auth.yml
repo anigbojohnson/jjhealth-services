@@ -8,7 +8,7 @@
     vault login
     -method=aws
     -format=json
-    role={{ vault_aws_auth_role }}
+    role={{ vault_admin_role_name }}
   environment:
     VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
   register: aws_login
