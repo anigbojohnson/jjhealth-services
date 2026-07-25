@@ -37,7 +37,7 @@
     vault_token: "{{ (aws_login.stdout | from_json).auth.client_token }}"
   no_log: true
 
-- name: Set Vault environment with root token
+- name: Set Vault environment credentials
   ansible.builtin.set_fact:
     vault_login_credentials:
       VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
