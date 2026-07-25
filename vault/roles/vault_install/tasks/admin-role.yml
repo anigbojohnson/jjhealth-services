@@ -11,7 +11,7 @@
 
 - name: Parse auth method
   ansible.builtin.set_fact:
-    secrets_json: "{{ auth_list.stdout | from_json }}"
+    auth_json: "{{ auth_list.stdout | from_json }}"
 
 - name: Enable AWS authentication method
   ansible.builtin.command: vault auth enable aws
