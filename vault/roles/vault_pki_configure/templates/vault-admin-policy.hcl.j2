@@ -25,6 +25,13 @@ path "sys/policies/acl/*" {
 path "pki/sign/{{ vault_pki_role_name }}" {
   capabilities = ["update"]
 }
+path "sys/mounts/*" { 
+  capabilities = ["read"] 
+}  
+
+path "sys/mounts" { 
+  capabilities = ["read"]
+ }
 
 path "pki/cert/ca" {
   capabilities = ["read"]

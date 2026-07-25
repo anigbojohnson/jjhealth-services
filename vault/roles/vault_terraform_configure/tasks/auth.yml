@@ -13,7 +13,8 @@
     VAULT_ADDR: "https://{{ vault_dns_name }}:8200"
   register: aws_login
   changed_when: false
-
+  failed_when: false
+  no_log: true
 
 - name: Extract client token
   ansible.builtin.set_fact:
