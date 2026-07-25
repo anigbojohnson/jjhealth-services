@@ -3,20 +3,6 @@
 # BOOTSTRAP APPROLE (using root token — one time only)
 # ─────────────────────────────────────────────────────────────
 
-- name: Check auth engines
-  ansible.builtin.command: vault auth list -format=json
-  environment: "{{ vault_login_credentials }}"
-  register: auth_list
-  changed_when: false
-
-- name: Parse auth engines
-  ansible.builtin.set_fact:
-    auth_json: "{{ auth_list.stdout | from_json }}"
-
-- name: Enable AWS secrets engine
-  ansible.builtin.command: vault secrets enable aws
-  environment: "{{ vault_login_credentials }}"
-  when: auth_json['aws/'] is not defined
 
 - name: Write vault admin policy
   ansible.builtin.template:
