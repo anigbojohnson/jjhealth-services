@@ -1,39 +1,22 @@
-# Allow enabling the AWS secrets engine
-path "sys/mounts/aws" {
-  capabilities = ["create", "read"]
+# Allow AppRole to manage AWS secrets engine
+path "aws/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
 
-# Allow configuring and managing the AWS secrets engine
-path "aws/config/root" {
-  capabilities = ["create", "read", "update"]
+# Allow AppRole to manage auth methods and policies
+path "auth/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
 
-path "aws/roles/*" {
-  capabilities = ["create", "read", "update", "list"]
-}
 
-# Allow reading generated AWS credentials (optional)
-path "aws/creds/*" {
-  capabilities = ["read"]
-}
-
-# Allow writing Terraform policies
 path "sys/policies/acl/*" {
-  capabilities = ["create", "read", "update", "list"]
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
 
-path "pki/sign/{{ vault_pki_role_name }}" {
-  capabilities = ["update"]
+path "sys/mounts/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
 }
 
-path "pki/cert/ca" {
-  capabilities = ["read"]
-}
-
-path "pki/cert/ca_chain" {
-  capabilities = ["read"]
-}
-
-path "pki/crl" {
-  capabilities = ["read"]
+path "sys/auth/*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
