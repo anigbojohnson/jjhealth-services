@@ -72,3 +72,7 @@ variable "vault_secret_name_recovery_keys" {
 variable "tls_dir" {
   type = string
 }
+
+variable "root_ca"{
+    type = string
+}

@@ -11,6 +11,6 @@ vault_root_ca_secret_name: jjhealth-services/vault/root-ca
 
 
 #Files
-vault_tls_ca_private_key: "{{ tls_dir}}/server.key"
-vault_tls_ca_certificate: "{{ tls_dir}}/server.crt"
+vault_tls_ca_private_key: "{{ tls_dir}}/ca.key"
+vault_tls_ca_certificate: "{{ tls_dir}}/ca.crt"
 ca_pem_bundle: /tmp/vault-ca-bundle.pem

@@ -3,11 +3,44 @@
 # CREATE PEM BUNDLE
 # ============================================================================
 
+- name: Retrieve Root CA secret
+  ansible.builtin.set_fact:
+    root_ca_secret: >-
+      {{
+        lookup(
+          'amazon.aws.secretsmanager_secret',
+           vault_root_ca
+          region=vault_aws_region
+        ) | from_json
+      }}
+  no_log: true
+
+- name: Write CA certificate
+  ansible.builtin.copy:
+    dest: "{{ vault_tls_ca_certificate }}"
+    content: "{{ root_ca_secret.ca_cert }}"
+    owner: vault
+    group: vault
+    mode: "0644"
+
+- name: Write CA private key
+  ansible.builtin.copy:
+    dest: "{{ vault_tls_ca_private_key }}"
+    content: "{{ root_ca_secret.ca_key }}"
+    owner: vault
+    group: vault
+    mode: "0600"
+  no_log: true
+
+
 - name: Create CA PEM bundle
-  ansible.builtin.shell: |
-    cat "{{ vault_tls_ca_private_key }}" "{{ vault_tls_ca_certificate }}" > "{{ ca_pem_bundle}}"
-  args:
-    creates: "{{ ca_pem_bundle}}"
+  ansible.builtin.copy:
+    dest: "{{ ca_pem_bundle }}"
+    mode: "0600"
+    content: |
+      {{ root_ca_secret.ca_key }}
+      {{ root_ca_secret.ca_cert }}
+  no_log: true
 
 - name: Read PEM bundle
   ansible.builtin.slurp:

@@ -3,6 +3,7 @@ name: Vault provisioning and configuration using terraform and ansible
 env:
   TF_VAR_vault_secret_name_root_token: "jjhealth-services/vault/vault-root-token"
   TF_VAR_vault_secret_name_recovery_keys: "jjhealth-services/vault/recovery-keys"
+  TF_VAR_vault_secret_name_root_certificate_authority: "jjhealth-services/vault/root-ca"
   TF_VAR_project_name: "jjhealth_services"
   TF_VAR_region: "eu-west-2"
   TF_VAR_tls_dir: "/etc/vault.d/tls"
@@ -59,7 +60,7 @@ jobs:
         run: terraform init
       
       - name: Terraform Apply
-        run: terraform destroy -auto-approve
+        run: terraform apply -auto-approve
       
   ansible:
     needs:
@@ -136,7 +137,8 @@ jobs:
             -e "vault_secret_name_root_token=$TF_VAR_vault_secret_name_root_token" \
             -e "vault_secret_name_recovery_keys=$TF_VAR_vault_secret_name_recovery_keys" \
             -e "vault_aws_region=$TF_VAR_region" \
-            -e "tls_dir=$TF_VAR_tls_dir"
+            -e "tls_dir=$TF_VAR_tls_dir" \
+            -e  "vault_root_ca=$TF_VAR_vault_secret_name_root_certificate_authority"
       
       - name: Retrieve Vault CA certificate
         run: |

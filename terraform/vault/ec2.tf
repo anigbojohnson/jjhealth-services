@@ -254,7 +254,8 @@ resource "aws_iam_role_policy" "vault-aws-root-recovery-token-secrets-engine" {
       ],
       "Resource":[ 
         "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.vault_secret_name_root_token}*",
-          "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.vault_secret_name_recovery_keys}*"
+          "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.vault_secret_name_recovery_keys}*",
+          "arn:aws:secretsmanager:${var.region}:${data.aws_caller_identity.current.account_id}:secret:${var.root_ca}*"
 
       ]
     }]
