@@ -38,3 +38,6 @@ path "pki/config/urls" {
 path "pki/roles/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
 }
+path "pki/issue/*" {
+  capabilities = ["update"]
+}
