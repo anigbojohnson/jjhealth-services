@@ -24,6 +24,6 @@
 - name: Install CA certificate
   ansible.builtin.copy:
     dest: "{{ vault_tls_ca_certificate }}"
-    content: "{{ certificate.data.issuing_ca }}"
+    content: "{{ certificate.data.data.issuing_ca }}"
     mode: "0644"
 
