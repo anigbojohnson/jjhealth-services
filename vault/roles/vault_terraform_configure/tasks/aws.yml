@@ -24,7 +24,7 @@
 
 - name: Create or update AWS role for Terraform in Vault
   ansible.builtin.command: >
-    vault write aws/roles/{{ vault_aws_role_name }}
+    vault write aws/roles/{{ vault_aws_terraform_role_name }}
       credential_type=iam_user
       policy_arns={{ vault_aws_policy_arns | join(',') }}
   environment: "{{ vault_login_credentials }}"

@@ -1,6 +1,5 @@
 ---
 vault_tls_ca_private_key: /etc/vault.d/tls/ca.key
-
 vault_tls_ca_certificate: /etc/vault.d/tls/ca.crt
 
 
@@ -19,7 +18,7 @@ vault_tls_san:
 vault_aws_terraform_role_name: "{{ project_name }}_terraform_role"
 vault_aws_auth_role: "{{ project_name }}_backend_role"
 vault_jwt_role_name: "{{ project_name }}_github-actions-role"
-
+vault_aws_terraform_role_name: "terraform-role"
 
 #Policy
 vault_aws_terraform_policy_name: "{{ project_name }}_terraform_policy"
