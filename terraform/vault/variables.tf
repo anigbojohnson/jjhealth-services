@@ -73,6 +73,6 @@ variable "tls_dir" {
   type = string
 }
 
-variable "root_ca"{
+variable "vault_secret_name_root_certificate_authority"{
     type = string
 }
