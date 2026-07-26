@@ -57,4 +57,3 @@ output "vault_instance_role_arn" {
   description = "Vault EC2 IAM Role ARN"
   value = aws_iam_role.private.arn
 }
-

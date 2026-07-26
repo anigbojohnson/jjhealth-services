@@ -6,8 +6,8 @@
 
 - name: Request certificate from Vault
   community.hashi_vault.vault_write:
-    url: "{{ vault_addr }}"
-    token: "{{ vault_token }}"
+    url: "{{ vault_login_credentials.VAULT_ADDR }}"
+    token: "{{ vault_login_credentials.VAULT_TOKEN }}"
     path: "pki/sign/{{ vault_pki_role_name }}"
     data:
       csr: "{{ csr.content | b64decode }}"
@@ -27,4 +27,3 @@
     content: "{{ certificate.data.issuing_ca }}"
     mode: "0644"
 
-    

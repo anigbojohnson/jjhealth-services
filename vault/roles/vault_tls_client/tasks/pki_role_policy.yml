@@ -5,8 +5,8 @@
 
 - name: Create PKI policy
   community.hashi_vault.vault_policy:
-    url: "{{ vault_env.VAULT_ADDR }}"
-    token: "{{ vault_env.VAULT_TOKEN }}"
+    url: "{{ vault_login_credentials.VAULT_ADDR }}"
+    token: "{{ vault_login_credentials.VAULT_TOKEN }}"
     name: "{{ vault_pki_policy_name }}"
     rules: |
       path "pki/sign/internal" {
