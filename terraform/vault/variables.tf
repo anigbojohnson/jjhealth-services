@@ -76,3 +76,4 @@ variable "tls_dir" {
 variable "vault_secret_name_root_certificate_authority"{
     type = string
 }
+
