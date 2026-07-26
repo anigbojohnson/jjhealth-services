@@ -61,7 +61,7 @@
   community.hashi_vault.vault_write:
     url: "{{ vault_login_credentials.VAULT_ADDR }}"
     token: "{{ vault_login_credentials.VAULT_TOKEN }}"
-    path: "auth/aws/role/{{ vault_aws_role_name }}"
+    path: "auth/aws/role/{{ vault_client_pki_role_name }}"
     data:
       auth_type: iam
       bound_iam_principal_arn: "{{ vault_instance_role_arn }}"
