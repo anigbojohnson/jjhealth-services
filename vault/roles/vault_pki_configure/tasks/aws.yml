@@ -43,7 +43,7 @@
     vault policy write
       {{ vault_pki_policy_name }}
       /tmp/pki-policy.hcl
-  environment: "{{ vault_env_root_token }}"
+  environment: "{{ vault_login_credentials }}"
 
 # ─────────────────────────────────────────────────────────────
 # REMOVE TEMPORARY POLICY FILE
