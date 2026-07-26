@@ -9,7 +9,7 @@
       {{
         lookup(
           'amazon.aws.secretsmanager_secret',
-           vault_root_ca
+           vault_root_ca,
           region=vault_aws_region
         ) | from_json
       }}
@@ -52,7 +52,7 @@
 
 - name: Import existing CA
   community.hashi_vault.vault_write:
-    url: "{{ vault_addr }}"
+    url: "{{ vault_login_credentials.VAULT_ADDR }}"
     token: "{{ vault_login_credentials.VAULT_TOKEN }}"
     path: "pki/config/ca"
     data:
@@ -77,7 +77,7 @@
 
 - name: Create PKI role for internal machines
   community.hashi_vault.vault_write:
-    url: "{{ vault_login_credentials.VAULT_TOKEN }}"
+    url: "{{ vault_login_credentials.VAULT_ADDR }}"
     token: "{{ vault_login_credentials.VAULT_TOKEN }}"
     path: "pki/roles/internal"
     data:
