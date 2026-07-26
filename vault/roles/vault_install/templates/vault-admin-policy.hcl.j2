@@ -35,3 +35,6 @@ path "pki/config/ca" {
 path "pki/config/urls" {
   capabilities = ["update"]
 }
+path "pki/roles/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
