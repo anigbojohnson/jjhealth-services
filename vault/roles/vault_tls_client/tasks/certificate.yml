@@ -14,6 +14,10 @@
       ttl: "{{ vault_tls_ttl }}"
   register: certificate
 
+- name: Show Vault response
+  ansible.builtin.debug:
+    var: certificate
+    
 - name: Install server certificate
   ansible.builtin.copy:
     dest: "{{ vault_tls_certificate }}"
