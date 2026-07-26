@@ -59,8 +59,8 @@
 # ─────────────────────────────────────────────────────────────
 - name: Configure AWS auth role
   community.hashi_vault.vault_write:
-    url: "{{ vault_env_root_token.VAULT_ADDR }}"
-    token: "{{ vault_env_root_token.VAULT_TOKEN }}"
+    url: "{{ vault_login_credentials.VAULT_ADDR }}"
+    token: "{{ vault_login_credentials.VAULT_TOKEN }}"
     path: "auth/aws/role/{{ vault_aws_role_name }}"
     data:
       auth_type: iam
