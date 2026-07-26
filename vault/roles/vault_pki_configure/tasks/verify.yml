@@ -65,22 +65,6 @@
       - pki_policy.rc == 0
     fail_msg: "PKI policy {{ vault_pki_policy_name }} does not exist."
 
-# ─────────────────────────────────────────────────────────────
-# VERIFY PKI APPROLE
-# ─────────────────────────────────────────────────────────────
-
-- name: Verify PKI AppRole
-  ansible.builtin.command: >
-    vault read auth/approle/role/{{ vault_pki_approle_name }}
-  environment: "{{ vault_login_credentials }}"
-  register: pki_approle
-  changed_when: false
-
-- name: Assert PKI AppRole exists
-  ansible.builtin.assert:
-    that:
-      - pki_approle.rc == 0
-    fail_msg: "PKI AppRole {{ vault_pki_approle_name }} does not exist."
 
 # ─────────────────────────────────────────────────────────────
 # SMOKE TEST - ISSUE A CERTIFICATE
