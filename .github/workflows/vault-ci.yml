@@ -58,6 +58,8 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Terraform force unock
         run: terraform force-unlock cbf20e66-5c51-1232-73c9-44acbe333d7e
       - name: Terraform Apply
         run: terraform apply -auto-approve
