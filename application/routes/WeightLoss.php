@@ -10,7 +10,6 @@ use App\Models\CacheInvalidation;
 
 
 Route::middleware(['auth'])->group(function () {
-
     Route::get('/weight-loss-payment', function () {
         return view('weightloss.weight-lost-home');
     })->name('weight-loss-payment');

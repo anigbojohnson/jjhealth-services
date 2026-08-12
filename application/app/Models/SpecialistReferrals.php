@@ -24,4 +24,9 @@ class SpecialistReferrals extends Model
         return $this->belongsTo(User::class, 'user_email', 'email');
     }
 
+    public function referral()
+    {
+        return $this->belongsTo(Referral::class, 'referral_id');
+    }
+
 }

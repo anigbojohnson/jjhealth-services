@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Referral;
+
 
 class PathologyReferrals extends Model
 {
@@ -14,20 +16,18 @@ class PathologyReferrals extends Model
 
     // Define the fields that are mass-assignable
       protected $fillable = [
-        'user_email',
         'imageUpload',
         'solution_available_testing',
         'requestReason',
-        'request_status',
     ];
 
     protected $casts = [
         'solution_available_testing' => 'array',
     ];
 
-    public function user()
+      public function referral()
     {
-        return $this->belongsTo(User::class, 'user_email', 'email');
-    }
+        return $this->belongsTo(Referral::class, 'referral_id');
+    } 
 
 }

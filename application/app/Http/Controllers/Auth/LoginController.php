@@ -43,7 +43,6 @@ class LoginController extends Controller
         if($userExists){
             return redirect()->route('login', ['param' => session()->get('param'), 'action' => session()->get('action')])
                    ->with('error', 'You have different means of login.');
-
         }
 
         // Attempt to authenticate the user

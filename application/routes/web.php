@@ -10,17 +10,21 @@ use App\Http\Controllers\MedicalCertificate\CertificateController;
 use App\Http\Controllers\WeightLoss\PaymentController;
 use App\Http\Controllers\Auth\AuthMicrosoftLoginController;
 use App\Http\Controllers\Auth\AuthGoogleLoginController;
-
+use App\Models\PathologyReferrals;
 use App\Http\Controllers\Auth\AuthMicrosoftRegisterController;
 use App\Http\Controllers\Auth\AuthGoogleRegisterController;
 use App\Http\Controllers\Auth\MedicationController;
 use App\Http\Controllers\Auth\AuthGoogleDriveController;
 
 use App\Models\Solutions;
+use App\Models\MedicalCertificate;
+
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Referral;
 
 
 Route::post('/logout', function () {
@@ -45,7 +49,7 @@ Route::get('/registered-patient', function () {
 })->name('registered-patient');
 
 
-Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login')->middleware('throttle:login');
 Route::get('/login', [LoginController::class, 'loginForm'])->name('loginForm');
 
 Route::get('/register', [RegisterController::class,'showRegistrationForm'])->name('showRegistrationForm');
@@ -83,10 +87,94 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cancel', [PaymentController::class, 'cancel'])->name('cancel');
     Route::get('/success', [PaymentController::class, 'success'])->name('success');
     Route::get('/payment/{id}/{action}/{failLink}', [PaymentController::class, 'show'])->name('payment');
-  //  Route::post('/payment', [PaymentController::class, 'make'])->name('payment');
-    Route::get('/dashboard',[DashboardController::class,'index'] )->name('user.account');
+  vvv  Route::post('/payment', [PaymentController::class, 'make'])->name('payment');
+    Rvvvvvvvvvvvvvvvthrottle:password-changevvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   oute::get('/dashboard',[DashboardController::class,'index'] )->name('user.account');
 });
 */
+
+
+Route::middleware(['auth'])->group(function () {
+        Route::post('/password-update',[DashboardController::class,'edit_password'] )->name('password-update')->middleware('throttle:password-change');
+        Route::get('/change-password',[DashboardController::class,'show_change_password'] )->name('change-password');
+        Route::get('/dashboard',[DashboardController::class,'index'] )->name('dashboard');
+        Route::post('/edit-profile',[DashboardController::class,'update'] )->name('edit-profile');
+        Route::get('/my-certificate', function () {
+
+            $certificates = MedicalCertificate::select([
+                    'id',
+                    'requestDate',
+                    'seeking',
+                    'validFrom',
+                    'validTo',
+                    'request_status'
+                ])
+                ->where('user_email', Auth::user()->email)
+                ->latest('requestDate')
+                ->paginate(10);
+
+                return view('dashboard.mycertificate', [
+                    'certificates' => $certificates,
+                ]);
+
+        })->name('my-certificate');
+
+
+        Route::get('/my-referrals', function () {
+            $referrals = Referral::with('catalogue')
+                ->where('user_email', Auth::user()->email)
+                ->latest()
+                ->paginate(10);
+
+            return view('dashboard.myreferrals', [
+                'referrals' => $referrals,
+            ]);
+
+        })->name('my-referrals');
+
+        Route::get('/view-profile', function () {
+
+            return view('dashboard.view-profile');
+        })->name('view-profile');
+
+        Route::get('/edit-profile', function () {
+
+            return view('dashboard.edit-profile');
+        })->name('edit-profile');        
+        
+        Route::get('/my-result', function () {
+
+            $pathologiesResults = PathologyReferrals::with('referral')
+                            ->whereHas('referral', function ($query) {
+                                $query->where('user_email', Auth::user()->email);
+                            })
+                            ->latest()
+                            ->paginate(10);
+            return view('dashboard.myresult', [
+                    'pathologiesResults' =>  $pathologiesResults,
+            ]);
+
+        })->name('my-result');
+
+
+
+        Route::get('/download/{$fileName}', function ($fileName) {
+                // This must match the path used when uploading
+                
+                $email = Auth::user()->email;
+                $filePath = 'user-temp-file/' . $email . '/' . $fileName;
+
+                // Make sure the file exists in S3
+                if (!Storage::disk('s3')->exists($filePath)) {
+                    abort(404, 'Certificate file not found.');
+                }
+
+                return Storage::disk('s3')->download(
+                    $filePath,
+                    $fileName
+                );
+
+        })->name('download'); 
+    });
 Route::get('/auth/show-file-drives', [AuthGoogleDriveController::class, 'showProvider'])->name('show-google-drive');
 Route::get('/auth/google-drive/redirect', [AuthGoogleDriveController::class, 'googleRedirect'])->name('auth.google-drive.redirect');
 Route::get('/auth/google-drive/callback', [AuthGoogleDriveController::class, 'googleCallback'])->name('auth.google-drive.callback');

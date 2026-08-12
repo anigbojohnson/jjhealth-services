@@ -18,7 +18,7 @@
             <div class="alert alert-success">
                 {{ session()->get('success') }}
             </div>
-        @endif 
+            @endif 
         
         @if(session()->has('error'))
             <div class="alert alert-danger"> {{-- Change 'alert-success' to 'alert-danger' --}}

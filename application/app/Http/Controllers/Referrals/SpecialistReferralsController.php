@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Solutions;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Payment;
-
-
+use App\Models\Referral;
+use App\Models\Category;
 
 class SpecialistReferralsController extends Controller
 {
@@ -99,13 +99,22 @@ class SpecialistReferralsController extends Controller
             ]
         );
 
-        
-    $sr = SpecialistReferrals::create([
-            'user_email' => auth()->user()->email,  // Assuming the user is authenticated
-            'request_reason' => $validatedData['requestReason'],
-            'image_uploaded' => $validatedData['medicalConditionImage'], // The file path in the storage
-            'file_name' => $validatedData['medicalConditionImage']=='Yes' ? $fileName :null, // The original file name
-            'request_status'=>"new request"
+        $catalogue = Category::where('slug', 'specialist-referral')
+            ->firstOrFail();
+
+        $referral = Referral::create([
+            'user_email'     => Auth::user()->email,
+            'catalogue_id'   => $catalogue->id,
+            'request_status' => 'new request',
+        ]);
+
+        $sr = SpecialistReferrals::create([
+            'referral_id'     => $referral->id,
+            'request_reason'  => $validatedData['requestReason'],
+            'image_uploaded'  => $validatedData['medicalConditionImage'],
+            'file_name'       => $validatedData['medicalConditionImage'] === 'Yes'
+                                    ? $fileName
+                                    : null,
         ]);
 
         $solutions = Solutions::where('solution_id', 'SR01')->latest('id')->first();

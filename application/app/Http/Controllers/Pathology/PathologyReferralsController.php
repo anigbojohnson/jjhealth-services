@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyConsultationMail;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Referral;
+use App\Models\Category;
 
 class PathologyReferralsController extends Controller
 {
@@ -129,8 +131,23 @@ class PathologyReferralsController extends Controller
             'requestReason' => session('credentials')->solution_name,
             'request_status'=>"new request"
         ]);
-     
-    
+
+
+        $pathologyCatalogue = Category::where('slug', 'pathology_referrals')
+            ->firstOrFail();
+
+        $referral = Referral::create([
+            'user_email'     => Auth::user()->email,
+            'catalogue_id'   => $pathologyCatalogue->id,
+            'request_status' => 'new request',
+        ]);
+
+        $referral->pathology()->create([
+            'imageUpload'                => $imageUploaded,
+            'solution_available_testing' => $request->solution_available_testing,
+            'requestReason'              => $request->requestReason,
+        ]);
+
         $payment = new Payment();
         $payment->payment_id = session('payment_intent_id');
         $payment->product_id = session('credentials')->id;

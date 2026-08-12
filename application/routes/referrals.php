@@ -35,8 +35,6 @@ Route::post('/specialist-referrals/request', function (Request $request) {
     $credentials->description =  $description;
     $credentials->cost =  $cost;
 
-
-
     session()->put('credentials', $credentials);
 
    if (Auth::check()) {
