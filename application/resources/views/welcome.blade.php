@@ -3,8 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        
+        <meta name="csrf-token" content="{{ csrf_token() }}">        
         <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
 
         <title>@yield("title","Video Explorer")</title>
@@ -287,24 +286,23 @@ $.ajaxSetup({
 
           // Get form data
           var formData = $(this).serialize();
-          console.log(formData)
 
           // Send AJAX request
           $.ajax({
-              type: 'GET',
+              type: 'POST',
               headers: {
-        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    },
+                   'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
               url:  "/forgotten-password",
               data: formData,
               success: function(response) {
-                // Registration successful
                 $('#forgottenMessage').text(response.message).removeClass('text-danger').addClass('text-success');
             },
             error: function(xhr, textStatus, errorThrown) {
                 // Registration failed
-                var errorMessage = xhr.responseJSON.error || 'Registration failed, please try again.';
-                $('#forggottenMessage').text( xhr.responseJSON.error).removeClass('text-success').addClass('text-danger');
+                console.log(xhr.responseJSON.error);
+                var errorMessage = xhr.responseJSON.error;
+                $('#forgottenMessage').text( xhr.responseJSON.error).removeClass('text-success').addClass('text-danger');
             }
           });
       });

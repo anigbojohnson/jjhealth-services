@@ -9,9 +9,6 @@ function updateProgress() {
 }
 
 
-
-
-
 $('.option-btn').click(function () {
         var target = $(this).data('target');
         var value = $(this).data('value');

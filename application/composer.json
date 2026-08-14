@@ -19,7 +19,7 @@
         "promphp/prometheus_client_php": "^2.15",
         "stripe/stripe-php": "^14.10"
     },
-    "require-dev": {
+    "require-dev": {  
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.0",
         "laravel/pint": "^1.13",

@@ -50,7 +50,9 @@ class ForgottenPasswordController extends Controller
         $user = User::where('email', $request->email)
             ->first();
 
-        if( $user ){
+        if($user){
+
+          if( $user->provider =="form register"){
             $userEmail = new EmailVerification();
             $userEmail->first_name = "";
             $userEmail ->last_name = "";
@@ -61,9 +63,13 @@ class ForgottenPasswordController extends Controller
             $this->forgottenPasswordService->sendVerificationLink($user,"forgotten-password");
             return response()->json(['message' => 'messege sent to your email.']);
 
+          } 
+            return response()->json(['error' => 'Please use '.$user->provider.' button to login'], 422);
+          
+            
         }
-        return response()->json(['error' => 'failure to send to your email'], 422);
-
+            return response()->json(['error' => 'You are not a registered user'], 422);
+        
     }
 
     public function changePassword($email , $token)

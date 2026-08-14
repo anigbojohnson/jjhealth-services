@@ -39,8 +39,16 @@
                 <div class="form-group mt-3 mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <label for="password" class="form-label fw-medium">Password</label>
-                        <span><a  href="#" data-toggle="modal" data-target="#exampleModal" class="fw-medium">
-                            Forgotten Password?</a></span>
+                        <span>
+                            <button
+                                type="button"
+                                class="btn btn-link fw-medium p-0"
+                                data-bs-toggle="modal"
+                                data-bs-target="#exampleModal"
+                                >
+                                    Forgotten Password?
+                            </button>
+                        </span>
                     </div>
 
                     <input id="password" type="password" name="password"  autocomplete="new-password" class="form-control">
@@ -71,33 +79,43 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Forgotten Password</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span>&times;</span>
+          <h5 class="modal-title" id="exampleModalLabel">Forgotten Password</h5>            
           </button>
+          <button 
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close">
+            <span>&times;</span>
+        </button>
         </div>
         <div id="forgottenMessage" class="container d-flex justify-content-center"></div>
         <div class="modal-body">
             <form id='forgotten-password' class="form-container">
                 @csrf
            
-            <div class="form-group">
-                <label for="email" class="font-weight-bold form-label">Email</label>
-                <input id="email"  type="text" name="email" value="{{ old('email') }}"  autocomplete="email" class="form-control">
+                <div class="form-group">
+                    <label for="email" class="font-weight-bold form-label">Email</label>
+                    <input id="email"  type="text" name="email" value="{{ old('email') }}"  autocomplete="email" class="form-control">
 
-                @error('email')
-                <span class="text-danger">{{ $message }}</span>
-                @enderror
-            </div>
-           
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Send</button>
+                    @error('email')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                
+                <div class="modal-footer">
+                    <button 
+                       type="button" 
+                       class="btn btn-danger" 
+                       aria-label="Close" 
+                       data-bs-dismiss="modal"
+                    >
+                    Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </div>
+            </form>
         </div>
-    </form>
-
-      </div>
-
     </div>
   </div>
 </div>
