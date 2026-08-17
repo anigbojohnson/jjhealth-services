@@ -14,7 +14,6 @@
     </div>
 
     <div class="profile-card">
-
         <form 
               id="change-password-form">
             @csrf

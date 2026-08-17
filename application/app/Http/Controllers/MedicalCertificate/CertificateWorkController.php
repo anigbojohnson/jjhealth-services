@@ -13,6 +13,8 @@ use App\Http\Controllers\Payment\PaymentController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyConsultationMail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CertificateWorkController extends Controller
 {
@@ -183,84 +185,174 @@ class CertificateWorkController extends Controller
         return response()->json(['message' => 'success'], 200);
 
     }
-    public function storeMCDetails(Request $request){
-    
-        $validatedData = session('personalDetails');
+   
 
-        $fileName ="";
+
+public function storeMCDetails(Request $request)
+{
+    $personalData = session('personalDetails');
+    $medicalData = session('medicalDetails');
+    $workData = session('workDetails');
+
+    $fileName = '';
+
+    try {
+
+        // Upload file once
         if ($request->hasFile('fileUpload')) {
-            // Get the file content
             $file = $request->file('fileUpload');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $fileContent = base64_encode(file_get_contents($file));
-            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
 
+            $fileName = time() . '_' . $file->getClientOriginalName();
+
+            Storage::disk('s3')->putFileAs(
+                'user-temp-file/' . Auth::user()->email,
+                $file,
+                $fileName,
+                'public'
+            );
         }
 
-        $user = User::updateOrCreate(
-            ['email' => Auth::user()->email], // Condition to find the user
-            [
-                'first_name' => $validatedData['fname'],
-                'last_name' => $validatedData['lname'],
-                'dob' => $validatedData['dob'],
-                'gender' => $validatedData['gender'],
-                'indigene' => $validatedData['indigene'],
-                'address' => $validatedData['address'],
-            ]
-        );
+        DB::transaction(function () use (
+            $personalData,
+            $medicalData,
+            $workData,
+            $fileName
+        ) {
 
-        $validatedData = session('medicalDetails');
-        $validatedWork = session('workDetails');
+            // Create/update user
+            $user = User::updateOrCreate(
+                ['email' => Auth::user()->email],
+                [
+                    'first_name' => $personalData['fname'],
+                    'last_name'  => $personalData['lname'],
+                    'dob'        => $personalData['dob'],
+                    'gender'     => $personalData['gender'],
+                    'indigene'   => $personalData['indigene'],
+                    'address'    => $personalData['address'],
+                ]
+            );
 
-        $medicalCertificate = MedicalCertificate::create([
-            'requestDate' => Carbon::now(),
-            'user_email' => Auth::user()->email,
-            'preExistingHealth' => $validatedData['preExistingHealth']??null,
-            'medicationsRegularly' => $validatedData['medicationsRegularly']??null,
-            'seeking' => session('credentials')->solution_name??null, // Assuming seeking is part of the request
-            'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes']??null,
-            'privacy' => $validatedData['privacy']??null,
-            'medicationsRegularlyInfo' => $validatedData['medicationsRegularlyInfo']??null,
-            'symptomsDetailed' => $validatedData['detailedSymptoms']??null,
-            'validFrom' => $validatedData['validFrom']??null,
-            'medicalLetterReasons' => $validatedData['medicalLetterReasons']??null,
-            'symptomsStartDate' => $validatedData['startDateSymptoms']??null,
-            'currentStatus' => $validatedData['currentStatus']??null,
-            'validTo' => $validatedData['validTo']??null,
-            'jobDescription'=> $validatedData['jobDescription']??null,
-             'fileUpload' => $fileName??null, 
-            'symptomsRelationToJobs'=> $validatedData['symptomsRelationToJobs']??null,
-            'request_status'=>"new request"
-        ]);
-     
-    
-            $payment = new Payment();
-            $payment->payment_id = session('payment_intent_id');
-            $payment->product_id = session('credentials')->id;
-            $payment->customer_email = Auth::user()->email;
-            $payment->mc_id  =  $medicalCertificate->id;    
-            $payment->payment_status = "pending";    
-    
-            $payment->save();
-    
+            // Create medical certificate
+            $medicalCertificate = MedicalCertificate::create([
+                'requestDate' => Carbon::now(),
+                'user_email' => Auth::user()->email,
 
+                'preExistingHealth' =>
+                    $medicalData['preExistingHealth'] ?? null,
+
+                'medicationsRegularly' =>
+                    $medicalData['medicationsRegularly'] ?? null,
+
+                'seeking' =>
+                    session('credentials')->solution_name ?? null,
+
+                'preExistingHealthInformation' =>
+                    $medicalData['informationPreExistingHealthYes'] ?? null,
+
+                'privacy' =>
+                    $medicalData['privacy'] ?? null,
+
+                'medicationsRegularlyInfo' =>
+                    $medicalData['medicationsRegularlyInfo'] ?? null,
+
+                'symptomsDetailed' =>
+                    $medicalData['detailedSymptoms'] ?? null,
+
+                'validFrom' =>
+                    $medicalData['validFrom'] ?? null,
+
+                'medicalLetterReasons' =>
+                    $medicalData['medicalLetterReasons'] ?? null,
+
+                'symptomsStartDate' =>
+                    $medicalData['startDateSymptoms'] ?? null,
+
+                'currentStatus' =>
+                    $medicalData['currentStatus'] ?? null,
+
+                'validTo' =>
+                    $medicalData['validTo'] ?? null,
+
+                'jobDescription' =>
+                    $medicalData['jobDescription'] ?? null,
+
+                'fileUpload' =>
+                    $fileName ?: null,
+
+                'symptomsRelationToJobs' =>
+                    $medicalData['symptomsRelationToJobs'] ?? null,
+
+                'request_status' => 'new request',
+            ]);
+
+            // Create payment
+            Payment::create([
+                'payment_id' => session('payment_intent_id'),
+                'product_id' => session('credentials')->id,
+                'customer_email' => Auth::user()->email,
+                'mc_id' => $medicalCertificate->id,
+                'payment_status' => 'pending',
+            ]);
+        });
+
+        // Transaction succeeded — send email
         $data = [
-            'first_name' =>  $user->first_name,
-            'last_name' =>  $user->last_name,
-            'solution_name' => session('credentials')->solution_name.' Medical Certificate',
-            'cost' =>  session('credentials')->cost,
+            'first_name' =>
+                $personalData['fname'],
+
+            'last_name' =>
+                $personalData['lname'],
+
+            'solution_name' =>
+                session('credentials')->solution_name . ' Medical Certificate',
+
+            'cost' =>
+                session('credentials')->cost,
         ];
 
+        Mail::to(Auth::user()->email)
+            ->send(new VerifyConsultationMail($data));
 
-        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
-
-        session()->forget(['payment_intent_id','credentials']);
+        session()->forget([
+            'payment_intent_id',
+            'credentials',
+        ]);
 
         return response()->json([
-            'redirect_url' => route('certificate', ['messege' => "Successful! please check your email for details"])
+            'success' => true,
+            'redirect_url' => route(
+                'certificate',
+                [
+                    'messege' =>
+                        'Successful! please check your email for details'
+                ]
+            ),
         ]);
-    
+
+    } catch (\Throwable $e) {
+
+        // Remove S3 file if database transaction failed
+        if ($fileName) {
+            Storage::disk('s3')->delete(
+                'user-temp-file/' .
+                Auth::user()->email .
+                '/' .
+                $fileName
+            );
+        }
+
+        Log::error('Failed to save medical certificate', [
+            'user_email' => Auth::user()->email,
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'We could not process your request at this time. Please try again.',
+        ], 500);
     }
+}
 
     public function getSecretKey(Request $request)
     {

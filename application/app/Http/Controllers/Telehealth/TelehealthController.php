@@ -13,6 +13,8 @@ use App\Http\Controllers\Payment\PaymentController as PaymentController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyConsultationMail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TelehealthController extends Controller
 {
@@ -89,61 +91,92 @@ class TelehealthController extends Controller
         
         return response()->json([ 'secret_key'=>$secretKey], 200);
     }
-    public function  saveConsultDetails(Request $request)
-    {
+   
 
-        $userData = session()->get('personalDetails');
 
-        $user = User::updateOrCreate(
-            ['email' => Auth::user()->email], // Condition to find the user
-            [
-                'first_name' => $userData['fname'],
-                'last_name' => $userData['lname'],
-                'phone_number' => $userData['pnumber'],
-                'dob' => $userData['dob'],
-                'gender' => $userData['gender'],
-                'indigene' =>$userData['indigene'],
-                'address' => $userData['address'],
-            ]
-        );
+public function saveConsultDetails(Request $request)
+{
+    $userData = session()->get('personalDetails');
+    $validData = session()->get('medicalDetails');
 
-        $validData= session('medicalDetails');
-        $tr=Treatment::create([
-            'user_email' => Auth::user()->email, 
-            'pre_existing_health' => $validData['preExistingHealth'],
-            'information_pre_existing_health' => $validData['informationPreExistingHealthYes']??null,
-            'medications_regularly' => $validData['medicationsRegularly'],
-            'medications_regularly_info' => $validData['medicationsRegularlyInfo']??null,
-            'start_date_symptoms' => $validData['startDateSymptoms'],
-            'detailed_symptoms' => $validData['detailedSymptoms'],
-            'treatment_category' => $validData['treatment_category'],
-            'request_status'=>"new request"
-        ]);
-     
-    
-        $payment = new Payment();
-        $payment->payment_id = session('payment_intent_id');
-        $payment->product_id = session('credentials')->solution_id;
-        $payment->customer_email = Auth::user()->email;
-        $payment->treatment_id = $tr->id;    
-        $payment->payment_status = "pending";    
+    try {
 
-        $payment->save();
-              $data = [
-        'first_name' => $userData['fname'],
-         'last_name' => $userData['lname'],
-        'solution_name' => session('credentials')->solution_name,
-        'cost' =>  session('credentials')->cost,
+        DB::transaction(function () use ($userData, $validData) {
+
+            // Create or update user
+            User::updateOrCreate(
+                ['email' => Auth::user()->email],
+                [
+                    'first_name'   => $userData['fname'],
+                    'last_name'    => $userData['lname'],
+                    'phone_number' => $userData['pnumber'],
+                    'dob'          => $userData['dob'],
+                    'gender'       => $userData['gender'],
+                    'indigene'     => $userData['indigene'],
+                    'address'      => $userData['address'],
+                ]
+            );
+
+            // Create treatment
+            $treatment = Treatment::create([
+                'user_email'                    => Auth::user()->email,
+                'pre_existing_health'            => $validData['preExistingHealth'],
+                'information_pre_existing_health' => $validData['informationPreExistingHealthYes'] ?? null,
+                'medications_regularly'         => $validData['medicationsRegularly'],
+                'medications_regularly_info'    => $validData['medicationsRegularlyInfo'] ?? null,
+                'start_date_symptoms'           => $validData['startDateSymptoms'],
+                'detailed_symptoms'             => $validData['detailedSymptoms'],
+                'treatment_category'            => $validData['treatment_category'],
+                'request_status'                => 'new request',
+            ]);
+
+            // Create payment
+            Payment::create([
+                'payment_id'   => session('payment_intent_id'),
+                'product_id'   => session('credentials')->id,
+                'customer_email' => Auth::user()->email,
+                'treatment_id' => $treatment->id,
+                'payment_status' => 'pending',
+            ]);
+        });
+
+        // Transaction succeeded, so send email
+        $data = [
+            'first_name'   => $userData['fname'],
+            'last_name'    => $userData['lname'],
+            'solution_name' => session('credentials')->solution_name,
+            'cost'         => session('credentials')->cost,
         ];
 
-        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
+        Mail::to(Auth::user()->email)
+            ->send(new VerifyConsultationMail($data));
 
-        session()->forget(['payment_intent_id','credentials']);
-
-        return response()->json([
-            'redirect_url' => route('consult-category', ['messege' => "Successful! please check your email for details"])
+        session()->forget([
+            'payment_intent_id',
+            'credentials',
         ]);
 
-    }
+        return response()->json([
+            'success' => true,
+            'redirect_url' => route(
+                'consult-category',
+                [
+                    'messege' => 'Successful! please check your email for details'
+                ]
+            ),
+        ]);
 
+    } catch (\Throwable $e) {
+
+        Log::error('Failed to save treatment consultation', [
+            'user_email' => Auth::user()->email,
+            'error'      => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'We could not process your request at this time. Please try again.',
+        ], 500);
+    }
+ }
 }

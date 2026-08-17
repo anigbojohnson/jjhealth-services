@@ -15,8 +15,7 @@ class PathologyReferrals extends Model
      protected $table = 'pathology_referrals';
 
     // Define the fields that are mass-assignable
-      protected $fillable = [
-        'imageUpload',
+    protected $fillable = [
         'solution_available_testing',
         'requestReason',
     ];

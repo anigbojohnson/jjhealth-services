@@ -31,7 +31,6 @@ public function redirect()
         return redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
 }
 public function callback(Request $request) {
-      
 
         // Check for errors from Google
         if ($request->has('error')) {
@@ -114,9 +113,6 @@ public function callback(Request $request) {
 
         } else {
              return redirect()->route('dashboard');
-
         }
-
-   
     }
 }

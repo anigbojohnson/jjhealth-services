@@ -10,10 +10,10 @@
         </div>
         @endif 
         @if(request()->has('messege'))
-                <div class="alert alert-success">
-                    {{ request('messege') }}
-                </div>
-            @endif
+            <div class="alert alert-success">
+                {{ request('messege') }}
+            </div>
+        @endif
     <h2 class="text-center mb-4">Choose a category from the options below</h2>
 
         <!-- Search Form -->
@@ -42,38 +42,38 @@
 
 @foreach ($solutions as $solution)
 
-@php
-$image = $solutionImages[$solution->solution_id] ?? '';
-$imagePath = $image ? asset('images/treatment/'.$image) : asset('images/treatment/discover-icon.png');
-@endphp
-<div class="col">
-    <div class="card treatment-card h-100 telehealth-card"
-         style="cursor:pointer;"
-         data-id="{{ $solution->id }}"
-         data-name="{{ $solution->solution_name }}"
-         data-solution-id="{{ $solution->solution_id }}"
-         data-cost="{{ $solution->cost }}"
-         data-description="{{ $solution->description }}">
+    @php
+        $image = $solutionImages[$solution->solution_id] ?? '';
+        $imagePath = $image ? asset('images/treatment/'.$image) : asset('images/treatment/discover-icon.png');
+    @endphp
+    <div class="col">
+        <div class="card treatment-card h-100 telehealth-card"
+            style="cursor:pointer;"
+            data-id="{{ $solution->id }}"
+            data-name="{{ $solution->solution_name }}"
+            data-solution-id="{{ $solution->solution_id }}"
+            data-cost="{{ $solution->cost }}"
+            data-description="{{ $solution->description }}">
 
-        <img src="{{ $imagePath }}" 
-             class="card-img-top treatment-img" 
-             alt="{{ $solution->solution_name }}">
+            <img src="{{ $imagePath }}" 
+                class="card-img-top treatment-img" 
+                alt="{{ $solution->solution_name }}">
 
-        <div class="card-body text-center">
+            <div class="card-body text-center">
 
-            <h4 class="treatment-title">{{ $solution->solution_name }}</h4>
+                <h4 class="treatment-title">{{ $solution->solution_name }}</h4>
 
-            <p class="treatment-desc">
-                {{ $solution->description }}
-            </p>
+                <p class="treatment-desc">
+                    {{ $solution->description }}
+                </p>
 
-            <h5 class="treatment-price">
-                ${{ $solution->cost }}<sup>00</sup>
-            </h5>
+                <h5 class="treatment-price">
+                    ${{ $solution->cost }}<sup>00</sup>
+                </h5>
 
+            </div>
         </div>
     </div>
-</div>
 @endforeach
 
 </div>
@@ -109,7 +109,7 @@ $(document).on('click', '.telehealth-card', function () {
         type: 'POST',
         data: {
             _token: $('meta[name="csrf-token"]').attr('content'),
-            id: id
+            id: id,
             solution_id: solutionId,
             solution_name: solutionName,
             cost: cost,

@@ -58,29 +58,26 @@
             @foreach($referrals as $referral)
             <tr>
                 <td>{{ $referral->created_at->format('d M Y') }}</td>
-                <td>{{ $referral->catalogue->name }}</td>
+                <td>{{ $referral->request_reason }}</td>
                 <td>
-            @if($referral->request_status === 'approved')
-                <span class="badge success">
-                    Approved
-                </span>
-            @elseif($referral->request_status === 'pending')
-                <span class="badge warning">
-                    Pending
-                </span>
-            @elseif($referral->request_status === 'declined')
-                <span class="badge danger">
-                    Declined
-                </span>
-            @else
-                <span class="badge">
-                    {{ ucfirst($referral->request_status) }}
-                </span>
-            @endif
+                    @if($referral->request_status === 'approved')
+                        <span class="badge success">
+                            Approved
+                        </span>
+                    @elseif($referral->request_status === 'declined')
+                        <span class="badge danger">
+                            Declined
+                        </span>
+                    @else
+                        <span class="badge warning">
+                            Pending
+                        </span>
+                    @endif
                 </td>
                 <td>
-                    @if($certificate->request_status == "approved")
-                        <a href="{{ route('download', ['fileName' => $certificate->fileUpload]) }}" 
+                    
+                    @if( $referral->request_status == "approved")
+                        <a href="{{ route('download', ['fileName' => $referral->fileUpload]) }}" 
                            class="download-btn">
                             ⬇ Download
                         </a>

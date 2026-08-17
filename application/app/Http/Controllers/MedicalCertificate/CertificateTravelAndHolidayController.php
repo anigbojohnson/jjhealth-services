@@ -13,7 +13,8 @@ use App\Models\Payment;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyConsultationMail;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CertificateTravelAndHolidayController extends Controller
 {
@@ -116,71 +117,143 @@ class CertificateTravelAndHolidayController extends Controller
 
     }
 
-    public function storeMCDetails(Request $request){
-    
-        $seeking ="Travel and Holiday cancellation";
-
-        $userData = session('personalDetails');
-
-        $user = User::updateOrCreate(
-            ['email' => Auth::user()->email], // Condition to find the user
-            [
-                'first_name' => $userData['fname'],
-                'last_name' => $userData['lname'],
-                'dob' => $userData['dob'],
-                'gender' => $userData['gender'],
-                'indigene' => $userData['indigene'],
-                'address' => $userData['address'],
-                'phone_number'=>$userData['pnumber']
-            ]
-        );
-
-        $validatedData = session('medicalsDetails');
 
 
-        
-        $medicalCertificate = MedicalCertificate::create([
-            'requestDate' => Carbon::now(),
-            'user_email' => Auth::user()->email,
-            'preExistingHealth' => $validatedData['preExistingHealth'],
-            'medicationsRegularly' => $validatedData['medicationsRegularly']??null,
-            'seeking' => $seeking??null, // Assuming seeking is part of the request
-            'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes']??null,
-            'privacy' => $validatedData['privacy']??null,
-            'medicationsRegularlyInfo' => $validatedData['medicationsRegularlyInfo']??null,
-            'symptomsDetailed' => $validatedData['detailedSymptoms']??null,
-            'medicalLetterReasons' => $validatedData['medicalLetterReasons']??null,
-            'symptomsStartDate' => $validatedData['startDateSymptoms']??null,
-            'request_status'=>"new request"
+public function storeMCDetails(Request $request)
+{
+    $seeking = "Travel and Holiday cancellation";
 
-        ]);
+    $userData = session('personalDetails');
+    $medicalData = session('medicalsDetails');
 
+    try {
 
-        $payment = new Payment();
-        $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  session('credentials')->id;
-        $payment->customer_email = Auth::user()->email;
-        $payment->mc_id  =  $medicalCertificate->id;    
-        $payment->payment_status = "pending";    
+        DB::transaction(function () use (
+            $userData,
+            $medicalData,
+            $seeking
+        ) {
 
-        $payment->save();
+            // Create or update user
+            User::updateOrCreate(
+                ['email' => Auth::user()->email],
+                [
+                    'first_name'   => $userData['fname'],
+                    'last_name'    => $userData['lname'],
+                    'dob'          => $userData['dob'],
+                    'gender'       => $userData['gender'],
+                    'indigene'     => $userData['indigene'],
+                    'address'      => $userData['address'],
+                    'phone_number' => $userData['pnumber'],
+                ]
+            );
 
+            // Create medical certificate
+            $medicalCertificate = MedicalCertificate::create([
+                'requestDate' =>
+                    Carbon::now(),
+
+                'user_email' =>
+                    Auth::user()->email,
+
+                'preExistingHealth' =>
+                    $medicalData['preExistingHealth'],
+
+                'medicationsRegularly' =>
+                    $medicalData['medicationsRegularly'] ?? null,
+
+                'seeking' =>
+                    $seeking,
+
+                'preExistingHealthInformation' =>
+                    $medicalData['informationPreExistingHealthYes'] ?? null,
+
+                'privacy' =>
+                    $medicalData['privacy'] ?? null,
+
+                'medicationsRegularlyInfo' =>
+                    $medicalData['medicationsRegularlyInfo'] ?? null,
+
+                'symptomsDetailed' =>
+                    $medicalData['detailedSymptoms'] ?? null,
+
+                'medicalLetterReasons' =>
+                    $medicalData['medicalLetterReasons'] ?? null,
+
+                'symptomsStartDate' =>
+                    $medicalData['startDateSymptoms'] ?? null,
+
+                'request_status' =>
+                    'new request',
+            ]);
+
+            // Create payment
+            Payment::create([
+                'payment_id' =>
+                    session('payment_intent_id'),
+
+                'product_id' =>
+                    session('credentials')->id,
+
+                'customer_email' =>
+                    Auth::user()->email,
+
+                'mc_id' =>
+                    $medicalCertificate->id,
+
+                'payment_status' =>
+                    'pending',
+            ]);
+        });
+
+        // Only execute after successful transaction
         $data = [
-        'first_name' => $userData['fname'],
-        'last_name' => $userData['lname'],
-        'solution_name' => session('credentials')->solution_name.' Medical Certificate',
-        'cost' =>  session('credentials')->cost,
+            'first_name' =>
+                $userData['fname'],
+
+            'last_name' =>
+                $userData['lname'],
+
+            'solution_name' =>
+                session('credentials')->solution_name . ' Medical Certificate',
+
+            'cost' =>
+                session('credentials')->cost,
         ];
 
+        Mail::to(Auth::user()->email)
+            ->send(new VerifyConsultationMail($data));
 
-        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
-
-        session()->forget(['payment_intent_id','credentials']);
+        session()->forget([
+            'payment_intent_id',
+            'credentials',
+        ]);
 
         return response()->json([
-            'redirect_url' => route('certificate', ['messege' => "Successful! please check your email for details"])
+            'success' => true,
+            'redirect_url' => route(
+                'certificate',
+                [
+                    'messege' =>
+                        'Successful! please check your email for details'
+                ]
+            ),
         ]);
+
+    } catch (\Throwable $e) {
+
+        Log::error('Failed to save travel cancellation medical certificate', [
+            'user_email' => Auth::user()->email,
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'We could not process your request at this time. Please try again.',
+        ], 500);
     }
+}
     
 
     public function getSecretKey(Request $request)

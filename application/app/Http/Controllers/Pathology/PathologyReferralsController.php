@@ -15,6 +15,8 @@ use App\Mail\VerifyConsultationMail;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Referral;
 use App\Models\Category;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PathologyReferralsController extends Controller
 {
@@ -94,93 +96,124 @@ class PathologyReferralsController extends Controller
         return response()->json([ 'secret_key'=>$secretKey], 200);
     }
 
-    public function  saveConsultDetails(Request $request)
+    public function saveConsultDetails(Request $request)
     {
-
         $userData = session()->get('personalDetails');
+        $validData = session()->get('medicalDetails');
 
+        $fileName = '';
 
-        $fileName ="";
-        if ($request->hasFile('fileUpload')) {
-            // Get the file content
-            $file = $request->file('fileUpload');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $fileContent = base64_encode(file_get_contents($file));
-            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
+        try {
 
+            // Upload file once
+            if ($request->hasFile('fileUpload')) {
+                $file = $request->file('fileUpload');
+
+                $fileName = time() . '_' . $file->getClientOriginalName();
+
+                Storage::disk('s3')->putFileAs(
+                    'user-temp-file/' . Auth::user()->email,
+                    $file,
+                    $fileName,
+                    'public'
+                );
+            }
+
+            $pathologyCategory = Category::where(
+                'slug',
+                'pathology_referrals'
+            )->firstOrFail();
+
+            DB::transaction(function () use (
+                $userData,
+                $validData,
+                $pathologyCategory,
+                $fileName
+            ) {
+
+                // Create/update user
+                User::updateOrCreate(
+                    ['email' => Auth::user()->email],
+                    [
+                        'first_name'   => $userData['fname'],
+                        'last_name'    => $userData['lname'],
+                        'phone_number' => $userData['pnumber'],
+                        'dob'          => $userData['dob'],
+                        'gender'       => $userData['gender'],
+                        'indigene'     => $userData['indigene'],
+                        'address'      => $userData['address'],
+                    ]
+                );
+
+                // Create referral
+                $referral = Referral::create([
+                    'user_email'      => Auth::user()->email,
+                    'category_id'     => $pathologyCategory->id,
+                    'request_status'  => 'new request',
+                    'condition_image' => $fileName ?: null,
+                    'request_reason'  => session('credentials')->solution_name,
+                ]);
+
+                // Create pathology referral
+                $pathology = $referral->pathology()->create([
+                    'solution_available_testing' => $validData['selected_tests'],
+                ]);
+
+                // Create payment
+                Payment::create([
+                    'payment_id'              => session('payment_intent_id'),
+                    'product_id'              => session('credentials')->id,
+                    'customer_email'          => Auth::user()->email,
+                    'pathology_referral_id'   => $pathology->id,
+                    'payment_status'          => 'pending',
+                ]);
+            });
+
+            // Prepare email data after successful transaction
+            $data = [
+                'first_name'   => $userData['fname'],
+                'last_name'    => $userData['lname'],
+                'solution_name' => session('credentials')->solution_name,
+                'cost'          => session('credentials')->cost,
+            ];
+
+            Mail::to(Auth::user()->email)
+                ->send(new VerifyConsultationMail($data));
+
+            session()->forget([
+                'payment_intent_id',
+                'credentials',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'redirect_url' => route(
+                    'pathology.select',
+                    [
+                        'messege' => 'Successful! Please check your email for details'
+                    ]
+                ),
+            ]);
+
+        } catch (\Throwable $e) {
+
+            // Remove uploaded file if database transaction failed
+            if ($fileName) {
+                Storage::disk('s3')->delete(
+                    'user-temp-file/' . Auth::user()->email . '/' . $fileName
+                );
+            }
+
+            Log::error('Failed to save pathology referral', [
+                'user_email' => Auth::user()->email,
+                'error'      => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'We could not process your request at this time. Please try again.',
+            ], 500);
         }
-
-        $user = User::updateOrCreate(
-            ['email' => Auth::user()->email], // Condition to find the user
-            [
-                'first_name' => $userData['fname'],
-                'last_name' => $userData['lname'],
-                'phone_number' => $userData['pnumber'],
-                'dob' => $userData['dob'],
-                'gender' => $userData['gender'],
-                'indigene' =>$userData['indigene'],
-                'address' => $userData['address'],
-            ]
-        );
-
-        $validData= session('medicalDetails');
-        $pr=PathologyReferrals::create([
-            'user_email' => Auth::user()->email, 
-            'imageUpload' =>   $fileName,
-            'solution_available_testing' =>  $validData['selected_tests'],
-            'requestReason' => session('credentials')->solution_name,
-            'request_status'=>"new request"
-        ]);
-
-
-        $pathologyCatalogue = Category::where('slug', 'pathology_referrals')
-            ->firstOrFail();
-
-        $referral = Referral::create([
-            'user_email'     => Auth::user()->email,
-            'catalogue_id'   => $pathologyCatalogue->id,
-            'request_status' => 'new request',
-        ]);
-
-        $referral->pathology()->create([
-            'imageUpload'                => $imageUploaded,
-            'solution_available_testing' => $request->solution_available_testing,
-            'requestReason'              => $request->requestReason,
-        ]);
-
-        $payment = new Payment();
-        $payment->payment_id = session('payment_intent_id');
-        $payment->product_id = session('credentials')->id;
-        $payment->customer_email = Auth::user()->email;
-        $payment->pathology_referral_id = $pr->id;    
-        $payment->payment_status = "pending";    
-
-        $payment->save();
-        $data = [
-        'first_name' => $userData['fname'],
-        'last_name' => $userData['lname'],
-        'solution_name' => session('credentials')->solution_name,
-        'cost' =>  session('credentials')->cost,
-        ];
-
-        $fileName ="";
-        if ($request->hasFile('fileUpload')) {
-            // Get the file content
-            $file = $request->file('fileUpload');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $fileContent = base64_encode(file_get_contents($file));
-            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
-
-        }
-
-        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
-
-        session()->forget(['payment_intent_id','credentials']);
-
-        return response()->json([
-            'redirect_url' => route('pathology.select', ['messege' => "Successful! please check your email for details"])
-        ]);
-
     }
 
 }

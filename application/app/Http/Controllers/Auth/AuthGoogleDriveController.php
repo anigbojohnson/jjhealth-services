@@ -7,13 +7,8 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Google_Client;
 use Illuminate\Support\Facades\Http;
-
 use Google_Service_Drive;
 use GuzzleHttp\Client as HttpClient;
-
-
-
-
 
 
 class AuthGoogleDriveController extends Controller

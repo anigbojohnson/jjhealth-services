@@ -110,7 +110,6 @@ Route::get('/consult-category', function () {
         CacheInvalidation::clearFlag('teleconsult_solutions_1');
     }
 
-
     $solutions = Cache::rememberForever('teleconsult_solutions_1', function () {
         return Solutions::select('solutions.*')
             ->whereIn('id', function ($query) {
@@ -121,6 +120,7 @@ Route::get('/consult-category', function () {
             ->where('category_id', 1)
             ->get();
     });
+    
 
         // Pass the solutions data to the view
     $message = "";

@@ -17,7 +17,8 @@ use OpenTelemetry\API\Trace\TracerInterface;  // ← import this
 use OpenTelemetry\API\Trace\StatusCode;
 use OpenTelemetry\API\Metrics\MeterInterface;  
 use App\Services\MetricsService;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CertificateStudiesController extends Controller
 {
@@ -299,7 +300,7 @@ class CertificateStudiesController extends Controller
 
     }
 
-   public function storeMCDetails(Request $request)
+    public function storeMCDetails(Request $request)
 {
     $span  = $this->tracer->spanBuilder('store-studies-medical-certificate')->startSpan();
     $scope = $span->activate();
@@ -309,47 +310,27 @@ class CertificateStudiesController extends Controller
     $validatedStudies = session('studiesDetails');
     $validatedData    = session('personalDetails');
 
+    $fileName = null;
+
     try {
         $email = Auth::user()->email;
 
         $span->setAttribute('user.email', $email);
 
-        // ── step 1: user ─────────────────────────────
-        $userSpan  = $this->tracer->spanBuilder('update-or-create-user')->startSpan();
-        $userScope = $userSpan->activate();
-
-        try {
-            $user = User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'first_name' => $validatedData['fname'],
-                    'last_name'  => $validatedData['lname'],
-                    'dob'        => $validatedData['dob'],
-                    'gender'     => $validatedData['gender'],
-                    'indigene'   => $validatedData['indigene'],
-                    'address'    => $validatedData['address'],
-                    'phone_number' => $validatedData['pnumber']
-                ]
-            );
-
-            $userSpan->setAttribute('user.id', $user->id);
-
-        } finally {
-            $userScope->detach();
-            $userSpan->end();
-        }
-
-        // ── step 2: file upload ───────────────────────
-        $fileName = null;
+        /*
+        |--------------------------------------------------------------------------
+        | Step 1: File upload
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->hasFile('fileUpload')) {
             $file = $request->file('fileUpload');
 
             try {
-                $fileName = time().'_'.$file->getClientOriginalName();
+                $fileName = time() . '_' . $file->getClientOriginalName();
 
                 Storage::disk('s3')->putFileAs(
-                    'user-temp-file/'.$email,
+                    'user-temp-file/' . $email,
                     $file,
                     $fileName,
                     'public'
@@ -363,80 +344,260 @@ class CertificateStudiesController extends Controller
             }
         }
 
-        $validatedData = session('medicalsDetails');
-        // ── step 3: medical certificate ───────────────
-        $medicalCertificate = MedicalCertificate::create([
-            'requestDate' => Carbon::now(),
-            'user_email'  => $email,
-            'preExistingHealth' => $validatedData['preExistingHealth']??null,
-            'medicationsRegularly' => $validatedData['medicationsRegularly'] ?? null,
-            'seeking' => session('credentials')->solution_name.' Medical Certificate',
-            'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes'] ?? null,
-            'privacy' => $validatedData['privacy'] ?? null,
-            'symptomsDetailed' => $validatedData['detailedSymptoms'] ?? null,
-            'location' => $validatedStudies['yourStudiesPlace'] ?? null,
-            'validFrom' => $validatedStudies['validFrom'] ?? null,
-            'validTo' => $validatedStudies['validTo'] ?? null,
-            'request_status' => "new request",
-            'fileUpload' => $fileName,
-        ]);
+        /*
+        |--------------------------------------------------------------------------
+        | Step 2: Database transaction
+        |--------------------------------------------------------------------------
+        */
 
-        $this->metrics->certificateCreated(
-            session('credentials')->solution_name.' Medical Certificate',
-        );
+        $result = DB::transaction(function () use (
+            $email,
+            $validatedData,
+            $validatedStudies,
+            $fileName
+        ) {
 
-        // ── step 4: payment ───────────────────────────
-        $payment = new Payment();
-        $payment->payment_id = session('payment_intent_id');
-        $payment->product_id = session('credentials')->id;
-        $payment->customer_email = $email;
-        $payment->mc_id = $medicalCertificate->id;
-        $payment->payment_status = "pending";
-        $payment->save();
+            // User
+            $userSpan = $this->tracer
+                ->spanBuilder('update-or-create-user')
+                ->startSpan();
 
-        $this->metrics->paymentSucceeded();
+            $userScope = $userSpan->activate();
 
-        // ── step 5: email ─────────────────────────────
+            try {
+
+                $user = User::updateOrCreate(
+                    ['email' => $email],
+                    [
+                        'first_name'   => $validatedData['fname'],
+                        'last_name'    => $validatedData['lname'],
+                        'dob'          => $validatedData['dob'],
+                        'gender'       => $validatedData['gender'],
+                        'indigene'     => $validatedData['indigene'],
+                        'address'      => $validatedData['address'],
+                        'phone_number' => $validatedData['pnumber'],
+                    ]
+                );
+
+                $userSpan->setAttribute('user.id', $user->id);
+
+            } finally {
+                $userScope->detach();
+                $userSpan->end();
+            }
+
+
+            // Medical certificate
+            $medicalCertificate = MedicalCertificate::create([
+                'requestDate' => Carbon::now(),
+
+                'user_email' => $email,
+
+                'preExistingHealth' =>
+                    $validatedData['preExistingHealth'] ?? null,
+
+                'medicationsRegularly' =>
+                    $validatedData['medicationsRegularly'] ?? null,
+
+                'seeking' =>
+                    session('credentials')->solution_name
+                    . ' Medical Certificate',
+
+                'preExistingHealthInformation' =>
+                    $validatedData['informationPreExistingHealthYes'] ?? null,
+
+                'privacy' =>
+                    $validatedData['privacy'] ?? null,
+
+                'symptomsDetailed' =>
+                    $validatedData['detailedSymptoms'] ?? null,
+
+                'location' =>
+                    $validatedStudies['yourStudiesPlace'] ?? null,
+
+                'validFrom' =>
+                    $validatedStudies['validFrom'] ?? null,
+
+                'validTo' =>
+                    $validatedStudies['validTo'] ?? null,
+
+                'request_status' =>
+                    'new request',
+
+                'fileUpload' =>
+                    $fileName,
+            ]);
+
+            $this->metrics->certificateCreated(
+                session('credentials')->solution_name
+                . ' Medical Certificate'
+            );
+
+
+            // Payment
+            $payment = new Payment();
+
+            $payment->payment_id =
+                session('payment_intent_id');
+
+            $payment->product_id =
+                session('credentials')->id;
+
+            $payment->customer_email =
+                $email;
+
+            $payment->mc_id =
+                $medicalCertificate->id;
+
+            $payment->payment_status =
+                'pending';
+
+            $payment->save();
+
+            $this->metrics->paymentSucceeded();
+
+
+            // Return values from the transaction
+            return [
+                'user' => $user,
+                'medicalCertificate' => $medicalCertificate,
+                'payment' => $payment,
+            ];
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Step 3: Email
+        |--------------------------------------------------------------------------
+        */
+
         try {
-            Mail::to($email)->send(new VerifyConsultationMail([
-                'first_name' => $user->first_name,
-                'last_name'  => $user->last_name,
-                'solution_name' => session('credentials')->solution_name,
-                'cost' => session('credentials')->cost,
-            ]));
+
+            Mail::to($email)->send(
+                new VerifyConsultationMail([
+                    'first_name' =>
+                        $result['user']->first_name,
+
+                    'last_name' =>
+                        $result['user']->last_name,
+
+                    'solution_name' =>
+                        session('credentials')->solution_name,
+
+                    'cost' =>
+                        session('credentials')->cost,
+                ])
+            );
 
             $this->metrics->emailSent();
-            
+
         } catch (\Throwable $e) {
-            $this->metrics->emailFailed($e->getMessage());
+
+            $this->metrics->emailFailed(
+                $e->getMessage()
+            );
+
             throw $e;
         }
 
-        // ── duration metric ───────────────────────────
-        $duration = (microtime(true) - $startTime) * 1000;
 
-        $this->metrics->storeMcDuration($duration, [
-            'mc' => 'studies'
+        /*
+        |--------------------------------------------------------------------------
+        | Step 4: Metrics
+        |--------------------------------------------------------------------------
+        */
+
+        $duration =
+            (microtime(true) - $startTime) * 1000;
+
+        $this->metrics->storeMcDuration(
+            $duration,
+            [
+                'mc' => 'studies'
+            ]
+        );
+
+        $this->metrics->storeMcSuccess(
+            'mc studies'
+        );
+
+        $span->setAttribute(
+            'store_mc.status',
+            'success'
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Step 5: Clear session
+        |--------------------------------------------------------------------------
+        */
+
+        session()->forget([
+            'payment_intent_id',
+            'credentials'
         ]);
-        $this->metrics->storeMcSuccess('mc studies');
 
-        $span->setAttribute('store_mc.status', 'success');
-
-        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('certificate', [
-                'messege' => "Successful! please check your email for details"
-            ])
+            'success' => true,
+
+            'redirect_url' => route(
+                'certificate',
+                [
+                    'messege' =>
+                        'Successful! please check your email for details'
+                ]
+            )
         ]);
 
     } catch (\Throwable $e) {
-        $this->metrics->paymentFailed( $e->getMessage());
+
+        $this->metrics->paymentFailed(
+            $e->getMessage()
+        );
+
+        /*
+         * If the database transaction failed,
+         * remove the file that was already uploaded to S3.
+         */
+        if ($fileName) {
+            try {
+
+                Storage::disk('s3')->delete(
+                    'user-temp-file/'
+                    . $email
+                    . '/'
+                    . $fileName
+                );
+
+            } catch (\Throwable $cleanupException) {
+
+                Log::error(
+                    'Failed to clean up S3 file',
+                    [
+                        'file' =>
+                            $fileName,
+
+                        'error' =>
+                            $cleanupException->getMessage(),
+                    ]
+                );
+            }
+        }
+
         $span->recordException($e);
-        $span->setStatus(StatusCode::STATUS_ERROR, $e->getMessage());
+
+        $span->setStatus(
+            StatusCode::STATUS_ERROR,
+            $e->getMessage()
+        );
+
         throw $e;
 
     } finally {
+
         $scope->detach();
         $span->end();
     }

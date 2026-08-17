@@ -112,7 +112,7 @@ Route::middleware(['auth','throttle:api'])->group(function () {
                 ->where('user_email', Auth::user()->email)
                 ->latest('requestDate')
                 ->paginate(10);
-
+                
                 return view('dashboard.mycertificate', [
                     'certificates' => $certificates,
                 ]);
@@ -121,7 +121,7 @@ Route::middleware(['auth','throttle:api'])->group(function () {
 
 
         Route::get('/my-referrals', function () {
-            $referrals = Referral::with('catalogue')
+            $referrals = Referral::with('catagory')
                 ->where('user_email', Auth::user()->email)
                 ->latest()
                 ->paginate(10);

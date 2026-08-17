@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Referrals;
 
 use App\Http\Controllers\Controller;
@@ -14,6 +13,8 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Payment;
 use App\Models\Referral;
 use App\Models\Category;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class SpecialistReferralsController extends Controller
 {
@@ -49,6 +50,8 @@ class SpecialistReferralsController extends Controller
             'fileUpload' => 'required_if:medicalConditionImage,Yes|nullable|mimes:jpg,jpeg,png,pdf|max:5120', // File required only if 'Yes'
         ]);
 
+        session()->put('consultationDetails', $validatedData);
+
         return response()->json(['message' => ''], 200);
 
     }
@@ -65,75 +68,101 @@ class SpecialistReferralsController extends Controller
     }
    
 
-    public function  saveConsultDetails(Request $request)
-    {
-        $validatedData = $request->validate([
-            'requestReason' => 'required|string|max:255',
-            'medicalConditionImage' => 'required|in:Yes,No', // Ensures the value is required and must be either Yes or No
-            'fileUpload' => 'required_if:medicalConditionImage,Yes|nullable|mimes:jpg,jpeg,png,pdf|max:5120', // File required only if 'Yes'
-        ]);
+public function saveConsultDetails(Request $request)
+{
 
-        $fileName ="";
+    $userData = session()->get('personalDetails');
+    $consultationDetails = session()->get('consultationDetails');
+    $category = Category::where('slug', 'specialist-referrals')
+        ->firstOrFail();
+
+    try {
+
+        $fileName = "";
+
         if ($request->hasFile('fileUpload')) {
-            // Get the file content
             $file = $request->file('fileUpload');
+
             $fileName = time() . '_' . $file->getClientOriginalName();
-            $fileContent = base64_encode(file_get_contents($file));
-            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
 
+            Storage::disk('s3')->putFileAs(
+                'user-temp-file/' . Auth::user()->email,
+                $file,
+                $fileName,
+                'public'
+            );
         }
+        DB::transaction(function () use (
+            $userData,
+            $consultationDetails,
+            $category,
+            $fileName
+        ) {
 
-        $userData = session()->get('personalDetails');
+            User::updateOrCreate(
+                ['email' => Auth::user()->email],
+                [
+                    'first_name'   => $userData['fname'],
+                    'last_name'    => $userData['lname'],
+                    'phone_number' => $userData['pnumber'],
+                    'dob'          => $userData['dob'],
+                    'gender'       => $userData['gender'],
+                    'indigene'     => $userData['indigene'],
+                    'address'      => $userData['address'],
+                ]
+            );
 
-
-        $user = User::updateOrCreate(
-            ['email' => Auth::user()->email], // Condition to find the user
-            [
-                'first_name' => $userData['fname'],
-                'last_name' => $userData['lname'],
-                'phone_number' => $userData['pnumber'],
-                'dob' => $userData['dob'],
-                'gender' => $userData['gender'],
-                'indigene' =>$userData['indigene'],
-                'address' => $userData['address'],
-            ]
-        );
-
-        $catalogue = Category::where('slug', 'specialist-referral')
-            ->firstOrFail();
-
-        $referral = Referral::create([
-            'user_email'     => Auth::user()->email,
-            'catalogue_id'   => $catalogue->id,
-            'request_status' => 'new request',
-        ]);
-
-        $sr = SpecialistReferrals::create([
-            'referral_id'     => $referral->id,
-            'request_reason'  => $validatedData['requestReason'],
-            'image_uploaded'  => $validatedData['medicalConditionImage'],
-            'file_name'       => $validatedData['medicalConditionImage'] === 'Yes'
+            $referral = Referral::create([
+                'user_email'      => Auth::user()->email,
+                'category_id'     => $category->id,
+                'request_status'  => 'new request',
+                'condition_image' => $consultationDetails['medicalConditionImage'] === 'Yes'
                                     ? $fileName
                                     : null,
+                'request_reason'  => session('credentials')->solution_name
+                                    . ': '
+                                    . $consultationDetails['requestReason'],
+            ]);
+
+            $specialistReferral = $referral->specialist()->create([
+                'referral_id' => $referral->id,
+            ]);
+
+            Payment::create([
+                'payment_id'              => session('payment_intent_id'),
+                'product_id'              => session('credentials')->id,
+                'customer_email'          => Auth::user()->email,
+                'specialist_referrals_id' => $specialistReferral->id,
+                'payment_status'          => 'pending',
+            ]);
+        });
+
+        session()->forget([
+            'payment_intent_id',
+            'credentials',
         ]);
-
-        $solutions = Solutions::where('solution_id', 'SR01')->latest('id')->first();
-
-        $payment = new Payment();
-        $payment->payment_id = session('payment_intent_id');
-        $payment->product_id =  session('credentials')->id;
-        $payment->customer_email = Auth::user()->email;
-        $payment->specialist_referrals_id = $sr->id;    
-        $payment->payment_status = "pending";    
-
-        $payment->save();
-
-
-        session()->forget(['payment_intent_id','credentials']);
 
         return response()->json([
-            'redirect_url' => route('specialist-referral-home', ['messege' => "Successful! please check your email for details"])
+            'success' => true,
+            'redirect_url' => route(
+                'specialist-referral-home',
+                [
+                    'messege' => 'Successful! Please check your email for details.'
+                ]
+            ),
         ]);
 
+    } catch (\Throwable $e) {
+
+        Log::error('Failed to save specialist referral', [
+            'user_email' => Auth::user()->email,
+            'error'      => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 }

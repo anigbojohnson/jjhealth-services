@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Pathology\PathologyController;
+use App\Http\Controllers\Referrals\SpecialistReferralsController;
 use App\Models\Category;
 use App\Models\Solutions;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +45,7 @@ Route::post('/specialist-referrals/request', function (Request $request) {
     }
 })->name('specialist-referrals.request');
 
+
 Route::get('/specialist-referral/select', function () {
 
    
@@ -52,7 +53,6 @@ Route::get('/specialist-referral/select', function () {
         Cache::forget('referrals_solutions_4');
         CacheInvalidation::clearFlag('referrals_solutions_4');
     }
-
 
     $solutions = Cache::rememberForever('referrals_solutions_4', function () {
         return Solutions::select('solutions.*')

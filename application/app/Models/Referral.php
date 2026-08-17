@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Category;
+use App\Models\SpecialistReferrals;
+use App\Models\PathologyReferrals;
+
+
 
 class Referral extends Model
 {
@@ -12,8 +17,11 @@ class Referral extends Model
 
     protected $fillable = [
         'user_email',
-        'catalogue_id',
+        'category_id',
         'request_status',
+        'request_reason',
+        'referral_image',
+        'condition_image',
     ];
 
     /**
@@ -24,9 +32,9 @@ class Referral extends Model
      *   ├── Specialist Referral
      *   └── Pathology Referral
      */
-    public function catalogue(): BelongsTo
+    public function catagory(): BelongsTo
     {
-        return $this->belongsTo(Catalogue::class, 'catalogue_id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     /**
@@ -35,7 +43,7 @@ class Referral extends Model
     public function specialist(): HasOne
     {
         return $this->hasOne(
-            SpecialistReferral::class,
+            SpecialistReferrals::class,
             'referral_id'
         );
     }
@@ -46,7 +54,7 @@ class Referral extends Model
     public function pathology(): HasOne
     {
         return $this->hasOne(
-            PathologyReferral::class,
+            PathologyReferrals::class,
             'referral_id'
         );
     }

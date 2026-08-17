@@ -18,6 +18,6 @@ class Treatment extends Model
         'detailed_symptoms',
         'treatment_category',
         'user_email',
-         'request_status'
+        'request_status'
     ];
 }

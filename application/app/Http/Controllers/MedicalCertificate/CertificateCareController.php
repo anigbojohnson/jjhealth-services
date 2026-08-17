@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use OpenTelemetry\API\Trace\TracerInterface;  // ← import this
 use OpenTelemetry\API\Trace\StatusCode;
 use App\Services\MetricsService;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CertificateCareController extends Controller
 {
@@ -309,105 +310,218 @@ class CertificateCareController extends Controller
         }
     }
 
- public function storeMCDetails(Request $request)
-    {
-        $span  = $this->tracer->spanBuilder('store-carer-medical-certificate')->startSpan();
-        $scope = $span->activate();
 
-        try {
-            $span->setAttribute('user.email', Auth::user()->email);
+public function storeMCDetails(Request $request)
+{
+    $span = $this->tracer
+        ->spanBuilder('store-carer-medical-certificate')
+        ->startSpan();
+
+    $scope = $span->activate();
+
+    try {
+        $email = Auth::user()->email;
+
+        $span->setAttribute('user.email', $email);
+
+        $validatedPersonal = session('personalDetails');
+        $validatedMedical  = session('medicalsDetails');
+        $validatedCare     = session('carerDetails');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Database transaction
+        |--------------------------------------------------------------------------
+        */
+
+        $result = DB::transaction(function () use (
+            $email,
+            $validatedPersonal,
+            $validatedMedical,
+            $validatedCare
+        ) {
 
             // ── step 1: save user details ──────────────────────────
-            $userSpan  = $this->tracer->spanBuilder('update-or-create-user')->startSpan();
+
+            $userSpan = $this->tracer
+                ->spanBuilder('update-or-create-user')
+                ->startSpan();
+
             $userScope = $userSpan->activate();
 
             try {
-                $validatedData = session('personalDetails');
 
                 $user = User::updateOrCreate(
-                    ['email' => Auth::user()->email],
+                    ['email' => $email],
                     [
-                        'first_name'   => $validatedData['fname'],
-                        'last_name'    => $validatedData['lname'],
-                        'dob'          => $validatedData['dob'],
-                        'gender'       => $validatedData['gender'],
-                        'indigene'     => $validatedData['indigene'],
-                        'address'      => $validatedData['address'],
-                        'phone_number' => $validatedData['pnumber']
+                        'first_name'   => $validatedPersonal['fname'],
+                        'last_name'    => $validatedPersonal['lname'],
+                        'dob'          => $validatedPersonal['dob'],
+                        'gender'       => $validatedPersonal['gender'],
+                        'indigene'     => $validatedPersonal['indigene'],
+                        'address'      => $validatedPersonal['address'],
+                        'phone_number' => $validatedPersonal['pnumber'],
                     ]
                 );
 
-                $userSpan->setAttribute('user.id',           $user->id);
-                $userSpan->setAttribute('user.was_created',  $user->wasRecentlyCreated);
+                $userSpan->setAttribute(
+                    'user.id',
+                    $user->id
+                );
+
+                $userSpan->setAttribute(
+                    'user.was_created',
+                    $user->wasRecentlyCreated
+                );
 
             } finally {
                 $userScope->detach();
                 $userSpan->end();
             }
 
+
             // ── step 2: create medical certificate ────────────────
-            $mcSpan  = $this->tracer->spanBuilder('create-carer-medical-certificate')->startSpan();
+
+            $mcSpan = $this->tracer
+                ->spanBuilder('create-carer-medical-certificate')
+                ->startSpan();
+
             $mcScope = $mcSpan->activate();
 
             try {
-                $validatedData = session('medicalsDetails');
-                $validatedCare = session('carerDetails');
 
                 $medicalCertificate = MedicalCertificate::create([
-                    'requestDate'                  => Carbon::now(),
-                    'user_email'                   => Auth::user()->email,
-                    'preExistingHealth'            => $validatedData['preExistingHealth'],
-                    'medicationsRegularly'         => $validatedData['medicationsRegularly'] ?? null,
-                    'seeking'                      => session('credentials')->solution_name ?? null,
-                    'preExistingHealthInformation' => $validatedData['informationPreExistingHealthYes'] ?? null,
-                    'privacy'                      => $validatedData['privacy'] ?? null,
-                    'medicationsRegularlyInfo'     => $validatedData['medicationsRegularlyInfo'] ?? null,
-                    'symptomsDetailed'             => $validatedData['detailedSymptoms'] ?? null,
-                    'validFrom'                    => $validatedCare['validFrom'] ?? null,
-                    'medicalLetterReasons'         => $validatedData['medicalLetterReasons'] ?? null,
-                    'symptomsStartDate'            => $validatedData['startDateSymptoms'] ?? null,
-                    'currentStatus'                => $validatedData['currentStatus'] ?? null,
-                    'validTo'                      => $validatedCare['validTo'] ?? null,
-                    'careForSomeone'               => $validatedCare['careForSomeone'] ?? null,
-                    'personCared'                  => $validatedCare['personCared'] ?? null,
-                    'request_status'               => 'new request'
+                    'requestDate' =>
+                        Carbon::now(),
+
+                    'user_email' =>
+                        $email,
+
+                    'preExistingHealth' =>
+                        $validatedMedical['preExistingHealth'] ?? null,
+
+                    'medicationsRegularly' =>
+                        $validatedMedical['medicationsRegularly'] ?? null,
+
+                    'seeking' =>
+                        session('credentials')->solution_name ?? null,
+
+                    'preExistingHealthInformation' =>
+                        $validatedMedical['informationPreExistingHealthYes'] ?? null,
+
+                    'privacy' =>
+                        $validatedMedical['privacy'] ?? null,
+
+                    'medicationsRegularlyInfo' =>
+                        $validatedMedical['medicationsRegularlyInfo'] ?? null,
+
+                    'symptomsDetailed' =>
+                        $validatedMedical['detailedSymptoms'] ?? null,
+
+                    'validFrom' =>
+                        $validatedCare['validFrom'] ?? null,
+
+                    'medicalLetterReasons' =>
+                        $validatedMedical['medicalLetterReasons'] ?? null,
+
+                    'symptomsStartDate' =>
+                        $validatedMedical['startDateSymptoms'] ?? null,
+
+                    'currentStatus' =>
+                        $validatedMedical['currentStatus'] ?? null,
+
+                    'validTo' =>
+                        $validatedCare['validTo'] ?? null,
+
+                    'careForSomeone' =>
+                        $validatedCare['careForSomeone'] ?? null,
+
+                    'personCared' =>
+                        $validatedCare['personCared'] ?? null,
+
+                    'request_status' =>
+                        'new request',
                 ]);
-                // record metric — certificate was created
+
                 $this->metrics->certificateCreated(
                     session('credentials')->solution_name
                 );
 
-                $mcSpan->setAttribute('mc.id',             $medicalCertificate->id);
-                $mcSpan->setAttribute('mc.reason',         $validatedData['medicalLetterReasons'] ?? 'unknown');
-                $mcSpan->setAttribute('mc.currentStatus',  $validatedData['currentStatus'] ?? 'unknown');
+                $mcSpan->setAttribute(
+                    'mc.id',
+                    $medicalCertificate->id
+                );
+
+                $mcSpan->setAttribute(
+                    'mc.reason',
+                    $validatedMedical['medicalLetterReasons'] ?? 'unknown'
+                );
+
+                $mcSpan->setAttribute(
+                    'mc.currentStatus',
+                    $validatedMedical['currentStatus'] ?? 'unknown'
+                );
 
             } finally {
                 $mcScope->detach();
                 $mcSpan->end();
             }
 
+
             // ── step 3: save payment ───────────────────────────────
-            $paySpan  = $this->tracer->spanBuilder('save-payment')->startSpan();
+
+            $paySpan = $this->tracer
+                ->spanBuilder('save-payment')
+                ->startSpan();
+
             $payScope = $paySpan->activate();
 
             try {
-                $payment                 = new Payment();
-                $payment->payment_id     = session('payment_intent_id');
-                $payment->product_id     = session('credentials')->id;
-                $payment->customer_email = Auth::user()->email;
-                $payment->mc_id          = $medicalCertificate->id;
-                $payment->payment_status = 'pending';
+
+                $payment = new Payment();
+
+                $payment->payment_id =
+                    session('payment_intent_id');
+
+                $payment->product_id =
+                    session('credentials')->id;
+
+                $payment->customer_email =
+                    $email;
+
+                $payment->mc_id =
+                    $medicalCertificate->id;
+
+                $payment->payment_status =
+                    'pending';
+
                 $payment->save();
 
-                // record metric — payment saved successfully
                 $this->metrics->paymentSucceeded();
 
-                $paySpan->setAttribute('payment.id',     $payment->payment_id);
-                $paySpan->setAttribute('payment.status', 'pending');
+                $paySpan->setAttribute(
+                    'payment.id',
+                    $payment->payment_id
+                );
+
+                $paySpan->setAttribute(
+                    'payment.status',
+                    'pending'
+                );
 
             } catch (\Throwable $e) {
-                // record metric — payment failed
-                $this->metrics->paymentFailed($e->getMessage());
+
+                $this->metrics->paymentFailed(
+                    $e->getMessage()
+                );
+
+                $paySpan->recordException($e);
+
+                $paySpan->setStatus(
+                    StatusCode::STATUS_ERROR,
+                    $e->getMessage()
+                );
+
                 throw $e;
 
             } finally {
@@ -415,52 +529,131 @@ class CertificateCareController extends Controller
                 $paySpan->end();
             }
 
-            // ── step 4: send confirmation email ───────────────────
-            $mailSpan  = $this->tracer->spanBuilder('send-confirmation-email')->startSpan();
-            $mailScope = $mailSpan->activate();
 
-            try {
-                $data = [
-                    'first_name'    => $user->first_name,
-                    'last_name'     => $user->last_name,
-                    'solution_name' => session('credentials')->solution_name . ' Medical Certificate',
-                    'cost'          => session('credentials')->cost,
-                ];
+            /*
+             * Return the models out of the transaction.
+             *
+             * DB::transaction() will COMMIT only if this
+             * callback completes successfully.
+             */
+            return [
+                'user' => $user,
+                'medicalCertificate' => $medicalCertificate,
+                'payment' => $payment,
+            ];
+        });
 
-                Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
 
-                 // record metric — email sent
-                $this->metrics->emailSent();
-                
-                $mailSpan->setAttribute('email.sent_to', Auth::user()->email);
-                $mailSpan->setAttribute('email.status',  'sent');
+        /*
+        |--------------------------------------------------------------------------
+        | Transaction has successfully committed
+        |--------------------------------------------------------------------------
+        */
 
-            } catch (\Throwable $e) {
-                $mailSpan->recordException($e);
-                $mailSpan->setStatus(StatusCode::STATUS_ERROR, 'Email failed');
-                throw $e;
 
-            } finally {
-                $mailScope->detach();
-                $mailSpan->end();
-            }
+        // ── step 4: send confirmation email ──────────────────────
 
-            session()->forget(['payment_intent_id', 'credentials']);
+        $mailSpan = $this->tracer
+            ->spanBuilder('send-confirmation-email')
+            ->startSpan();
 
-            $span->setAttribute('store_mc.status', 'success');
+        $mailScope = $mailSpan->activate();
 
-            return response()->json([
-                'redirect_url' => route('certificate', ['messege' => 'Successful! please check your email for details'])
-            ]);
+        try {
+
+            $data = [
+                'first_name' =>
+                    $result['user']->first_name,
+
+                'last_name' =>
+                    $result['user']->last_name,
+
+                'solution_name' =>
+                    session('credentials')->solution_name
+                    . ' Medical Certificate',
+
+                'cost' =>
+                    session('credentials')->cost,
+            ];
+
+            Mail::to($email)->send(
+                new VerifyConsultationMail($data)
+            );
+
+            $this->metrics->emailSent();
+
+            $mailSpan->setAttribute(
+                'email.sent_to',
+                $email
+            );
+
+            $mailSpan->setAttribute(
+                'email.status',
+                'sent'
+            );
 
         } catch (\Throwable $e) {
-            $span->recordException($e);
-            $span->setStatus(StatusCode::STATUS_ERROR, $e->getMessage());
+
+            $this->metrics->emailFailed(
+                $e->getMessage()
+            );
+
+            $mailSpan->recordException($e);
+
+            $mailSpan->setStatus(
+                StatusCode::STATUS_ERROR,
+                'Email failed'
+            );
+
             throw $e;
 
         } finally {
-            $scope->detach();
-            $span->end();
+            $mailScope->detach();
+            $mailSpan->end();
         }
+
+
+        // ── step 5: clear session ─────────────────────────────────
+
+        session()->forget([
+            'payment_intent_id',
+            'credentials'
+        ]);
+
+
+        $span->setAttribute(
+            'store_mc.status',
+            'success'
+        );
+
+        return response()->json([
+            'success' => true,
+
+            'redirect_url' => route(
+                'certificate',
+                [
+                    'messege' =>
+                        'Successful! please check your email for details'
+                ]
+            ),
+        ]);
+
+    } catch (\Throwable $e) {
+
+        $span->recordException($e);
+
+        $span->setStatus(
+            StatusCode::STATUS_ERROR,
+            $e->getMessage()
+        );
+
+        throw $e;
+
+    } finally {
+
+        $scope->detach();
+        $span->end();
     }
+}
+ 
 }

@@ -96,7 +96,9 @@
                     </li>
                 @else
                     <li class="nav-item">
-                        <span class="nav-link">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</span>
+                        <a class="nav-link" href="{{ route('dashboard') }}">
+                            {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

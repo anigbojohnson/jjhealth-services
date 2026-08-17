@@ -14,7 +14,8 @@ use Carbon\Carbon;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyConsultationMail;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WeightLostController extends Controller
 {
@@ -100,88 +101,166 @@ class WeightLostController extends Controller
     }
 
 
-    public function  saveConsultDetails(Request $request)
-    {        
 
+public function saveConsultDetails(Request $request)
+{
+    $userData = session()->get('personalDetails');
+    $validatedData = session('medicalDetails');
+    $consultationData = session()->get('consultationDetails');
 
-        $userData = session()->get('personalDetails');
+    $fileName = '';
 
+    try {
 
-        $user = User::updateOrCreate(
-            ['email' => Auth::user()->email], // Condition to find the user
-            [
-                'first_name' => $userData['fname'],
-                'last_name' => $userData['lname'],
-                'phone_number' => $userData['pnumber'],
-                'dob' => $userData['dob'],
-                'gender' => $userData['gender'],
-                'indigene' =>$userData['indigene'],
-                'address' => $userData['address'],
-            ]
-        );
-
-
-        $fileName ="";
+        // Upload file
         if ($request->hasFile('fileUpload')) {
-            // Get the file content
             $file = $request->file('fileUpload');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $fileContent = base64_encode(file_get_contents($file));
-            $filePath = Storage::disk('s3')->putFileAs('user-temp-file/'. Auth::user()->email, $file, $fileName, 'public');
 
+            $fileName = time() . '_' . $file->getClientOriginalName();
+
+            Storage::disk('s3')->putFileAs(
+                'user-temp-file/' . Auth::user()->email,
+                $file,
+                $fileName,
+                'public'
+            );
         }
 
-        $validatedData = session('medicalDetails');
+        DB::transaction(function () use (
+            $userData,
+            $validatedData,
+            $consultationData,
+            $fileName
+        ) {
 
+            // Create/update user
+            User::updateOrCreate(
+                ['email' => Auth::user()->email],
+                [
+                    'first_name'   => $userData['fname'],
+                    'last_name'    => $userData['lname'],
+                    'phone_number' => $userData['pnumber'],
+                    'dob'          => $userData['dob'],
+                    'gender'       => $userData['gender'],
+                    'indigene'     => $userData['indigene'],
+                    'address'      => $userData['address'],
+                ]
+            );
 
-        $consultationData = session()->get('consultationDetails');
+            // Create weight-loss request
+            $weightLoss = WeightLoss::create([
+                'request_status' => 'new request',
+                'user_email' => Auth::user()->email,
 
-        $wl= WeightLoss::create([
-            'request_status'=>"new request",
-             'user_email' => Auth::user()->email,
-             'medication_used' => $validatedData['medication_used'],
-             'diseases_pancreas_liver_kidneys' => $validatedData['diseases_pancreas_liver_kidneys'],
-             'taking_insulin' => $validatedData['taking_insulin'],
-             'allergic_reaction' => $validatedData['allergic_reaction'],
-             'any_allergies' => $validatedData['any_allergies'],
-             'pregnant' => $validatedData['pregnant'],
-             'eating_disorder' => $validatedData['eating_disorder'],
-             'cardiovascular_disease' => $validatedData['cardiovascular_disease'],
-             'strong_pain_killers' => $validatedData['strong_pain_killers'],
-             'severe_heart_failure' => $validatedData['severe_heart_failure'],
-             'brain_tumour' => $validatedData['brain_tumour'],
-             'bariatric_surgery' => $validatedData['bariatric_surgery'],
-             'gastroparesis' => $validatedData['gastroparesis'],
-             'requestReason' =>  $consultationData['requestReason'],
-             'height' =>  $consultationData['height'],
-             'weight' =>  $consultationData['weight'],
-             'file_name' => $validatedData['medicalConditionImage']=='Yes' ? $fileName :null, // The original file name
+                'medication_used' =>
+                    $validatedData['medication_used'],
 
-         ]);
+                'diseases_pancreas_liver_kidneys' =>
+                    $validatedData['diseases_pancreas_liver_kidneys'],
 
-         $payment = new Payment();
-         $payment->payment_id = session('payment_intent_id');
-         $payment->product_id =  session('credentials')->id;
-         $payment->customer_email = Auth::user()->email;
-         $payment->weight_loss_id  = $wl->id;    
-         $payment->payment_status = "pending";    
- 
-         $payment->save();
- 
- 
-       
+                'taking_insulin' =>
+                    $validatedData['taking_insulin'],
 
+                'allergic_reaction' =>
+                    $validatedData['allergic_reaction'],
+
+                'any_allergies' =>
+                    $validatedData['any_allergies'],
+
+                'pregnant' =>
+                    $validatedData['pregnant'],
+
+                'eating_disorder' =>
+                    $validatedData['eating_disorder'],
+
+                'cardiovascular_disease' =>
+                    $validatedData['cardiovascular_disease'],
+
+                'strong_pain_killers' =>
+                    $validatedData['strong_pain_killers'],
+
+                'severe_heart_failure' =>
+                    $validatedData['severe_heart_failure'],
+
+                'brain_tumour' =>
+                    $validatedData['brain_tumour'],
+
+                'bariatric_surgery' =>
+                    $validatedData['bariatric_surgery'],
+
+                'gastroparesis' =>
+                    $validatedData['gastroparesis'],
+
+                'requestReason' =>
+                    $consultationData['requestReason'],
+
+                'height' =>
+                    $consultationData['height'],
+
+                'weight' =>
+                    $consultationData['weight'],
+
+                'file_name' =>
+                    $validatedData['medicalConditionImage'] === 'Yes'
+                        ? $fileName
+                        : null,
+            ]);
+
+            // Create payment
+            Payment::create([
+                'payment_id' => session('payment_intent_id'),
+                'product_id' => session('credentials')->id,
+                'customer_email' => Auth::user()->email,
+                'weight_loss_id' => $weightLoss->id,
+                'payment_status' => 'pending',
+            ]);
+        });
+
+        // Only execute after transaction successfully commits
         $data = [
-        'first_name' => $userData['fname'],
-         'last_name' => $userData['lname'],
-        'solution_name' => session('credentials')->solution_name,
-        'cost' =>  session('credentials')->cost,
+            'first_name' => $userData['fname'],
+            'last_name' => $userData['lname'],
+            'solution_name' => session('credentials')->solution_name,
+            'cost' => session('credentials')->cost,
         ];
-        
-        Mail::to(Auth::user()->email)->send(new VerifyConsultationMail($data));
-        session()->forget(['payment_intent_id','credentials']);
-         return response()->json([
-             'redirect_url' => route('weight-loss', ['messege' => "Successful! please check your email for details"])
-         ]);
+
+        Mail::to(Auth::user()->email)
+            ->send(new VerifyConsultationMail($data));
+
+        session()->forget([
+            'payment_intent_id',
+            'credentials',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'redirect_url' => route(
+                'weight-loss',
+                [
+                    'messege' => 'Successful! please check your email for details'
+                ]
+            ),
+        ]);
+
+    } catch (\Throwable $e) {
+
+        // Clean up S3 file if database transaction failed
+        if ($fileName) {
+            Storage::disk('s3')->delete(
+                'user-temp-file/' . Auth::user()->email . '/' . $fileName
+            );
+        }
+
+        Log::error('Failed to save weight loss request', [
+            'user_email' => Auth::user()->email,
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'We could not process your request at this time. Please try again.',
+        ], 500);
     }
+}
+  
 }
