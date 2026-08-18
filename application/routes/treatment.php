@@ -104,12 +104,10 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::get('/consult-category', function () {
-
     if (CacheInvalidation::wasInvalidated('teleconsult_solutions_1')) {
         Cache::forget('teleconsult_solutions_1');
         CacheInvalidation::clearFlag('teleconsult_solutions_1');
     }
-
     $solutions = Cache::rememberForever('teleconsult_solutions_1', function () {
         return Solutions::select('solutions.*')
             ->whereIn('id', function ($query) {
@@ -120,12 +118,9 @@ Route::get('/consult-category', function () {
             ->where('category_id', 1)
             ->get();
     });
-    
-
         // Pass the solutions data to the view
     $message = "";
     return view('treatment.doctor-consult-category', compact('solutions', 'message'));
-
 })->name('consult-category');
 
 Route::get('/telehealth', function () {
