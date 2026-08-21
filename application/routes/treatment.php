@@ -91,12 +91,11 @@ Route::get('/telehealth-request', function () {
 
 Route::middleware(['auth'])->group(function () {
     
-    Route::post('/ save-tele-consult-details', [TelehealthController::class,'saveConsultDetails'])->name(' save-tele-consult-details');
-
+    Route::post('/ save-tele-consult-details', [TelehealthController::class,'saveConsultDetails'])->name(' save-tele-consult-details')->middleware('idempotency');
     Route::post('/create-tele-consult-payment-intent', [TelehealthController::class,'getSecretKey'])->name('create-tele-consult-payment-intent');
 
 
-    Route::post('/telehealth-consultation-details', [TelehealthController::class,'consultationDetails'])->name('telehealth-consultation-details');
+Route::post('/telehealth-consultation-details', [TelehealthController::class,'consultationDetails'])->name('telehealth-consultation-details');
 
     Route::post('/telehealth-personal-details', [TelehealthController::class,'personalDetails'])->name('telehealth-personal-details');
 });

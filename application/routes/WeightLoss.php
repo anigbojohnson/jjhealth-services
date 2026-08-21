@@ -14,8 +14,8 @@ Route::middleware(['auth'])->group(function () {
         return view('weightloss.weight-lost-home');
     })->name('weight-loss-payment');
 
-    Route::post('/save-weight-loss-details', [WeightLostController::class,'saveConsultDetails'])->name('save-weight-loss-details');
-    Route::post('/create-weight-loss-payment-intent', [WeightLostController::class,'getSecretKey'])->name('create-weight-loss-payment-intent');
+    Route::post('/save-weight-loss-details', [WeightLostController::class,'saveConsultDetails'])->name('save-weight-loss-details')->middleware('idempotency');
+    Route::post('/create-weight-loss-payment-intent', [WeightLostController::class,'getSecretKey'])->name('create-weight-loss-payment-intent')->middleware('idempotency');
     Route::post('/weight-loss-personal-details', [WeightLostController::class,'personalDetails'])->name('weight-loss-personal-details');
     Route::post('/weight-loss-consultation-details', [WeightLostController::class,'consultationDetails'])->name('weight-loss-consultation-details');
     Route::post('/weight-loss-medical-details', [WeightLostController::class,'medicalDetails'])->name('weight-loss-medical-details');

@@ -14,15 +14,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/validate-personalDetails-work-medical-certificate', [CertificateWorkController::class, 'personalDetails'])->name('validate-personalDetails-work-medical-certificate');
     Route::post('/validate-medicalDetails-work-medical-certificate', [CertificateWorkController::class, 'medicalDetails'])->name('validate-medicalDetails-work-medical-certificate');
     Route::post('/validate-workDetails-work-medical-certificate', [CertificateWorkController::class, 'workDetails'])->name('validate-workDetails-work-medical-certificate');
-    Route::post('/submit-work-medical-certificate', [CertificateWorkController::class, 'storeMCDetails'])->name('submit-work-medical-certificate');
-    Route::post('/create-mc-work-payment-intent', [CertificateWorkController::class, 'getSecretKey'])->name('create-mc-work-payment-intent');
+    Route::post('/submit-work-medical-certificate', [CertificateWorkController::class, 'storeMCDetails'])->name('submit-work-medical-certificate')->middleware('idempotency');
+    Route::post('/create-mc-work-payment-intent', [CertificateWorkController::class, 'getSecretKey'])->name('create-mc-work-payment-intent')->middleware('idempotency');
 
 
     Route::post('/validate-studiesDetails-studies-medical-certificate', [CertificateStudiesController::class, 'studiesDetails'])->name('validate-studiesDetails-studies-medical-certificate');
     Route::post('/validate-personalDetails-studies-medical-certificate', [CertificateStudiesController::class, 'personalDetails'])->name('validate-personalDetails-studies-medical-certificate');
     Route::post('/validate-medicalDetails-studies-medical-certificate', [CertificateStudiesController::class, 'medicalDetails'])->name('validate-medicalDetails-studies-medical-certificate');
-    Route::post('/ submit-studies-medical-certificate', [CertificateStudiesController::class, 'storeMCDetails'])->name('submit-studies-medical-certificate');
-    Route::post('/create-mc-studies-payment-intent', [CertificateStudiesController::class, 'getSecretKey'])->name('create-mc-studies-payment-intent');
+    Route::post('/ submit-studies-medical-certificate', [CertificateStudiesController::class, 'storeMCDetails'])->name('submit-studies-medical-certificate')->middleware('idempotency');
+    Route::post('/create-mc-studies-payment-intent', [CertificateStudiesController::class, 'getSecretKey'])->name('create-mc-studies-payment-intent')->middleware('idempotency');
 
 
     Route::post('/create-mc-travelAndHoliday-payment-intent', [CertificateTravelAndHolidayController::class, 'getSecretKey'])->name('create-mc-travelAndHoliday-payment-intent');

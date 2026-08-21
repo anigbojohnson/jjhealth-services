@@ -11,8 +11,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(\App\Http\Middleware\OpenTelemetryMiddleware::class);
+        $middleware->append(
+            \App\Http\Middleware\OpenTelemetryMiddleware::class
+        );
+
+        $middleware->alias([
+            'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+
+    ->create();

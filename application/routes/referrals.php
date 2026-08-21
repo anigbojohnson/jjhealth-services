@@ -74,8 +74,8 @@ Route::get('/specialist-referral-home', function () {
 
 
 Route::middleware(['auth'])->group(function () { 
-    Route::post('/create-specialist-refferals-payment-intent', [SpecialistReferralsController::class,'getSecretKey'])->name('create-specialist-refferals-payment-intent');
-    Route::post('/ save-specialist-refferals-details', [SpecialistReferralsController::class,'saveConsultDetails'])->name('save-specialist-refferals-details');
+    Route::post('/create-specialist-refferals-payment-intent', [SpecialistReferralsController::class,'getSecretKey'])->name('create-specialist-refferals-payment-intent')->middleware('idempotency');
+    Route::post('/ save-specialist-refferals-details', [SpecialistReferralsController::class,'saveConsultDetails'])->name('save-specialist-refferals-details')->middleware('idempotency');
     Route::post('/special-refferals-consultation-details', [SpecialistReferralsController::class,'consultationDetails'])->name('special-refferals-consultation-details');
     Route::post('/specialist-referral-personal-details', [SpecialistReferralsController::class,'personalDetails'])->name('specialist-referral-personal-details');
 });

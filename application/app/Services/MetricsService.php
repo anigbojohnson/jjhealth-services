@@ -20,33 +20,21 @@ class MetricsService
     private $requestDuration;
     private $dbQueryDuration;
     private $storeMcDuration;
-
     public function __construct(MeterInterface $meter)
     {
         // ── Counters (ONE per domain) ─────────────────────────
-
         $this->certificates = $meter->createCounter('certificates.total');
-
         $this->validation = $meter->createCounter('validation.total');
-
         $this->payments = $meter->createCounter('payment.total');
-
         $this->emails = $meter->createCounter('emails.total');
-
         $this->forms = $meter->createCounter('form.submissions.total');
-
         $this->studyMc = $meter->createCounter('studies.store_mc.total');
-
         $this->secretKey = $meter->createCounter('studies.secret_key.total');
-
         $this->fileUpload = $meter->createCounter('fileupload.total');
 
         // ── Histograms ─────────────────────────────────────────
-
         $this->requestDuration = $meter->createHistogram('http_request_duration_ms');
-
         $this->dbQueryDuration = $meter->createHistogram('db_query_duration_ms');
-
         $this->storeMcDuration = $meter->createHistogram('studies_store_mc_duration_ms');
     }
 

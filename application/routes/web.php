@@ -95,10 +95,10 @@ Route::middleware(['throttle:api'])->group(function () {
 
 
 Route::middleware(['auth','throttle:api'])->group(function () {
-        Route::post('/password-update',[DashboardController::class,'edit_password'] )->name('password-update');
+        Route::post('/password-update',[DashboardController::class,'edit_password'] )->name('password-update')->middleware('idempotency');;
         Route::get('/change-password',[DashboardController::class,'show_change_password'] )->name('change-password');
         Route::get('/dashboard',[DashboardController::class,'index'] )->name('dashboard');
-        Route::post('/edit-profile',[DashboardController::class,'update'] )->name('edit-profile');
+        Route::post('/edit-profile',[DashboardController::class,'update'] )->name('edit-profile')->middleware('idempotency');;
         Route::get('/my-certificate', function () {
 
             $certificates = MedicalCertificate::select([
