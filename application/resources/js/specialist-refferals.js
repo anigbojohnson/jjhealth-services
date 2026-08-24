@@ -207,6 +207,9 @@ $(document).ready(function () {
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'), // Include CSRF token
             },
+            headers: {
+                    'Idempotency-Key': crypto.randomUUID()
+            },
             success: function(response) {
 
                 // Step 2: Confirm the card payment with the client secret
@@ -219,7 +222,10 @@ $(document).ready(function () {
   
                         $('#card-errors').text(result.error.message);
                     } else {
-
+                        
+                        if (result.status === 409) {
+                             return;
+                        }
 
                          // Display error message in #card-errors
                         let form = document.getElementById('consultation-special-refferals-form');
@@ -240,13 +246,24 @@ $(document).ready(function () {
                             contentType: false,  // VERY IMPORTANT
                             processData: false,  // VERY IMPORTANT
                             url: '/save-specialist-refferals-details', // Adjust this route to your actual backend route
+                            headers: {
+                                    'Idempotency-Key': crypto.randomUUID()
+                            },
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 window.location.href = response.redirect_url
                             },
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
-                                alert("Failed to complete backend processing");
+                                    if (xhr.status === 409) {
+                                        const message = xhr.responseJSON.message;
+
+                                        $('#payment-error')
+                                            .removeClass('d-none')
+                                            .text(message);
+                                    }else{
+                                        alert("Failed to complete backend processing");
+                                    }
                             },
                             complete: function() {
                                 $('#validate-payment').prop('disabled', false).text('Continue');
@@ -257,7 +274,16 @@ $(document).ready(function () {
             },
             error: function(xhr) {
                 // Handle error if the request fails
-                console.error("Error creating PaymentIntent:", xhr);
+
+                    if (xhr.status === 409) {
+                        const message = xhr.responseJSON.message;
+                        $('#payment-error')
+                            .removeClass('d-none')
+                            .text(message);
+                    }else{
+                        alert("Error creating PaymentIntent");
+                    }
+               
             },
             complete: function() {
               $('#validate-payment').prop('disabled', false).text('Continue');

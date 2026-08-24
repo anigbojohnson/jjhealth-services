@@ -208,10 +208,6 @@ $(document).ready(function() {
 });
 
 
-
-
-
-
 // Get today's date
 var today = new Date();
 var dd = String(today.getDate()).padStart(2, '0');
@@ -675,6 +671,9 @@ var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'), // Include CSRF token
             },
+            headers: {
+                'Idempotency-Key': crypto.randomUUID()
+            },
             success: function(response) {
 
                 // Step 2: Confirm the card payment with the client secret
@@ -687,18 +686,32 @@ var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
                         // Display error message in #card-errors
                         $('#card-errors').text(result.error.message);
                     } else {
+                        if (result.status === 409) {
+                            return;
+                        }
                         // Payment succeeded, redirect to success page
                         $.ajax({
                             type: 'POST',
                             url: '/submit-carer-medical-certificate', // Adjust this route to your actual backend route
                             data:'',
+                            headers: {
+                                'Idempotency-Key': crypto.randomUUID()
+                            },
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 window.location.href = response.redirect_url
                             },
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
-                                alert("Failed to complete backend processing");
+
+                                if (xhr.status === 409) {
+                                        const message = xhr.responseJSON.message;
+                                        $('#payment-error')
+                                            .removeClass('d-none')
+                                            .text(message);
+                                }else{
+                                        alert("Failed to complete backend processing");
+                                }
                             }
                         });
                     }
@@ -706,7 +719,15 @@ var stripe = Stripe("pk_test_bMToQz9lq4TgR3V5Qe6jRygh00I6c2oSfG");
             },
             error: function(xhr) {
                 // Handle error if the request fails
-                console.error("Error creating PaymentIntent:", xhr);
+
+                if (xhr.status === 409) {
+                        const message = xhr.responseJSON.message;
+                        $('#payment-error')
+                            .removeClass('d-none')
+                            .text(message);
+                }else{
+                        alert("Error creating PaymentIntent");
+                }
             },
 
             complete: function() {

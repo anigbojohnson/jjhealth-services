@@ -82,8 +82,8 @@ Route::get('/pathology/select', function () {
 
 Route::middleware(['auth'])->group(function () {
     
-    Route::post('/create-pathology-refferals-payment-intent', [PathologyReferralsController::class,'getSecretKey'])->name('create-specialist-refferals-payment-intent')->middleware('idempotency');
-    Route::post('/save-pathology-refferals-details', [PathologyReferralsController::class,'saveConsultDetails'])->name('save-specialist-refferals-details')->middleware('idempotency');
+    Route::post('/create-pathology-refferals-payment-intent', [PathologyReferralsController::class,'getSecretKey'])->name('create-pathology-refferals-payment-intent')->middleware('idempotency');
+    Route::post('/save-pathology-refferals-details', [PathologyReferralsController::class,'saveConsultDetails'])->name('save-pathology-refferals-details')->middleware('idempotency');
 
     Route::post('/pathology-refferals-consultation-details', [PathologyReferralsController::class,'consultationDetails'])->name('special-refferals-consultation-details');
     Route::post('/pathology-referral-personal-details', [PathologyReferralsController::class,'personalDetails'])->name('specialist-referral-personal-details');

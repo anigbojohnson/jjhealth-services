@@ -211,9 +211,11 @@
     <div class="row justify-content-center gy-3">
         <div class="col-md-6">
             <h3 class="text-center"  style="font-weight: 600;"></h3>
+            <div id="payment-error" class="alert alert-danger d-none"></div>
 
             <h5>Payment Information</h5>
             <hr>
+            <div id="payment-error" class="alert alert-danger d-none"></div>
 
             <i> {{ session('credentials')->description }}</i> </br>
 

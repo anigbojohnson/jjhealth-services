@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class IdempotencyKey extends Model
 {
     protected $fillable = [
-        'user_id',
+        'user_email',
         'key',
         'endpoint',
         'request_hash',

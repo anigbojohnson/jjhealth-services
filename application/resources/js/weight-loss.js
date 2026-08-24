@@ -261,14 +261,17 @@ $(document).ready(function () {
 
         $('#validate-payment').prop('disabled', false).text('Processing');
             
-
         // Step 1: Send an AJAX request to the backend to get the client secret
         $.ajax({
             type: 'POST',
             url: '/create-weight-loss-payment-intent',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'), // Include CSRF token
+            },  
+             headers: {
+                    'Idempotency-Key': crypto.randomUUID()
             },
+
             success: function(response) {
 
                 // Step 2: Confirm the card payment with the client secret
@@ -281,6 +284,10 @@ $(document).ready(function () {
                         // Display error message in #card-errors
                         $('#card-errors').text(result.error.message);
                     } else {
+
+                        if (result.status === 409) {
+                            return;
+                        }
                         let file = $('input[name="fileUpload"]')[0].files[0];
                         let formData = new FormData();
                         formData.append('fileUpload', file);
@@ -289,14 +296,26 @@ $(document).ready(function () {
                             url: '/save-weight-loss-details', // Adjust this route to your actual backend route
                             data:formData,
                             processData: false,   
-                            contentType: false,   
+                            contentType: false, 
+                            headers: {
+                                    'Idempotency-Key': crypto.randomUUID()
+                            }, 
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 window.location.href = response.redirect_url
                             },
                             error: function(xhr) {
-                                // Handle error if something goes wrong with the post-payment processing
-                                alert("Failed to complete backend processing");
+
+                                if (xhr.status === 409) {
+                                    const message = xhr.responseJSON?.message
+                                        ?? 'The request conflicts with an existing operation.';
+
+                                    $('#payment-error')
+                                        .removeClass('d-none')
+                                        .text(message);
+                                } else{
+                                      alert("Failed to complete backend processing");
+                                }
                             }
                         });
                     }
@@ -311,12 +330,7 @@ $(document).ready(function () {
             }
         });
     });
-    
 });
-
-
-
-
 
 document.addEventListener("DOMContentLoaded", function () {
 

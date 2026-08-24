@@ -118,7 +118,7 @@ public function saveConsultDetails(Request $request)
                 'request_status'  => 'new request',
                 'condition_image' => $consultationDetails['medicalConditionImage'] === 'Yes'
                                     ? $fileName
-                                    : null,
+                                   : null,
                 'request_reason'  => session('credentials')->solution_name
                                     . ': '
                                     . $consultationDetails['requestReason'],

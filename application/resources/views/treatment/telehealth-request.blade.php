@@ -240,7 +240,7 @@
         <div class="col-md-6">
             <h3 class="text-center"  style="font-weight: 600;">Request For {{ session('credentials')->solution_name}}</h3>
             <hr>
-
+           <div id="payment-error" class="alert alert-danger d-none"></div>
             <h5>Payment Information</h5>
 
         

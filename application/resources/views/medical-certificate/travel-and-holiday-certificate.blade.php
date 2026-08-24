@@ -315,7 +315,7 @@
                 (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
             </h3>
             <hr>
-
+            <div id="payment-error" class="alert alert-danger d-none"></div>
             <h5>Payment Information</h5>
 
         

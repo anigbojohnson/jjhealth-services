@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('idempotency_keys', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                ->nullable()
-                ->constrained()
-                ->nullOnDelete();
+            $table->string('user_email');
+
+            $table->foreign('user_email')->references('email')->on('users')->onDelete('cascade');
             $table->string('key', 255);
             $table->string('endpoint', 255);
             $table->string('request_hash', 64);
@@ -24,7 +23,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('response_code')->nullable();
             $table->jsonb('response_body')->nullable();
             $table->timestamp('expires_at')->nullable();
-            $table->unique(['user_id', 'key']);
+            $table->unique(['user_email', 'key']);
             $table->index('expires_at');
             $table->timestamps();
 

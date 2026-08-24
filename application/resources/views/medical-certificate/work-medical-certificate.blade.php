@@ -458,8 +458,8 @@
                 Medical Certificate 
                 (<i style="font-size: 0.7em;">{{ session('credentials')->solution_name }}</i>)
             </h3>
+            <div id="payment-error" class="alert alert-danger d-none"></div>
             <hr>
-
             <h5>Payment Information</h5>
 
         

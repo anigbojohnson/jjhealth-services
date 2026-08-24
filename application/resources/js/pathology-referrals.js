@@ -340,7 +340,7 @@ $('input[name="selected_tests[]"]').on('change', function() {
 
     $('#validate-payment').click(function(e) {
         e.preventDefault(); // Prevent form submission
-        $('#validate-payment').prop('disabled', true).text('Processing...');
+        $('#validate-payment').prop('disabled', false).text('Processing...');
 
 
         // Step 1: Send an AJAX request to the backend to get the client secret
@@ -349,6 +349,9 @@ $('input[name="selected_tests[]"]').on('change', function() {
             url: '/create-pathology-refferals-payment-intent',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'), // Include CSRF token
+            },
+            headers: {
+                    'Idempotency-Key': crypto.randomUUID()
             },
             success: function(response) {
 
@@ -362,8 +365,9 @@ $('input[name="selected_tests[]"]').on('change', function() {
   
                         $('#card-errors').text(result.error.message);
                     } else {
-
-
+                        if (result.status === 409) {
+                                return;
+                        }
                          // Display error message in #card-errors
                         let form = document.getElementById('consultation-pathology-refferals-form');
                         let formData = new FormData(form);
@@ -375,7 +379,6 @@ $('input[name="selected_tests[]"]').on('change', function() {
                             formData.append('fileUpload', fileInput.files[0]);
                         }
 
-                 
                         // Payment succeeded, redirect to success page
                         $.ajax({
                             type: 'POST',
@@ -383,14 +386,24 @@ $('input[name="selected_tests[]"]').on('change', function() {
                             contentType: false,  // VERY IMPORTANT
                             processData: false,  // VERY IMPORTANT
                             url: '/save-pathology-refferals-details', // Adjust this route to your actual backend route
+                            headers: {
+                                    'Idempotency-Key': crypto.randomUUID()
+                            },
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 window.location.href = response.redirect_url
                             },
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
-                               console.log(xhr)
-                                alert("Failed to complete backend processing");
+                                if (xhr.status === 409) {
+                                    const message = xhr.responseJSON.message;
+                                    $('#payment-error')
+                                        .removeClass('d-none')
+                                        .text(message);
+                                }else{
+                                    alert("Failed to complete backend processing");
+                                }
+
                             },
                            complete: function() {
                               $('#validate-payment').prop('disabled', false).text('Continue');
@@ -401,7 +414,14 @@ $('input[name="selected_tests[]"]').on('change', function() {
             },
             error: function(xhr) {
                 // Handle error if the request fails
-                console.error("Error creating PaymentIntent:", xhr);
+                if (xhr.status === 409) {
+                    const message = xhr.responseJSON.message;
+                    $('#payment-error')
+                        .removeClass('d-none')
+                        .text(message);
+                }else{
+                    alert("Error creating PaymentIntent");
+                }
             },
         });
     });

@@ -31,7 +31,6 @@ class IdempotencyMiddleware
         ])) {
             return $next($request);
         }
-
         $key = $this->idempotencyService->getKey($request);
 
         /*
@@ -44,20 +43,6 @@ class IdempotencyMiddleware
 
         $requestHash =
             $this->idempotencyService->generateRequestHash($request);
-
-        /*
-         * Acquire Redis lock.
-         */
-        $lock = $this->idempotencyService->acquireLock(
-            $request,
-            $key
-        );
-
-        if (!$lock->get()) {
-            return response()->json([
-                'message' => 'This request is already being processed.',
-            ], 409);
-        }
 
         try {
             /*
@@ -84,9 +69,9 @@ class IdempotencyMiddleware
                  * If the original request completed,
                  * return the original response.
                  */
-                if ($existing->status === 'completed') {
+                 if ($existing->status === 'completed') {
                     return $this->idempotencyService
-                        ->replayResponse($existing);
+                        ->replayResponse();
                 }
             }
 
@@ -128,15 +113,10 @@ class IdempotencyMiddleware
                     'status' => 'failed',
                 ]);
             }
-
             throw $exception;
-
         } finally {
 
-            /*
-             * Always release the Redis lock.
-             */
-            $lock->release();
+       
         }
     }
 }

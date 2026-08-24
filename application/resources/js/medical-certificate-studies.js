@@ -645,6 +645,9 @@ $('#validate-medical').on('click', function(e) {
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'), // Include CSRF token
             },
+            headers: {
+                    'Idempotency-Key': crypto.randomUUID()
+            },
             success: function(response) {
 
                 // Step 2: Confirm the card payment with the client secret
@@ -657,6 +660,10 @@ $('#validate-medical').on('click', function(e) {
                         // Display error message in #card-errors
                         $('#card-errors').text(result.error.message);
                     } else {
+
+                        if (result.status === 409) {
+                            return;
+                        }
                         // Payment succeeded, redirect to success page
                         let formData = new FormData();
                         let medicalConditionImage = $('input[name="medicalConditionImage"]').val(); // 'Yes' or 'No'
@@ -675,8 +682,11 @@ $('#validate-medical').on('click', function(e) {
                             processData: false,        // ← missing
                             contentType: false,        // ← missing
                             headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')  // ← missing
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') , // ← missing
+                                'Idempotency-Key': crypto.randomUUID()
+
                             },
+                            
                             success: function(response) {
                                 // Redirect to success page or handle successful response
                                 if(step < totalSteps)  
@@ -686,7 +696,15 @@ $('#validate-medical').on('click', function(e) {
                             },
                             error: function(xhr) {
                                 // Handle error if something goes wrong with the post-payment processing
-                                alert("Failed to complete backend processing");
+                                if (xhr.status === 409) {
+                                    const message = xhr.responseJSON.message;
+                                    $('#payment-error')
+                                        .removeClass('d-none')
+                                        .text(message);
+                                }else{
+                                    alert("Failed to complete backend processing");
+
+                                }
                             },
                             
                             complete: function() {
@@ -698,8 +716,15 @@ $('#validate-medical').on('click', function(e) {
             },
             error: function(xhr) {
                 // Handle error if the request fails
-                console.error("Error creating PaymentIntent:", xhr);
-                $('#validate-payment').prop('disabled', false).text('Continue');
+            $('#validate-payment').prop('disabled', false).text('Continue');
+                    if (xhr.status === 409) {
+                            const message = xhr.responseJSON.message;
+                            $('#payment-error')
+                                .removeClass('d-none')
+                                .text(message);
+                    }else{
+                            alert("Error creating PaymentIntent");
+                    }
             }
         });
     });
