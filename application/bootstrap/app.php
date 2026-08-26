@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     });
 
+
+
 })->withExceptions(function (Exceptions $exceptions) {
 
     $exceptions->render(function (
@@ -53,6 +55,20 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     });
 
+    $exceptions->render(function (
+        \App\Exceptions\IdempotencyKeyAlreadyProcessingException $e,
+        \Illuminate\Http\Request $request
+    ) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => [
+                    'code' => 'IDEMPOTENCY_REQUEST_PROCESSING',
+                ],
+            ], 409);
+        }
+    });
 })
 
     ->create();

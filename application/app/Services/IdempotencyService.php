@@ -88,14 +88,24 @@ use App\Exceptions\IdempotencyKeyMismatchException;
         string $key,
         string $requestHash
     ): IdempotencyKey {
-        return IdempotencyKey::create([
-            'user_email' => $request->user()?->email,
-            'key' => $key,
-            'endpoint' => $request->method() . ' ' . $request->path(),
-            'request_hash' => $requestHash,
-            'status' => 'processing',
-            'expires_at' => now()->addHours($this->expirationHours),
-        ]);
+        try {
+            return IdempotencyKey::create([
+                'user_email' => $request->user()?->email,
+                'key' => $key,
+                'endpoint' => $request->method() . ' ' . $request->path(),
+                'request_hash' => $requestHash,
+                'status' => 'processing',
+                'expires_at' => now()->addHours($this->expirationHours),
+            ]);
+        } catch (QueryException $exception) {
+
+            // PostgreSQL unique constraint violation
+            if ($exception->getCode() === '23505') {
+                throw new IdempotencyKeyAlreadyProcessingException();
+            }
+
+            throw $exception;
+        }
     }
 
     /**
